@@ -138,12 +138,14 @@ jobs:
 
       - name: Build package (makepkg)
         run: |
-          cp packaging/arch/PKGBUILD .
           useradd -m builder || true
           chown -R builder:builder .
-          # --nodeps: wine yalnızca ÇALIŞMA anında gereken bağımlılıktır; paket derlemesi
-          # dosya kopyalamadan ibarettir. Uç kullanıcıda pacman bağımlılıkları normal çözer.
-          su builder -c "cd '$PWD' && makepkg -f --nodeps"
+          # makepkg, PKGBUILD'in bulunduğu packaging/arch/ içinde koşar; böylece
+          # pkg/ ve src/ çalışma dizinleri repo köküyle karışmaz. Uygulamanın kendi
+          # src/ (Python paketi) korunur.
+          # --nodeps: wine yalnızca ÇALIŞMA anında gereken bağımlılıktır.
+          su builder -c "cd '$PWD/packaging/arch' && makepkg -f --nodeps"
+          mv packaging/arch/*.pkg.tar.zst ./
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

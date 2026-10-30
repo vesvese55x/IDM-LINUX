@@ -1,4 +1,6 @@
 # Maintainer: BELGESELSEMO <vesvese55x@users.noreply.github.com>
+# Bu PKGBUILD, repo kökünde çalışacak şekilde tasarlandı: makepkg dosyasının
+# bulunduğu packaging/arch/ dizininde çalıştırın (CI da böyle yapar).
 pkgname=idm-linux
 pkgver=1.0.0
 pkgrel=1
@@ -13,8 +15,23 @@ source=()
 md5sums=()
 
 package() {
+  local ROOT="$(cd "${startdir}/../.." && pwd)"
+
   install -d "${pkgdir}/opt/${pkgname}"
-  cp -a "${startdir}/." "${pkgdir}/opt/${pkgname}/"
+  # Uygulama ağacını kopyala; makepkg'in kendi pkg/ ve src/ dizinleri ile
+  # sürüm kontrolü/CI klasörleri pakete girmez. Uygulamanın kendi src/ klasörü
+  # (Python paketi) bilinçli olarak DAHİLDİR.
+  tar -cf - -C "${ROOT}" \
+      --exclude=./.git \
+      --exclude=./.github \
+      --exclude=./build \
+      --exclude=./dist \
+      --exclude=./tests \
+      --exclude=./docs \
+      --exclude=./packaging/arch/pkg \
+      --exclude=./packaging/arch/src \
+      . | tar -xf - -C "${pkgdir}/opt/${pkgname}"
+
   rm -rf "${pkgdir}/opt/${pkgname}/.git" \
          "${pkgdir}/opt/${pkgname}/.github" \
          "${pkgdir}/opt/${pkgname}/packaging" \
@@ -24,16 +41,16 @@ package() {
          "${pkgdir}/opt/${pkgname}/docs"
   rm -f  "${pkgdir}/opt/${pkgname}/.gitignore"
 
-  install -Dm0755 "${startdir}/packaging/launcher.sh" "${pkgdir}/usr/bin/${pkgname}"
-  install -Dm0644 "${startdir}/packaging/idm-linux.desktop" "${pkgdir}/usr/share/applications/${pkgname}.desktop"
-  install -Dm0644 "${startdir}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+  install -Dm0755 "${ROOT}/packaging/launcher.sh" "${pkgdir}/usr/bin/${pkgname}"
+  install -Dm0644 "${ROOT}/packaging/idm-linux.desktop" "${pkgdir}/usr/share/applications/${pkgname}.desktop"
+  install -Dm0644 "${ROOT}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
 
   local _icon=""
   for c in icons/idm-linux.png icons/icon.png icon.png idm-linux.png; do
-    if [ -f "${startdir}/${c}" ]; then _icon="${startdir}/${c}"; break; fi
+    if [ -f "${ROOT}/${c}" ]; then _icon="${ROOT}/${c}"; break; fi
   done
   if [ -z "${_icon}" ]; then
-    python3 "${startdir}/packaging/icon_gen.py" "${srcdir}/idm-linux.png"
+    python3 "${ROOT}/packaging/icon_gen.py" "${srcdir}/idm-linux.png"
     _icon="${srcdir}/idm-linux.png"
   fi
   install -Dm0644 "${_icon}" "${pkgdir}/usr/share/icons/hicolor/256x256/apps/${pkgname}.png"
