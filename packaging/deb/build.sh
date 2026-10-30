@@ -4,6 +4,18 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 source packaging/vars.sh
 
+# Kaynak kontrolü: uygulama giriş noktası yoksa anlamlı hata ver
+SRC_ENTRY=""
+for c in idm-linux.sh run.sh start.sh idm-linux main.py app.py idm_linux.py gui.py; do
+  if [ -f "$c" ] || [ -x "$c" ]; then SRC_ENTRY="$c"; break; fi
+done
+if [ -z "$SRC_ENTRY" ]; then
+  echo "HATA: Uygulama kaynak ağacı bulunamadı (main.py/app.py/idm_linux.py/gui.py/idm-linux.sh...)." >&2
+  echo "       Kaynak ağacı repo köküne koyup tekrar deneyin." >&2
+  exit 1
+fi
+echo "Kaynak bulundu: $SRC_ENTRY"
+
 STAGE="build/deb/${APP_ID}"
 rm -rf build/deb
 mkdir -p "${STAGE}/DEBIAN" "${STAGE}/opt/${APP_ID}" "${STAGE}/usr/bin" \

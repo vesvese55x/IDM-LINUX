@@ -22,14 +22,41 @@ env:
   APP_ID: idm-linux
   DISPLAY_NAME: IDM LINUX
   VERSION: "1.0.0"
-  MAINTAINER: "BELGESELSEMO <belgeselsemo@users.noreply.github.com>"
+  MAINTAINER: "BELGESELSEMO <vesvese55x@users.noreply.github.com>"
 
 permissions:
   contents: read
 
 jobs:
+  source-check:
+    name: Kaynak kod kontrolü
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    outputs:
+      present: ${{ steps.check.outputs.present }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Uygulama kaynak ağacı var mı?
+        id: check
+        run: |
+          FOUND=""
+          for f in idm-linux.sh run.sh start.sh idm-linux main.py app.py idm_linux.py gui.py; do
+            if [ -f "$f" ] || [ -x "$f" ]; then FOUND="$f"; break; fi
+          done
+          if [ -n "$FOUND" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+            echo "Kaynak bulundu: $FOUND"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Uygulama kaynak ağacı bu committe yok — paket adımları atlanacak. Kaynak eklendiğinde AppImage/deb/rpm/zst otomatik derlenecek."
+          fi
+
   appimage:
     name: AppImage (x86_64)
+    needs: source-check
+    if: needs.source-check.outputs.present == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -49,6 +76,8 @@ jobs:
 
   deb:
     name: DEB (Debian/Ubuntu, all)
+    needs: source-check
+    if: needs.source-check.outputs.present == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -68,6 +97,8 @@ jobs:
 
   rpm:
     name: RPM (Fedora/openSUSE, noarch)
+    needs: source-check
+    if: needs.source-check.outputs.present == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -92,6 +123,8 @@ jobs:
 
   arch:
     name: Arch Linux (.pkg.tar.zst)
+    needs: source-check
+    if: needs.source-check.outputs.present == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     container:
