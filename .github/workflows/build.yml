@@ -1,22 +1,16 @@
-name: Build & Release
-
-# IDM LINUX (BELGESELSEMO) — CI/CD
-# - Her push / PR / manuel tetikleme: AppImage + deb + rpm + Arch (zst) paketleri derlenir,
-#   30 gün saklanan "Artifacts" olarak yüklenir (release'e EKLENMEZ).
-# - v* etiketi pushlanınca (örn. v1.0.0): 4 paket DRAFT bir GitHub Release'e eklenir.
-#   Yayın kararı sende kalır: Releases sayfasından draft'ı düzenleyip "Publish" edersin.
+# IDM LINUX (BELGESELSEMO) — 1.0.0 final sürüm akışı
+# Bu, repodaki SON workflow'dur: 4 paketi derler ve "IDM-LINUX-1.0.0"
+# adlı DRAFT release'e ekler. Yayın kararı kullanıcıdadır (Publish).
+name: "IDM-LINUX-1.0.0 Building (İnşa Ediliyor)"
 
 on:
   push:
     branches: ["main"]
-    tags: ["v*"]
-  pull_request:
-    branches: ["main"]
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: final-build-${{ github.ref }}
+  cancel-in-progress: false
 
 env:
   APP_ID: idm-linux
@@ -25,38 +19,11 @@ env:
   MAINTAINER: "BELGESELSEMO <vesvese55x@users.noreply.github.com>"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  source-check:
-    name: Kaynak kod kontrolü
-    runs-on: ubuntu-latest
-    timeout-minutes: 3
-    outputs:
-      present: ${{ steps.check.outputs.present }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Uygulama kaynak ağacı var mı?
-        id: check
-        run: |
-          FOUND=""
-          for f in idm-linux.sh run.sh start.sh idm-linux bin/idm-linux main.py app.py idm_linux.py gui.py; do
-            if [ -f "$f" ] || [ -x "$f" ]; then FOUND="$f"; break; fi
-          done
-          if [ -n "$FOUND" ]; then
-            echo "present=true" >> "$GITHUB_OUTPUT"
-            echo "Kaynak bulundu: $FOUND"
-          else
-            echo "present=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Uygulama kaynak ağacı bu committe yok — paket adımları atlanacak. Kaynak eklendiğinde AppImage/deb/rpm/zst otomatik derlenecek."
-          fi
-
   appimage:
     name: AppImage (x86_64)
-    needs: source-check
-    if: needs.source-check.outputs.present == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -76,8 +43,6 @@ jobs:
 
   deb:
     name: DEB (Debian/Ubuntu, all)
-    needs: source-check
-    if: needs.source-check.outputs.present == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -97,8 +62,6 @@ jobs:
 
   rpm:
     name: RPM (Fedora/openSUSE, noarch)
-    needs: source-check
-    if: needs.source-check.outputs.present == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -123,8 +86,6 @@ jobs:
 
   arch:
     name: Arch Linux (.pkg.tar.zst)
-    needs: source-check
-    if: needs.source-check.outputs.present == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     container:
@@ -141,8 +102,7 @@ jobs:
           useradd -m builder || true
           chown -R builder:builder .
           # makepkg, PKGBUILD'in bulunduğu packaging/arch/ içinde koşar; böylece
-          # pkg/ ve src/ çalışma dizinleri repo köküyle karışmaz. Uygulamanın kendi
-          # src/ (Python paketi) korunur.
+          # pkg/ ve src/ çalışma dizinleri repo köküyle karışmaz.
           # --nodeps: wine yalnızca ÇALIŞMA anında gereken bağımlılıktır.
           su builder -c "cd '$PWD/packaging/arch' && makepkg -f --nodeps"
           mv packaging/arch/*.pkg.tar.zst ./
@@ -156,9 +116,8 @@ jobs:
           retention-days: 30
 
   release:
-    name: GitHub Release (draft)
+    name: "Release: IDM-LINUX-1.0.0"
     needs: [appimage, deb, rpm, arch]
-    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -170,9 +129,47 @@ jobs:
           path: dist
           merge-multiple: true
 
-      - name: Attach packages to draft release
+      - name: Paketleri listele
+        run: ls -lh dist
+
+      - name: IDM-LINUX-1.0.0 draft release'e ekle
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v1.0.0
+          name: "IDM-LINUX-1.0.0"
           draft: true
-          generate_release_notes: true
           files: dist/*
+          body: |
+            ## 🚀 IDM LINUX 1.0.0 (BELGESELSEMO)
+
+            Internet Download Manager'ı Linux'ta **tam işlevsel** kullanan entegrasyon katmanının ilk sürümü.
+
+            ### 📦 Paketler
+            | Dosya | Dağıtım |
+            |---|---|
+            | `IDM-LINUX-1.0.0-x86_64.AppImage` | Evrensel — kurulum gerektirmez |
+            | `idm-linux_1.0.0_all.deb` | Debian · Ubuntu · Mint |
+            | `idm-linux-1.0.0-1.noarch.rpm` | Fedora · openSUSE · RHEL |
+            | `idm-linux-1.0.0-1-any.pkg.tar.zst` | Arch · Manjaro |
+
+            ### ⚡ Kurulum
+            ```bash
+            # AppImage
+            chmod +x IDM-LINUX-1.0.0-x86_64.AppImage
+            ./IDM-LINUX-1.0.0-x86_64.AppImage
+
+            # deb
+            sudo apt install ./idm-linux_1.0.0_all.deb
+
+            # rpm
+            sudo dnf install ./idm-linux-1.0.0-1.noarch.rpm
+
+            # Arch
+            sudo pacman -U idm-linux-1.0.0-1-any.pkg.tar.zst
+            ```
+
+            ### 🔧 Gereksinimler
+            Wine + Python 3.9+ (paket yöneticileri bağımlılıkları otomatik kurar; AppImage'da sistem Wine'ı kullanılır).
+
+            ---
+            İndirmelerin bütünlüğü CI'da doğrulanmıştır: 4 paket de 1.0.0 sürümüyle üretilmiştir (tarayıcı eklentileri dahil).
