@@ -1999,6 +1999,7 @@ class TestIdmLinuxSuite(unittest.TestCase):
         """
         import time
         from idm_linux.projects_data import BELGESELSEMO_PREMIUM_URL
+        import idm_linux.webview_modal as _wvm
         from idm_linux.webview_modal import EmbeddedIframeHost, _extract_exec_from_desktop, open_standalone_iframe_window
 
         with tempfile.TemporaryDirectory() as tmpd:
@@ -2022,6 +2023,13 @@ class TestIdmLinuxSuite(unittest.TestCase):
             old_path = os.environ.get("PATH", "")
             os.environ["HOME"] = str(tmp)
             os.environ["PATH"] = f"{tmp}:{old_path}"
+            # v3.14.1: KEŞİF DETERMİNİSTİK — CI runner'ında gerçek Firefox/Chrome kurulu
+            # ve xdg-mime SİSTEM geneli mimeapps.list'ten onları sahte tarayıcıdan ÖNCE
+            # döndürebiliyor; headless'ta o süreç 'canlı' görünüp testi saptırıyor.
+            # Birim testi sahte tarayıcıya sabitliyoruz (desktop ayrıştırma kapsamı
+            # zaten yukarıdaki _extract_exec_from_desktop doğrulamasında).
+            _orig_discover = _wvm._discover_window_browsers
+            _wvm._discover_window_browsers = lambda: [(str(fake_brave), "chromium")]
             host = EmbeddedIframeHost.instance()
             try:
                 ext_res = _extract_exec_from_desktop("brave-test.desktop")
@@ -2049,6 +2057,7 @@ class TestIdmLinuxSuite(unittest.TestCase):
                     self.assertIn(f'src="{BELGESELSEMO_PREMIUM_URL}"', html_txt)
             finally:
                 host.stop()
+                _wvm._discover_window_browsers = _orig_discover
                 if old_home is None:
                     os.environ.pop("HOME", None)
                 else:
