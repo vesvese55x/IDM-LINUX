@@ -22,10 +22,12 @@ rm -rf build/rpmbuild
 mkdir -p "$TOP/BUILD" "$TOP/RPMS" "$TOP/SOURCES" "$TOP/SPECS" "$TOP/SRPMS" dist
 
 # Kaynak ağacını paketle (yeni düzen: her şey src/idm_linux altında)
+# NOT: packaging BİLİNÇLİ olarak DAHİLİDİR — %install bölümü launcher.sh'yi
+# buildroot'taki staged ağaçtan alır; %install sonunda silinir.
 tar -czf "$TOP/SOURCES/${APP_ID}.tar.gz" \
   --exclude=./.git --exclude=./.github --exclude=./build --exclude=./dist \
   --exclude='__pycache__' --exclude='*.pyc' \
-  --exclude=./src/idm_linux/tests --exclude=./src/idm_linux/docs --exclude=./src/idm_linux/packaging \
+  --exclude=./src/idm_linux/tests --exclude=./src/idm_linux/docs \
   .
 
 # İkon
