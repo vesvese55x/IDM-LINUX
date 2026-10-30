@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-export PYTHONPATH="$SCRIPT_DIR/src${PYTHONPATH:+:$PYTHONPATH}"
+# IDM LINUX girişi — yeni depo düzeninde bu betik src/idm_linux/bin/ altındadır.
+# PYTHONPATH tabanı: idm_linux paketini içeren dizin (bu betiğin iki üst dizini).
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+export PYTHONPATH="$SCRIPT_DIR${PYTHONPATH:+:$PYTHONPATH}"
 exec python3 -m idm_linux.cli "$@"

@@ -78,8 +78,9 @@ def can_launch_gui() -> bool:
 
 
 def _find_project_root() -> Path:
+    # Yeni depo düzeni: uygulama ağacı src/idm_linux'tedir (extension/ bu dizinde).
     here = Path(__file__).resolve()
-    cand = here.parents[2]
+    cand = here.parents[0]
     if (cand / "extension").exists():
         return cand
     app_dir = get_data_dir(create=False) / "app"

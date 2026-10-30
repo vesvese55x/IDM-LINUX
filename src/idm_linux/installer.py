@@ -1001,6 +1001,22 @@ def _find_desktop_dir() -> Optional[Path]:
     return None
 
 
+def resolve_src_base(project_root: Path) -> Path:
+    """PYTHONPATH tabanı: idm_linux paketini içeren dizini döndürür.
+
+    - Yeni depo düzeni: proje kökü = src/idm_linux paket ağacının kendisi
+      (extension/, bin/, language/ bu dizinde) → taban = bir üst dizin (…/src).
+    - Eski düzen / kurulu app kopyası: <kök>/src (veya app/src) klasik düzen.
+    """
+    for cand in (project_root / "src", project_root.parent, project_root):
+        try:
+            if (cand / "idm_linux" / "__init__.py").exists():
+                return cand.resolve()
+        except OSError:
+            continue
+    return (project_root / "src").resolve()
+
+
 def install_cli_and_desktop_entries(
     project_root: Path,
     cfg: IdmLinuxConfig,
@@ -1008,7 +1024,8 @@ def install_cli_and_desktop_entries(
     chrom_ext_dir: Optional[Path] = None,
     create_desktop_icons: bool = False,
 ) -> Tuple[Path, bool]:
-    src_dir = (project_root / "src").resolve()
+    # Yeni depo düzeninde project_root = src/idm_linux paket ağacıdır; taban esnek çözülür.
+    src_dir = resolve_src_base(project_root)
     py_exe = sys.executable
 
     installed_src = get_data_dir() / "app" / "src"
@@ -1328,7 +1345,7 @@ def execute_install_pipeline(
     # v2.8.8: bayt-kodu ÖNDEN derle -> GUI ilk açılışta bile anında
     try:
         subprocess.run(
-            [sys.executable, "-m", "compileall", "-q", str(project_root / "src")],
+            [sys.executable, "-m", "compileall", "-q", str(resolve_src_base(project_root))],
             capture_output=True,
             timeout=180,
         )

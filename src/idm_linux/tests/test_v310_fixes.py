@@ -30,14 +30,15 @@ from pathlib import Path
 import pytest
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(PROJECT_ROOT / "src"))
+SRC_BASE = Path(__file__).resolve().parents[2]  # yeni düzen: idm_linux paketini içeren src/ dizini
+sys.path.insert(0, str(SRC_BASE))  # yeni düzen: src/ tabanı
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 1) Yetki istemeyen politika yazımı
 # ─────────────────────────────────────────────────────────────────────────────
 def test_policy_write_never_prompts_for_password() -> None:
-    src = (PROJECT_ROOT / "src/idm_linux/browsers.py").read_text(encoding="utf-8")
+    src = (PROJECT_ROOT / "browsers.py").read_text(encoding="utf-8")
     # _root_write_file gövdesi pkexec İÇERMEMELİ (polkit penceresi = kullanıcı şikâyeti)
     body_start = src.index("def _root_write_file(")
     body_end = src.index("def _sudo_write_file(")
@@ -262,7 +263,7 @@ def test_credit_text_arena_and_zai_everywhere() -> None:
     tr = I18nManager("tr").t("footer.credit_template", belgeselsemo="BELGESELSEMO", arena="ARENA.AI", zai="Z.AI")
     assert tr == "Bu araç BELGESELSEMO tarafından ARENA.AI & Z.AI sayesinde yapılmıştır", tr
 
-    gui = (PROJECT_ROOT / "src/idm_linux/gui.py").read_text(encoding="utf-8")
+    gui = (PROJECT_ROOT / "gui.py").read_text(encoding="utf-8")
     assert '{zai}' in gui and 'text="Z.AI"' in gui, "GUI alt bilgisinde Z.AI etiketi yok"
     assert "BELGESELSEMO × ARENA.AI & Z.AI" in gui, "sidebar rozeti güncellenmemiş"
     assert 't("footer.credit_template", belgeselsemo="BELGESELSEMO", arena="ARENA.AI", zai="Z.AI")' in gui, (
@@ -272,7 +273,7 @@ def test_credit_text_arena_and_zai_everywhere() -> None:
     for name in ("chromium", "firefox"):
         popup = (PROJECT_ROOT / f"extension/{name}/popup.html").read_text(encoding="utf-8")
         assert "Z.AI" in popup, f"{name} popup kredi metni güncellenmemiş"
-    welcome = (PROJECT_ROOT / "src/idm_linux/welcome_page.py").read_text(encoding="utf-8")
+    welcome = (PROJECT_ROOT / "welcome_page.py").read_text(encoding="utf-8")
     assert "Z.AI" in welcome
 
 

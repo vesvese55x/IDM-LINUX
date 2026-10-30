@@ -17,7 +17,7 @@ import time
 import zlib
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from idm_linux.p2p import ed2k_native as E  # noqa: E402
 

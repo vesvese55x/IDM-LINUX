@@ -970,7 +970,8 @@ def _find_installed_ext_paths() -> Tuple[Path, Path, Path, Path]:
     xpi_file = ext_root / "idm-linux-companion-firefox.xpi"
 
     # Geliştirme / kaynak dizini yedek kontrolü
-    repo_ext = Path(__file__).resolve().parents[2] / "extension"
+    # Yeni düzen: repo kökü = src/idm_linux (daemon.py'nin bir üst dizini DEĞİL, kendisi)
+    repo_ext = Path(__file__).resolve().parents[0] / "extension"
     if not chrom_dir.exists() and (repo_ext / "chromium").exists():
         chrom_dir = repo_ext / "chromium"
     if not crx_file.exists() and (repo_ext / "idm-linux-companion-chromium.crx").exists():
@@ -1336,7 +1337,7 @@ def make_http_handler(state: DaemonState):
                 # (kullanıcı indirmesi DEĞİL) buradan indirir; tarayıcı engellemez.
                 _, crx_src, _, _ = _find_installed_ext_paths()
                 self._send_binary_file(
-                    crx_src if (crx_src and crx_src.exists()) else (Path(__file__).resolve().parents[2] / "extension" / "idm-linux-companion-chromium.crx"),
+                    crx_src if (crx_src and crx_src.exists()) else (Path(__file__).resolve().parents[0] / "extension" / "idm-linux-companion-chromium.crx"),
                     "application/octet-stream",
                     "idm-linux-companion-chromium.crx",
                 )

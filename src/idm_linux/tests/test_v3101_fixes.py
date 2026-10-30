@@ -29,7 +29,8 @@ from pathlib import Path
 import pytest
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(PROJECT_ROOT / "src"))
+SRC_BASE = Path(__file__).resolve().parents[2]  # yeni düzen: idm_linux paketini içeren src/ dizini
+sys.path.insert(0, str(SRC_BASE))  # yeni düzen: src/ tabanı
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -211,7 +212,7 @@ def test_find_ytdlp_prefers_bundled_binary(tmp_path, monkeypatch):
     found = distro.find_ytdlp()
     assert found == str(fake), found
 
-    src = (PROJECT_ROOT / "src/idm_linux/distro.py").read_text(encoding="utf-8")
+    src = (PROJECT_ROOT / "distro.py").read_text(encoding="utf-8")
     body = src[src.index("def ensure_ytdlp(") :]
     assert "install_standalone_ytdlp" in body.split("cmds = [")[0], (
         "ensure_ytdlp önce root'suz ikili indirmeyi denemeli"
@@ -226,7 +227,7 @@ def test_real_urls_preferred_by_default():
 
     assert IdmLinuxConfig().prefer_real_urls is True
 
-    src = (PROJECT_ROOT / "src/idm_linux/daemon.py").read_text(encoding="utf-8")
+    src = (PROJECT_ROOT / "daemon.py").read_text(encoding="utf-8")
     assert 'prefer_real_urls' in src
     direct_block = src[
         src.index('if delivery == "direct" and direct_url:') : src.index('if delivery == "direct" and direct_url:')

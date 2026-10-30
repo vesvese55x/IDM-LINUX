@@ -18,11 +18,22 @@ import unittest
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(PROJECT_ROOT / "src"))
+SRC_BASE = Path(__file__).resolve().parents[2]  # yeni düzen: idm_linux paketini içeren src/ dizini
+sys.path.insert(0, str(SRC_BASE))  # yeni düzen: src/ tabanı
 
 
 def _read(rel: str) -> str:
-    return (PROJECT_ROOT / rel).read_text(encoding="utf-8")
+    # Yeni düzende kaynak dosyalar PROJECT_ROOT (src/idm_linux) içindedir;
+    # eski "src/idm_linux/..." göreceli yolları da uyumlulukla kabul edilir.
+    if rel.startswith("src/idm_linux/"):
+        rel = rel[len("src/idm_linux/"):]
+    for cand in (PROJECT_ROOT / rel, SRC_BASE / rel, PROJECT_ROOT.parents[1] / rel):
+        try:
+            if cand.exists():
+                return cand.read_text(encoding="utf-8")
+        except OSError:
+            continue
+    raise FileNotFoundError(rel)
 
 
 class TestTrialReset(unittest.TestCase):

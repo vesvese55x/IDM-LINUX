@@ -33,8 +33,8 @@ if [ "$#" -eq 0 ]; then
   fi
 fi
 
-# 1) Kabuk başlatıcıları dene (kaynak ağacın bin/idm-linux girişi dahil)
-for c in idm-linux.sh run.sh start.sh idm-linux bin/idm-linux; do
+# 1) Kabuk başlatıcıları dene (yeni düzende src/idm_linux/bin/idm-linux, eski düzende bin/idm-linux)
+for c in idm-linux.sh run.sh start.sh idm-linux src/idm_linux/bin/idm-linux bin/idm-linux; do
   if [ -x "$c" ]; then
     exec "./$c" "$@"
   fi

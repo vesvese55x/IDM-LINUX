@@ -34,8 +34,10 @@ from .protocol import DownloadRequest
 from .wine_sender import WineIdmSender
 
 def _find_project_root() -> Path:
+    # Yeni depo düzeni: tüm uygulama ağacı src/idm_linux altındadır (extension/, bin/,
+    # language/, packaging/ ...). Paket kökü = bu dosyanın bulunduğu dizindir.
     here = Path(__file__).resolve()
-    cand = here.parents[2]
+    cand = here.parents[0]
     if (cand / "extension").exists():
         return cand
     return cand
@@ -253,7 +255,9 @@ def cmd_repair(extra_ext_ids: Optional[List[str]] = None) -> int:
     if (proj_root / "extension" / "chromium").exists():
         crx_path, chrom_ext_dir, _ = deploy_browser_extensions(proj_root)
 
-    if (proj_root / "src").exists():
+    # Yeni düzende uygulama ağacı (bin/) proj_root'ın kendisidir; kurulu app kopyasında
+    # ise eski düzen korunur (app/src + app/extension) — ikisini de kapsa.
+    if (proj_root / "bin").exists() or (proj_root / "src").exists():
         install_cli_and_desktop_entries(proj_root, cfg, crx_path=crx_path, chrom_ext_dir=chrom_ext_dir)
     else:
         src_dir = Path(__file__).resolve().parents[1]

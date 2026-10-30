@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from idm_linux.auth_proxy import (  # noqa: E402
     _ALWAYS_PROXY_AUTH_DOMAINS,

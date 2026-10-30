@@ -81,5 +81,7 @@ case ":$PATH:" in
         ;;
 esac
 
-export PYTHONPATH="$SCRIPT_DIR/src${PYTHONPATH:+:$PYTHONPATH}"
+# PYTHONPATH: install.sh yeni düzende src/idm_linux/ altındadır; idm_linux paketini
+# içeren taban bir üst dizindir (src/).
+export PYTHONPATH="$(cd "$SCRIPT_DIR/.." && pwd)${PYTHONPATH:+:$PYTHONPATH}"
 exec python3 -m idm_linux.cli install "$@"

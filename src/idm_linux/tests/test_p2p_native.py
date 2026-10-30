@@ -24,7 +24,7 @@ from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from idm_linux.p2p.bencode import bdecode, bencode  # noqa: E402
 from idm_linux.p2p.bt_native import (  # noqa: E402
@@ -289,7 +289,7 @@ def test_native_magnet_metadata_exchange(tmp_path: Path) -> None:
 def test_native_engine_prefers_no_external_binary() -> None:
     """Native motor dış ikili çağırmadan çalışmalı (aria2c yolu yalnız yedek)."""
     root = Path(__file__).resolve().parents[1]
-    src = (root / "src/idm_linux/torrent_engine.py").read_text(encoding="utf-8")
+    src = (root / "torrent_engine.py").read_text(encoding="utf-8")
     assert "NativeTorrentSession" in src, "native motor torrent_engine'e bağlanmamış"
     impl = src[src.index("def _ensure_started_impl") :]
     assert impl.index("self._try_native_start()") < impl.index('shutil.which("aria2c")'), (

@@ -16,7 +16,8 @@ import urllib.request
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(PROJECT_ROOT / "src"))
+SRC_BASE = Path(__file__).resolve().parents[2]  # yeni düzen: idm_linux paketini içeren src/ dizini
+sys.path.insert(0, str(SRC_BASE))  # yeni düzen: src/ tabanı
 
 from idm_linux.browsers import build_chromium_manifest, build_gecko_manifest
 from idm_linux.config import (
@@ -136,7 +137,7 @@ class TestIdmLinuxSuite(unittest.TestCase):
             env["XDG_CONFIG_HOME"] = str(Path(tmpd) / "config")
             env["XDG_DATA_HOME"] = str(Path(tmpd) / "data")
             env["XDG_CACHE_HOME"] = str(Path(tmpd) / "cache")
-            env["PYTHONPATH"] = str(PROJECT_ROOT / "src")
+            env["PYTHONPATH"] = str(SRC_BASE)
 
             # Çakışmasız test portları ata
             cfg_dir = Path(env["XDG_CONFIG_HOME"]) / "idm-linux"
@@ -799,7 +800,7 @@ class TestIdmLinuxSuite(unittest.TestCase):
         2) Sol sidebar'da sistem bilgi kutusunun (side_info_box) ve BELGESELSEMO × ARENA.AI kutusunun (side_credit_box)
            aynı rozet tasarımında (SIDE_BADGE_BG) alt alta yerleştiğini doğrular.
         """
-        gui_src = (PROJECT_ROOT / "src" / "idm_linux" / "gui.py").read_text(encoding="utf-8")
+        gui_src = (PROJECT_ROOT / "gui.py").read_text(encoding="utf-8")
         idx_credit_pack = gui_src.index('credit_outer.pack(side="bottom", fill="x", padx=22')
         idx_content_pack = gui_src.index('content_host.pack(side="top", fill="both", expand=True)')
         self.assertLess(
@@ -1443,14 +1444,14 @@ class TestIdmLinuxSuite(unittest.TestCase):
             self.assertTrue(p.is_file(), f"Eksik pencere ikonu: {p}")
             self.assertEqual(p.read_bytes()[:8], b"\x89PNG\r\n\x1a\n")
 
-        gui_src = (PROJECT_ROOT / "src" / "idm_linux" / "gui.py").read_text(encoding="utf-8")
+        gui_src = (PROJECT_ROOT / "gui.py").read_text(encoding="utf-8")
         self.assertIn('tk.Tk(className="idm-linux-panel")', gui_src)
         self.assertIn("root.iconphoto(True,", gui_src)
         self.assertIn('("projects", t("nav.projects"))', gui_src)
         self.assertIn('("support", t("nav.support"))', gui_src)
         self.assertIn('("language",', gui_src)
 
-        inst_src = (PROJECT_ROOT / "src" / "idm_linux" / "installer.py").read_text(encoding="utf-8")
+        inst_src = (PROJECT_ROOT / "installer.py").read_text(encoding="utf-8")
         self.assertIn("StartupWMClass=idm-linux-panel", inst_src)
         self.assertIn("application/x-bittorrent;x-scheme-handler/magnet;", inst_src)
 
@@ -2209,7 +2210,7 @@ class TestIdmLinuxSuite(unittest.TestCase):
         import ast
         import builtins
 
-        src_dir = PROJECT_ROOT / "src" / "idm_linux"
+        src_dir = PROJECT_ROOT  # yeni düzen: paket ağacının kendisi
         mods = [
             "installer.py", "cli.py", "gui.py", "gui_pages.py", "daemon.py",
             "browsers.py", "stream_engine.py", "hls_streamer.py", "firefox_ext.py",
@@ -2962,8 +2963,8 @@ class TestIdmLinuxSuite(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         bg_src = (root / "extension/chromium/background.js").read_text(encoding="utf-8")
         content_src = (root / "extension/chromium/content.js").read_text(encoding="utf-8")
-        native_src = (root / "src/idm_linux/native_host.py").read_text(encoding="utf-8")
-        daemon_src = (root / "src/idm_linux/daemon.py").read_text(encoding="utf-8")
+        native_src = (root / "native_host.py").read_text(encoding="utf-8")
+        daemon_src = (root / "daemon.py").read_text(encoding="utf-8")
 
         # background: özel mesaj tipi + gerçek köprü rotası + native yedek aksiyonu
         self.assertIn('msg.type === "IDM_TORRENT_SEND"', bg_src)
@@ -3001,7 +3002,7 @@ class TestIdmLinuxSuite(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         bg_src = (root / "extension/chromium/background.js").read_text(encoding="utf-8")
         content_src = (root / "extension/chromium/content.js").read_text(encoding="utf-8")
-        daemon_src = (root / "src/idm_linux/daemon.py").read_text(encoding="utf-8")
+        daemon_src = (root / "daemon.py").read_text(encoding="utf-8")
 
         # background: IIFE catch garantisi + fetch timeout + native timeout
         self.assertIn("})().catch(", bg_src)
@@ -3025,7 +3026,7 @@ class TestIdmLinuxSuite(unittest.TestCase):
     def test_124_subtitle_capture_scope_extended(self) -> None:
         """v3.6.0: altyazı yakalamaları video seçeneği olarak sızmaz + JS taraması var."""
         root = Path(__file__).resolve().parents[1]
-        eng_src = (root / "src/idm_linux/stream_engine.py").read_text(encoding="utf-8")
+        eng_src = (root / "stream_engine.py").read_text(encoding="utf-8")
         content_src = (root / "extension/chromium/content.js").read_text(encoding="utf-8")
         ph_src = (root / "extension/chromium/page_hook.js").read_text(encoding="utf-8")
 
@@ -3048,8 +3049,8 @@ class TestIdmLinuxSuite(unittest.TestCase):
     def test_125_gui_scrollable_overview_and_slim_scrollbar(self) -> None:
         """v3.6.0: Genel Bakış sayfası kaydırılabilir + özel ince kaydırma çubuğu."""
         root = Path(__file__).resolve().parents[1]
-        gui_src = (root / "src/idm_linux/gui.py").read_text(encoding="utf-8")
-        pages_src = (root / "src/idm_linux/gui_pages.py").read_text(encoding="utf-8")
+        gui_src = (root / "gui.py").read_text(encoding="utf-8")
+        pages_src = (root / "gui_pages.py").read_text(encoding="utf-8")
 
         # Genel Bakış IDM Hakkında gibi kaydırılır
         self.assertIn('pg_ov = make_scrollable_area(tk, ttk, pages["overview"], BG_MAIN)', gui_src)
@@ -4227,10 +4228,10 @@ def test_101_abyss_default_off_and_gui_hint():
     assert fresh.abyss_enabled is False, "abyss varsayılanı hâlâ açık"
 
     root = _Path(__file__).resolve().parents[1]
-    tr = (root / "src" / "idm_linux" / "language" / "tr.txt").read_text(encoding="utf-8")
+    tr = (root / "language" / "tr.txt").read_text(encoding="utf-8")
     assert "ABYSS PASİF" in tr, "tr dil dosyasında ABYSS PASİF yok"
     assert "set.abyss_hint" in tr, "canlı uygulama ipucu (set.abyss_hint) yok"
-    gui_src = (root / "src" / "idm_linux" / "gui.py").read_text(encoding="utf-8")
+    gui_src = (root / "gui.py").read_text(encoding="utf-8")
     assert "set.abyss_hint" in gui_src, "GUI ipucu etiketi eklenmedi"
 
 
@@ -4340,9 +4341,9 @@ def test_105_vtt_to_srt_and_subs_delivery():
     assert opts and opts[0].delivery == "subs" and opts[0].ext == "vtt"
     assert "(VTT)" in opts[0].label and "Türkçe" in opts[0].label
 
-    src = (PROJECT_ROOT / "src" / "idm_linux" / "stream_engine.py").read_text(encoding="utf-8")
+    src = (PROJECT_ROOT / "stream_engine.py").read_text(encoding="utf-8")
     assert 'if t.mode == "subs":' in src, "işçi altyazı kolu yok"
-    dsrc = (PROJECT_ROOT / "src" / "idm_linux" / "daemon.py").read_text(encoding="utf-8")
+    dsrc = (PROJECT_ROOT / "daemon.py").read_text(encoding="utf-8")
     assert 'delivery == "subs" and direct_url:' in dsrc, "daemon altyazı kolu yok"
 
 
@@ -4409,9 +4410,9 @@ def test_107_chromium_force_install_policy_payload():
         br._CHROMIUM_POLICY_DIRS = orig_dirs
         shutil.rmtree(tmpdir, ignore_errors=True)
 
-    dsrc = (PROJECT_ROOT / "src" / "idm_linux" / "daemon.py").read_text(encoding="utf-8")
+    dsrc = (PROJECT_ROOT / "daemon.py").read_text(encoding="utf-8")
     assert "/crx-update.xml" in dsrc and "/extension/companion-policy.crx" in dsrc
-    isrc = (PROJECT_ROOT / "src" / "idm_linux" / "installer.py").read_text(encoding="utf-8")
+    isrc = (PROJECT_ROOT / "installer.py").read_text(encoding="utf-8")
     assert "register_chromium_force_install_policy" in isrc
 
 
@@ -4440,9 +4441,9 @@ def test_109_memory_governor_and_status_fields():
     eng = StreamEngine(IdmLinuxConfig())
     assert eng.active_job_count() == 0
 
-    dsrc = (PROJECT_ROOT / "src" / "idm_linux" / "daemon.py").read_text(encoding="utf-8")
+    dsrc = (PROJECT_ROOT / "daemon.py").read_text(encoding="utf-8")
     assert "rss_now > 450" in dsrc and "active_job_count() == 0" in dsrc
-    assert "MemoryMax=700M" in (PROJECT_ROOT / "src" / "idm_linux" / "installer.py").read_text(encoding="utf-8")
+    assert "MemoryMax=700M" in (PROJECT_ROOT / "installer.py").read_text(encoding="utf-8")
     assert '"rss_mb"' in dsrc and '"active_stream_jobs"' in dsrc
 
 
@@ -4456,7 +4457,7 @@ def test_110_subs_delivery_direct_url_order_fixed():
     (UnboundLocalError) -> film sitesi altyazıları bar'dan tıklanınca 500 çöküyordu."""
     from pathlib import Path as _Path
 
-    daemon_src = (_Path(__file__).resolve().parents[1] / "src" / "idm_linux" / "daemon.py").read_text(encoding="utf-8")
+    daemon_src = (_Path(__file__).resolve().parents[1] / "daemon.py").read_text(encoding="utf-8")
     assign_pos = daemon_src.find('direct_url = (payload.get("directUrl") or "").strip()')
     subs_pos = daemon_src.find('if delivery == "subs" and direct_url:')
     assert assign_pos != -1, "direct_url ataması yok"
@@ -4483,11 +4484,11 @@ def test_111_about_page_i18n_all_20_languages():
             assert f"\n{key} = " in f"\n{content}", f"{lf.name} içinde {key} eksik"
 
     # GUI: 9. nav öğesi + sayfa üreticisi + gerçek iki yana yaslama bileşeni kullanımı
-    gp_src = (root / "src" / "idm_linux" / "gui_pages.py").read_text(encoding="utf-8")
+    gp_src = (root / "gui_pages.py").read_text(encoding="utf-8")
     assert "def build_about_idm_page" in gp_src, "build_about_idm_page yok"
     assert "create_justified_text" in gp_src.split("def build_about_idm_page")[1], "Hakkında sayfası yaslı metin kullanmıyor"
     assert "idm_icon_128.png" in gp_src, "IDM simgesi sayfada yok"
-    gui_src = (root / "src" / "idm_linux" / "gui.py").read_text(encoding="utf-8")
+    gui_src = (root / "gui.py").read_text(encoding="utf-8")
     assert '("about", t("nav.about"))' in gui_src, "9. nav öğesi (about) yok"
 
 
@@ -4551,13 +4552,13 @@ def test_114_light_theme_registry_black_window_fix():
     """v3.4.0 SİYAH PENCERE: açık tema (light theme) bayrakları registry optimizasyonlarında."""
     from pathlib import Path as _Path
 
-    inst_src = (_Path(__file__).resolve().parents[1] / "src" / "idm_linux" / "installer.py").read_text(encoding="utf-8")
+    inst_src = (_Path(__file__).resolve().parents[1] / "installer.py").read_text(encoding="utf-8")
     assert "def ensure_idm_light_theme_registry" in inst_src, "açık tema self-heal fonksiyonu yok"
     assert "AppsUseLightTheme" in inst_src and "SystemUsesLightTheme" in inst_src, "açık tema bayrakları yok"
     # ana tweaks .reg bloğunda da Personalize bölümü olmalı
     assert "[HKEY_CURRENT_USER\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Themes\\\\Personalize]" in inst_src
     # daemon başlangıcında self-heal çağrısı bağlı
-    daemon_src = (_Path(__file__).resolve().parents[1] / "src" / "idm_linux" / "daemon.py").read_text(encoding="utf-8")
+    daemon_src = (_Path(__file__).resolve().parents[1] / "daemon.py").read_text(encoding="utf-8")
     assert "ensure_idm_light_theme_registry" in daemon_src, "daemon açılışında açık tema düzeltmesi çağrılmıyor"
 
 
@@ -4565,7 +4566,7 @@ def test_115_gui_sequential_lazy_page_build():
     """v3.4.0: ağır sayfalar TEK TEK arka planda (90ms aralıkla) inşa edilir — açılış kasmıyor."""
     from pathlib import Path as _Path
 
-    gui_src = (_Path(__file__).resolve().parents[1] / "src" / "idm_linux" / "gui.py").read_text(encoding="utf-8")
+    gui_src = (_Path(__file__).resolve().parents[1] / "gui.py").read_text(encoding="utf-8")
     assert "root.after(90, _flush_deferred_pages)" in gui_src, "sıralı gecikmeli inşa zinciri yok"
     assert '"about": lambda: build_about_idm_page(' in gui_src, "about sayfası gecikmeli inşaya bağlı değil"
     # while döngüsüyle TOPLU inşa kalkmış olmalı
@@ -4728,7 +4729,7 @@ def test_120_v350_deliverables_consistency():
     from idm_linux import __version__ as _pkg_ver
     assert json.loads((root / "extension/chromium/manifest.json").read_text(encoding="utf-8"))["version"] == _pkg_ver
     assert json.loads((root / "extension/firefox/manifest.json").read_text(encoding="utf-8"))["version"] == _pkg_ver
-    init_src = (root / "src/idm_linux/__init__.py").read_text(encoding="utf-8")
+    init_src = (root / "__init__.py").read_text(encoding="utf-8")
     assert f'__version__ = "{_pkg_ver}"' in init_src
 
     content_src = (root / "extension/chromium/content.js").read_text(encoding="utf-8")
@@ -4742,9 +4743,9 @@ def test_120_v350_deliverables_consistency():
     assert "ytInitialPlayerResponse" in ph_src and "captionTracks" in ph_src, "YouTube altyazı motoru yok"
 
     # engine + daemon
-    eng_src = (root / "src/idm_linux/stream_engine.py").read_text(encoding="utf-8")
+    eng_src = (root / "stream_engine.py").read_text(encoding="utf-8")
     assert "automatic_captions" in eng_src and "bar.subs_header" in eng_src
-    daemon_src = (root / "src/idm_linux/daemon.py").read_text(encoding="utf-8")
+    daemon_src = (root / "daemon.py").read_text(encoding="utf-8")
     for route in ("/api/playlist/batch/start", "/api/playlist/batch/control", "/api/playlist/batch/status", "/api/playlist/batch/list"):
         assert route in daemon_src, f"daemon rotası eksik: {route}"
 
@@ -4764,7 +4765,7 @@ def test_120_v350_deliverables_consistency():
 def test_121_gui_playlist_card_and_details_card():
     """v3.5.0: GUI Genel Bakış sayfasına Oynatma Listesi kartı eklendi; link kutusu sabit,
     liste kaydırılabilir; Dağıtım & Ortam kartı kısaltıldı (expand kalktı)."""
-    gui_src = (Path(__file__).resolve().parents[1] / "src" / "idm_linux" / "gui.py").read_text(encoding="utf-8")
+    gui_src = (Path(__file__).resolve().parents[1] / "gui.py").read_text(encoding="utf-8")
     assert "ov.pl_card_title" in gui_src, "oynatma listesi kartı yok"
     assert "_pl_control(" in gui_src and '"pause"' in gui_src and '"resume"' in gui_src, "duraklat/devam yok"
     assert "pl_canvas.yview_scroll" in gui_src, "kaydırılabilir liste yok"
@@ -4950,12 +4951,12 @@ def test_124_ed2k_auto_install_flow_and_no_manual_hints():
         assert "/api/ed2k/install" in bg_src
 
     # b) daemon kaynak: otomatik kurulum işi + bekleyen bağlantı alanları
-    daemon_src = (root / "src/idm_linux/daemon.py").read_text(encoding="utf-8")
+    daemon_src = (root / "daemon.py").read_text(encoding="utf-8")
     assert "_ed2k_auto_install_job" in daemon_src
     assert "ed2k_pending_link" in daemon_src and "ed2k_install_started" in daemon_src
 
     # c) köprü metinleri: kullanıcıya elle komut gösterilmez
-    bridge_src = (root / "src/idm_linux/ed2k_bridge.py").read_text(encoding="utf-8")
+    bridge_src = (root / "ed2k_bridge.py").read_text(encoding="utf-8")
     for banned in ("Elle kurmayı deneyin", "sudo pacman -S amule", "sudo apt install amule"):
         assert banned not in bridge_src, f"ed2k_bridge yasaklı metin: {banned}"
 
@@ -5071,14 +5072,14 @@ def test_126_tk9_wheel_number_mapping_and_scroll_dispatch():
     (8.6'da 4/5). Global kaydırma dağıtıcısı sürüme göre doğru tabloyu seçmeli;
     aksi hâlde Genel Bakış & İndir sayfası tekerleğe tepki vermez (kullanıcı raporu)."""
     root = Path(__file__).resolve().parents[1]
-    src = (root / "src/idm_linux/gui_pages.py").read_text(encoding="utf-8")
+    src = (root / "gui_pages.py").read_text(encoding="utf-8")
     assert "_wheel_nums_for_runtime" in src, "sürüm-uyumlu tekerlek tablosu yok"
     assert "TkVersion >= 9.0" in src, "Tk 9.0 denetimi yok"
     # dağıtıcı sabitlenmiş 4/5 karşılaştırması İÇERMEMELİ (yön tayini tablo üzerinden yapılmalı)
     assert "if num == 4 or wheel_delta > 0" not in src, "eski sabit num karşılaştırması duruyor"
     assert "_WHEEL_UP_NUMS" in src and "_WHEEL_DOWN_NUMS" in src
     # oynatma listesi tekerleği de her iki sürümü kapsamalı
-    gui_src = (root / "src/idm_linux/gui.py").read_text(encoding="utf-8")
+    gui_src = (root / "gui.py").read_text(encoding="utf-8")
     assert "<Button-8>" in gui_src and "<Button-9>" in gui_src, "oynatma listesi Tk 9.0 tekerleği kapsamıyor"
 
 
@@ -5087,7 +5088,7 @@ def test_127_qr_cache_and_performance_guards():
     sayfaları tekrar açılışlarında anında kurulmalı) ve iki yana yaslı metin
     yeniden çizimi Configure fırtınalarına karşı debounce'lu olmalı."""
     root = Path(__file__).resolve().parents[1]
-    qr_src = (root / "src/idm_linux/qr_gen.py").read_text(encoding="utf-8")
+    qr_src = (root / "qr_gen.py").read_text(encoding="utf-8")
     assert "_QR_B64_CACHE" in qr_src, "QR önbelleği yok"
 
     from idm_linux.qr_gen import render_qr_base64
@@ -5096,7 +5097,7 @@ def test_127_qr_cache_and_performance_guards():
     b2 = render_qr_base64("https://idm-linux.example/v38?a=1", scale=2, border=2)
     assert b1 == b2 and b1.startswith("iVBOR"), "QR önbelleği tutarsız"
 
-    gp_src = (root / "src/idm_linux/gui_pages.py").read_text(encoding="utf-8")
+    gp_src = (root / "gui_pages.py").read_text(encoding="utf-8")
     assert "_pending_redraw" in gp_src and "_flush_pending_redraw" in gp_src, "justified text debounce yok"
 
 
@@ -5108,7 +5109,7 @@ def test_128_amulecmd_no_uppercase_h_option():
     '-h/--host=' (küçük harf) '-H' yoktur. Ayrıca 'Show DL' kuyruk doğrulaması
     zincirde yer almalı (sessiz başarısızlık biter)."""
     root = Path(__file__).resolve().parents[1]
-    src = (root / "src/idm_linux/ed2k_bridge.py").read_text(encoding="utf-8")
+    src = (root / "ed2k_bridge.py").read_text(encoding="utf-8")
     # attempts kurulumunda -H geçmemeli (docstring/rapor içindeki geçişler hariç)
     import re as _re
     fn = src.split("def _amulecmd_add")[1].split("\ndef ")[0]
@@ -5292,7 +5293,7 @@ def test_135_aria2_cmd_has_head_priority_and_live_trackers():
     """v3.9.0: aria2c komutunda bt-prioritize-piece=head + canlı tracker listesi +
     changeOption tabanlı refresher iş parçacığı bulunmalı."""
     root = Path(__file__).resolve().parents[1]
-    src = (root / "src/idm_linux/torrent_engine.py").read_text(encoding="utf-8")
+    src = (root / "torrent_engine.py").read_text(encoding="utf-8")
     assert '"--bt-prioritize-piece=head=48M"' in src
     assert "merged_tracker_list()" in src
     assert "aria2.changeOption" in src
@@ -5307,7 +5308,7 @@ def test_136_policy_update_url_version_stamped():
     IDM güncellenince policy içeriği değişir, ÇALIŞAN Chromium eklentiyi RESTARTSIZ
     üzerine kurar. pkexec yedeği de mevcut olmalı."""
     root = Path(__file__).resolve().parents[1]
-    src = (root / "src/idm_linux/browsers.py").read_text(encoding="utf-8")
+    src = (root / "browsers.py").read_text(encoding="utf-8")
     assert "crx-update.xml" in src and "?v=" in src, "sürüm damgası yok"
     assert "__version__" in src, "sürüm değişkeni kullanılmıyor"
     assert 'shutil.which("pkexec")' in src and '"tee"' in src, "pkexec yedeği yok"
