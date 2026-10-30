@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Version=1.0.0
+Name=IDM LINUX
+GenericName=Download Manager
+GenericName[tr]=İndirme Yöneticisi
+Comment=Internet Download Manager Linux integration (BELGESELSEMO)
+Comment[tr]=Internet Download Manager Linux entegrasyonu (BELGESELSEMO)
+Exec=idm-linux
+TryExec=idm-linux
+Icon=idm-linux
+Terminal=false
+Categories=Network;FileTransfer;
+StartupNotify=true

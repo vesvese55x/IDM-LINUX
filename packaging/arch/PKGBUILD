@@ -1,0 +1,38 @@
+# Maintainer: BELGESELSEMO <belgeselsemo@users.noreply.github.com>
+pkgname=idm-linux
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="IDM LINUX (BELGESELSEMO) — Internet Download Manager'ı Linux'ta tam işlevsel kullanan entegrasyon katmanı"
+arch=('any')
+url="https://github.com/BELGESELSEMO/IDM-LINUX"
+license=('custom')
+depends=('wine' 'python')
+optdepends=('xdg-utils: masaüstü entegrasyonu')
+options=('!strip' '!emptydirs')
+source=()
+md5sums=()
+
+package() {
+  install -d "${pkgdir}/opt/${pkgname}"
+  cp -a "${startdir}/." "${pkgdir}/opt/${pkgname}/"
+  rm -rf "${pkgdir}/opt/${pkgname}/.git" \
+         "${pkgdir}/opt/${pkgname}/.github" \
+         "${pkgdir}/opt/${pkgname}/packaging" \
+         "${pkgdir}/opt/${pkgname}/build" \
+         "${pkgdir}/opt/${pkgname}/dist"
+  rm -f  "${pkgdir}/opt/${pkgname}/.gitignore"
+
+  install -Dm0755 "${startdir}/packaging/launcher.sh" "${pkgdir}/usr/bin/${pkgname}"
+  install -Dm0644 "${startdir}/packaging/idm-linux.desktop" "${pkgdir}/usr/share/applications/${pkgname}.desktop"
+  install -Dm0644 "${startdir}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+
+  local _icon=""
+  for c in icons/idm-linux.png icons/icon.png icon.png idm-linux.png; do
+    if [ -f "${startdir}/${c}" ]; then _icon="${startdir}/${c}"; break; fi
+  done
+  if [ -z "${_icon}" ]; then
+    python3 "${startdir}/packaging/icon_gen.py" "${srcdir}/idm-linux.png"
+    _icon="${srcdir}/idm-linux.png"
+  fi
+  install -Dm0644 "${_icon}" "${pkgdir}/usr/share/icons/hicolor/256x256/apps/${pkgname}.png"
+}

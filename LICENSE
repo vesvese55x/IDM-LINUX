@@ -1,0 +1,26 @@
+IDM LINUX (BELGESELSEMO)
+Telif Hakkı / Copyright (c) 2026 BELGESELSEMO
+
+TR:
+Bu projenin kodu ve paketleme dosyaları BELGESELSEMO'ya aittir.
+Kaynak gösterilmeden yeniden dağıtılamaz.
+
+"Internet Download Manager", "IDM" ve ilgili markalar, Tonec Inc.'in
+tescilli ürün ve markalarıdır. Bu proje bağımsız bir topluluk
+entegrasyonudur; Tonec Inc. ile bağlantılı değildir ve onaylanmamıştır.
+
+IDM yazılımını kullanmak için Tonec Inc. ile geçerli bir lisansınızın
+bulunması gerekir. Bu proje IDM'nin bir kopyasını veya sürümünü
+dağıtmaz; yalnızca Linux entegrasyon katmanını içerir.
+
+EN:
+The code and packaging files of this project belong to BELGESELSEMO
+and may not be redistributed without attribution.
+
+"Internet Download Manager" and "IDM" are products and trademarks of
+Tonec Inc. This is an independent community integration project, not
+affiliated with or endorsed by Tonec Inc.
+
+A valid IDM license from Tonec Inc. is required to use IDM. This
+project does not distribute IDM itself; it only contains the Linux
+integration layer.
