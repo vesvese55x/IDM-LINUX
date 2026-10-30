@@ -31,7 +31,6 @@ rm -rf "$APPDIR/usr/share/idm-linux/packaging"
 cat > "$APPDIR/usr/share/applications/${APP_ID}.desktop" <<EOF
 [Desktop Entry]
 Type=Application
-Version=${VERSION}
 Name=${DISPLAY_NAME}
 GenericName=Download Manager
 GenericName[tr]=İndirme Yöneticisi
