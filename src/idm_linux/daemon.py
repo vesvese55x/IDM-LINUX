@@ -83,6 +83,59 @@ logger = setup_logger("daemon", "daemon.log")
 # v3.7.1: eD2K motor kurulum işinin tek örnek çalışmasını garanti eden kilit
 _ED2K_INSTALL_LOCK = threading.Lock()
 
+# v3.14.2: İÇERİK-TİPİ TORRENT KOKLAMA — filmix.gg/download/<id> gibi dinamik .torrent
+# üreticilerinde URL '.torrent' ile bitmez; sunucu 'application/x-bittorrent' mime'i veya
+# '*.torrent' Content-Disposition dosya adı döndürür. Bilinen büyük-dosya uzantılarında
+# sorgu hiç yapılmaz (sıfır ek yük); diğerlerinde tek bir kısa HEAD isteği yeterlidir.
+_KNOWN_NON_TORRENT_EXT = {
+    "zip", "rar", "7z", "tar", "gz", "bz2", "xz", "zst", "iso", "bin", "mdf", "nrg",
+    "exe", "msi", "dmg", "deb", "rpm", "apk", "appimage", "pkg",
+    "mp4", "mkv", "avi", "mov", "flv", "webm", "wmv", "mpg", "mpeg", "m4v", "ts",
+    "mp3", "flac", "m4a", "wav", "ogg", "opus", "aac", "wma",
+    "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "epub", "mobi",
+    "jpg", "jpeg", "png", "gif", "webp", "bmp", "svg", "psd",
+    "ttf", "otf", "jar", "csv", "json", "xml", "vpk", "wad", "rom",
+}
+
+
+def _sniff_is_torrent_url(
+    url: str,
+    *,
+    cookies: str = "",
+    referer: str = "",
+    user_agent: str = "",
+    timeout: float = 3.0,
+) -> bool:
+    """URL '.torrent' ile bitmese bile sunucunun döndürdüğü içerik-tipine bakar.
+
+    Yalnızca NET torrent işaretlerinde True döner; HEAD desteklenmiyorsa/hata varsa
+    False döner (normal indirme akışı aynen sürer — asla yavaşlatmaz)."""
+    try:
+        low = url.lower()
+        if "127.0.0.1" in low or "//localhost" in low:
+            return False
+        path = urllib.parse.urlparse(url).path.lower()
+        last_seg = path.rsplit("/", 1)[-1]
+        ext = last_seg.rsplit(".", 1)[-1] if "." in last_seg else ""
+        if ext and ext in _KNOWN_NON_TORRENT_EXT:
+            return False
+        headers = {"User-Agent": user_agent or "Mozilla/5.0 (X11; Linux x86_64)", "Accept": "*/*"}
+        if cookies:
+            headers["Cookie"] = cookies
+        if referer:
+            headers["Referer"] = referer
+        req = urllib.request.Request(url, headers=headers, method="HEAD")
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            ctype = (resp.headers.get("Content-Type") or "").split(";")[0].strip().lower()
+            disp = (resp.headers.get("Content-Disposition") or "").lower()
+        if ctype == "application/x-bittorrent":
+            return True
+        if ".torrent" in disp:
+            return True
+        return False
+    except Exception:
+        return False
+
 
 def _categorized_final_dir(filename: str, base_dir: Path) -> Path:
     """v3.7.0: dosya adına göre IDM kategori klasörünü döndürür ve oluşturur.
@@ -670,6 +723,33 @@ class DaemonState:
             if ok_g:
                 return ok_g, msg_g
             logger.info("Gofile taze-çözüm başarısız, eski köprü akışına düşülüyor: %s", msg_g[:120])
+
+        # v3.14.2: İÇERİK-TİPİ TORRENT KOKLAMA — URL '.torrent' ile bitmese bile sunucu
+        # 'application/x-bittorrent' döndürüyorsa (filmix.gg/download/<id> gibi) indirme
+        # DOSYA olarak değil torrent motoruyla başlar. HEAD 3 sn'yi aşarsa/hata olursa
+        # normal akışa devam — hız kaybı yok, yanlış pozitif yok.
+        if (
+            not req.url.strip().lower().startswith("magnet:")
+            and "127.0.0.1" not in req.url
+            and "/proxy/" not in req.url
+            and "/stream/" not in req.url
+            and _sniff_is_torrent_url(
+                req.url,
+                cookies=req.cookies,
+                referer=req.referer or req.origin or "",
+                user_agent=req.user_agent,
+            )
+        ):
+            wrapped_t = self.auth_proxy.maybe_wrap_authenticated_download(req, self.cfg.http_port)
+            ok_t, msg_t, _ = self.dispatch_torrent_or_magnet(
+                torrent_url=wrapped_t.url,
+                cookies=req.cookies,
+                referer=req.referer,
+                user_agent=req.user_agent,
+                silent=req.silent,
+                source=f"{req.source}-torrent-sniff",
+            )
+            return ok_t, msg_t
 
         final_req = self.auth_proxy.maybe_wrap_authenticated_download(req, self.cfg.http_port)
         ok, msg = self.sender.send_download(final_req)

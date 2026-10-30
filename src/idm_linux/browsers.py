@@ -26,6 +26,12 @@ from .config import (
     OFFICIAL_OPERA_EXT_ID,
     get_data_dir,
 )
+from .sandbox import (
+    looks_like_sandbox_error,
+    needs_no_sandbox,
+    remember_no_sandbox,
+    sandbox_launch_args,
+)
 
 _IDM_DESKTOP_MARKER = "# X-IDM-Linux-Managed=1"
 _CHROMIUM_UNLOCK_FEATURES = "DisableLoadExtensionCommandLineSwitch,ExtensionDisableUnsupportedDeveloper"
@@ -1007,6 +1013,64 @@ def _copy_path_to_system_clipboard(text: str) -> None:
                 pass
 
 
+def _popen_browser_with_sandbox_retry(cmd: List[str]) -> "subprocess.Popen":
+    """v3.14.2: Tarayıcıyı sandbox uyumluluğuyla AÇILMAYA ZORLAYARAK başlatır.
+
+    Kanka kuralı: kurulum sırasında/eklenti yüklerken IDM tarayıcıyı açmak
+    istediğinde --no-sandbox engeline takılan ortamlarda tarayıcı AÇILMAYAZ;
+    burada:
+      1) Ortam/kalıcı hafıza gerektiriyorsa BAŞTAN --no-sandbox eklenir,
+      2) Yine de hızla ölürse ve çıktı sandbox hata imzası taşıyorsa araç
+         KALICI işaretlenir ve --no-sandbox ile TEKRAR açılır (zorla açılış).
+    """
+    binary = cmd[0] if cmd else ""
+    sb_args = sandbox_launch_args(binary) if binary else []
+    launch = [cmd[0], *sb_args, *cmd[1:]] if sb_args else list(cmd)
+    try:
+        proc = subprocess.Popen(
+            launch,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            start_new_session=True,
+        )
+        time.sleep(0.9)
+        rc = proc.poll()
+        if rc is None or rc == 0:
+            return proc  # çalışıyor / sorunsuz — iş tamam
+        err_txt = ""
+        try:
+            err_txt = (proc.stderr.read() or b"").decode("utf-8", "ignore")
+        except Exception:
+            pass
+        if looks_like_sandbox_error(err_txt):
+            # Kökten çözüm: aracı kalıcı işaretle (kullanıcının kendi açılışları da
+            # flags.conf sayesinde sandbox'sız başlar) ve --no-sandbox ile ZORLA aç
+            remember_no_sandbox(binary, reason=err_txt.strip()[:180])
+            retry = [cmd[0], "--no-sandbox"]
+            if needs_no_sandbox():
+                retry.append("--disable-dev-shm-usage")
+            retry.extend(cmd[1:])
+            return subprocess.Popen(
+                retry,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                start_new_session=True,
+            )
+        # Sandbox hatası değil: davranış eskisi gibi sessiz (DEAD process zaten bitti)
+        return proc
+    except Exception:
+        # Son çare: hiçbir denetim olmadan başlatmayı dene
+        try:
+            return subprocess.Popen(
+                launch,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                start_new_session=True,
+            )
+        except Exception:
+            raise
+
+
 def _launch_chromium_with_extension(
     binary_path: str,
     chrom_ext_dir: Path,
@@ -1030,46 +1094,67 @@ def _launch_chromium_with_extension(
     ]
 
     if not is_branded_google_chrome:
-        subprocess.Popen(
-            [*base_args, welcome_url],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            start_new_session=True,
-        )
+        # v3.14.2: sandbox engelli ortamlarda BAŞTAN --no-sandbox; engeline takılan
+        # araç kalıcı işaretlenip --no-sandbox ile yeniden AÇILMAYA ZORLANIR
+        _popen_browser_with_sandbox_retry([*base_args, welcome_url])
         return
 
     # Google Chrome 142+ resmi derlemeleri için bağımsız CDP Pipe (FD 3 & FD 4) yardımcı başlatıcısı:
     # Chrome başladığı saniyede borudan Extensions.loadUnpacked gönderir ve Chrome kapanana dek boruyu açık tutar.
+    # v3.14.2: sandbox bayrakları yardımcıya taşınır; Chrome sandbox engeline takılırsa
+    # yardımcı KENDİSİ --no-sandbox ile yeniden başlatır (açılış zorlanır).
+    sb_args = sandbox_launch_args(binary_path)
     helper_code = r"""
-import json, os, subprocess, sys, time
+import json, os, shlex, subprocess, sys, tempfile, time
 binary, ext_dir, url, feats = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+sb_flags = shlex.split(sys.argv[5]) if len(sys.argv) > 5 and sys.argv[5].strip() else []
 c_read, p_write = os.pipe()
 p_read, c_write = os.pipe()
 def _setup_fds():
     os.dup2(c_read, 3)
     os.dup2(c_write, 4)
-cmd = [
-    binary,
-    "--restore-last-session",
-    "--remote-debugging-pipe",
-    "--enable-unsafe-extension-debugging",
-    f"--disable-features={feats}",
-    f"--load-extension={ext_dir}",
-    url,
-]
-proc = subprocess.Popen(
-    cmd,
-    stdin=subprocess.DEVNULL,
-    stdout=subprocess.DEVNULL,
-    stderr=subprocess.DEVNULL,
-    pass_fds=(3, 4),
-    preexec_fn=_setup_fds,
-    start_new_session=True,
-)
+def _spawn(extra):
+    cmd = [binary, *extra, *sb_flags,
+        "--restore-last-session",
+        "--remote-debugging-pipe",
+        "--enable-unsafe-extension-debugging",
+        f"--disable-features={feats}",
+        f"--load-extension={ext_dir}",
+        url,
+    ]
+    # v3.14.2: stderr GEÇİCİ DOSYAYA — PIPE dolarsa Chrome'nin stderr yazısı
+    # TIKANIR ve tarayıcı donar; dosya sınırsızdır ve ölüm anında okunabilir
+    errf = tempfile.TemporaryFile()
+    proc = subprocess.Popen(
+        cmd,
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=errf,
+        pass_fds=(3, 4),
+        preexec_fn=_setup_fds,
+        start_new_session=True,
+    )
+    return proc, errf
+proc, errf = _spawn([])
 os.close(c_read)
 os.close(c_write)
+time.sleep(1.1)
+if proc.poll() not in (None, 0) and "--no-sandbox" not in sb_flags:
+    # v3.14.2: sandbox engeli — --no-sandbox ile ZORLA yeniden açılış
+    try:
+        errf.seek(0)
+        err = (errf.read() or b"").decode("utf-8", "ignore").lower()
+    except Exception:
+        err = ""
+    sigs = ("running as root without --no-sandbox", "running without the suid sandbox",
+            "the suid sandbox helper binary was found, but is not configured correctly",
+            "failed to move to new namespace", "no usable sandbox", "cannot open sandbox")
+    if any(s in err for s in sigs):
+        # işaret, ana sürecin bir sonraki çalışmasında ortam algılama/kalıcı
+        # hafızayla kalıcılaşır; burada amaç AÇILIŞI ZORLAMAK
+        proc, errf = _spawn(["--no-sandbox", "--disable-dev-shm-usage"])
 try:
-    time.sleep(0.6)
+    time.sleep(0.4)
     msg = json.dumps({"id": 1, "method": "Extensions.loadUnpacked", "params": {"path": ext_dir}}).encode("utf-8") + b"\x00"
     os.write(p_write, msg)
     while proc.poll() is None:
@@ -1080,7 +1165,7 @@ except OSError:
     pass
 """
     subprocess.Popen(
-        [sys.executable, "-c", helper_code, binary_path, ext_abs, welcome_url, _CHROMIUM_UNLOCK_FEATURES],
+        [sys.executable, "-c", helper_code, binary_path, ext_abs, welcome_url, _CHROMIUM_UNLOCK_FEATURES, " ".join(sb_args)],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
         start_new_session=True,
@@ -1125,24 +1210,16 @@ def auto_install_and_open_default_browser(
             [(det.name, Path(det.binary).name, home_root)], ff_xpi_path, official_xpi_cache_path()
         )
         welcome_url = f"http://127.0.0.1:{http_port}/welcome"
-        subprocess.Popen(
-            [det.binary, welcome_url],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            start_new_session=True,
-        )
+        # v3.14.2: sandbox engelli ortamda Gecko ailesi etkilenmez ama Chromium
+        # türevi Gecko çatallarına karşı güvenli başlatma + zorla-açılış katmanı kullanılır
+        _popen_browser_with_sandbox_retry([det.binary, welcome_url])
         if report["signed"] or report["companion"]:
             return True, (
                 f"Varsayılan tarayıcı ({det.name} — Gecko) profillerine eklenti(ler) DOĞRUDAN sideload edildi "
                 f"(imzalı: {len(report['signed'])}, companion: {len(report['companion'])}). Tarayıcı yeniden başlatıldığında aktiftir!"
             )
         if ff_xpi_path.exists():
-            subprocess.Popen(
-                [det.binary, str(ff_xpi_path.resolve())],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                start_new_session=True,
-            )
+            _popen_browser_with_sandbox_retry([det.binary, str(ff_xpi_path.resolve())])
         return True, f"Varsayılan tarayıcı ({det.name} — Gecko) algılandı ve .xpi eklenti kurulumu başlatıldı!"
 
     # 2. Durum: Chromium / Google Chrome / Brave / Brave-Origin-Nightly / Edge / Vivaldi
@@ -1167,12 +1244,8 @@ def auto_install_and_open_default_browser(
 
     # Tarayıcı zaten açıksa: policy force-install CANLI devreye girer (restart gerekmez);
     # /welcome sayfası da aktivasyonu anında doğrular.
-    subprocess.Popen(
-        [det.binary, welcome_url],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        start_new_session=True,
-    )
+    # v3.14.2: sandbox engeli olsa dahi sekme açılışı zorlanır
+    _popen_browser_with_sandbox_retry([det.binary, welcome_url])
     return True, (
         f"Varsayılan tarayıcı ({det.name} — Chromium) algılandı; eklenti kurumsal policy ile "
         "CANLI yüklendi (tarayıcı yeniden başlatılmadı) ve aktivasyon sayfası açıldı!"

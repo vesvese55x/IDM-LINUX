@@ -1,8 +1,8 @@
 <div align="center">
 
-  <img src="src/idm_linux/assets/idm-linux-icon.png" width="128" alt="IDM LINUX uygulama simgesi" />
-
 # 🚀 IDM LINUX (BELGESELSEMO)
+
+<img src="src/idm_linux/assets/idm-linux-icon.png" width="128" alt="IDM LINUX uygulama simgesi" />&nbsp;&nbsp;<img src="src/idm_linux/assets/idm-classic-icon.png" width="128" alt="Orijinal IDM simgesi — aynı tasarımda" />
 
 **Internet Download Manager'ın tüm gücü — Linux'ta, tam işlevsel, hafif ve kararlı.**
 

@@ -52,6 +52,8 @@ const reqHeadersMap = new Map();
 // Klavye kısayol durumları (Alt = atla, Insert = zorla yakala)
 let bypassCaptureUntil = 0;
 let forceCaptureUntil = 0;
+// v3.14.2: 'Hayır' denen torrent URL'leri (url -> son kullanım ts) — popup döngü koruması
+const torrentDeclineUrls = new Map();
 
 // Köprü yapılandırma önbelleği (senkron 0ms indirme yakalama için her zaman sıcak tutulur)
 let cachedState = {
@@ -702,6 +704,24 @@ function evaluateInterceptSync(item) {
     return { intercept: true, url, referer, forced: true };
   }
 
+  // v3.14.2: İÇERİK-TİPİ TORRENT TESPİTİ — filmix.gg/download/<id> gibi dinamik .torrent
+  // üreticilerinde URL '.torrent' ile BITMEZ; sunucu 'application/x-bittorrent' mime'i veya
+  // '*.torrent' dosya adı döndürür. Böyle indirmeler DOSYA olarak değil, 'Torrent İndirme
+  // Onayı' penceresiyle karşılanır (Linux Mint .torrent davranışı TÜM sitelerde garanti).
+  const lowUrl = url.toLowerCase();
+  const fnameLow = (item.filename || "").toLowerCase();
+  const mimeLow = (item.mime || "").toLowerCase().split(";")[0].trim();
+  const looksTorrent =
+    mimeLow === "application/x-bittorrent" ||
+    /\.torrent(\?|#|$)/i.test(lowUrl) ||
+    fnameLow.endsWith(".torrent");
+  if (looksTorrent) {
+    // kullanıcı az önce 'Hayır' dedi -> tarayıcı kendi indirmesine bırakılır (döngü yok)
+    const declineTs = torrentDeclineUrls.get(url) || 0;
+    if (Date.now() < declineTs) return { intercept: false };
+    return { intercept: true, url, referer, forced: forced, torrent: true };
+  }
+
   // Resmi IDM eklentisi bağlıysa bile:
   // 1) Anında çerez/başlık zenginleştirmesini köprüye göndeririz,
   // 2) Eğer site HttpOnly/Cloudflare/Authorization gerektiriyorsa (örn. arena.ai), resmi eklenti
@@ -759,6 +779,11 @@ if (extApi.downloads && extApi.downloads.onDeterminingFilename) {
       if (check.intercept && cachedState.online && cachedState.idm_installed) {
         interceptedDownloadIds.add(item.id);
         purgeBrowserDownload(item.id);
+        // v3.14.2: içerik-tipi torrent -> DOSYA olarak değil onay penceresiyle
+        if (check.torrent) {
+          dispatchTorrentPopup(item, check);
+          return;
+        }
         dispatchInterceptedToIdm(item, check);
         return;
       }
@@ -817,6 +842,66 @@ async function dispatchInterceptedToIdm(item, check) {
   }
 }
 
+// v3.14.2: İÇERİK-TİPİ TORRENT POPUP'U — indirme torrent kokuyorsa (mime/dosya adı),
+// DOSYA olarak IDM'ye gitmez; başlatan sekmede 'Torrent İndirme Onayı' penceresi açılır.
+// Sekme bulunamazsa / içerik betiği yoksa eski dosya akışına geri düşer.
+async function dispatchTorrentPopup(item, check) {
+  if (processedDownloadIds.has(item.id)) return;
+  processedDownloadIds.add(item.id);
+  setTimeout(() => {
+    processedDownloadIds.delete(item.id);
+    interceptedDownloadIds.delete(item.id);
+  }, 30000);
+
+  const url = check.url || item.finalUrl || item.url || "";
+  const tab = await findTabForDownload(check.referer);
+  if (tab && tab.id >= 0) {
+    try {
+      const resp = await new Promise((resolve) => {
+        try {
+          extApi.tabs.sendMessage(
+            tab.id,
+            { type: "IDM_SHOW_TORRENT_POPUP", url, name: (item.filename || "").split(/[/\\]/).pop() },
+            (r) => {
+              void extApi.runtime.lastError;
+              resolve(r);
+            }
+          );
+        } catch (_syncErr) {
+          resolve(null);
+        }
+      });
+      if (resp && resp.ok) return; // popup sekmede açıldı
+    } catch (_e) {}
+  }
+  // İçerik betiği yok (mağaza sayfası vb.) -> eski davranış: .torrent dosyasını IDM'ye ver
+  dispatchInterceptedToIdm(item, check);
+}
+
+// İndirmeyi başlatan sekmeyi bul: önce referer origin eşleşmesi, sonra aktif sekme
+async function findTabForDownload(referer) {
+  try {
+    let origin = "";
+    try { if (referer) origin = new URL(referer).origin; } catch (_e) {}
+    if (origin) {
+      const all = await extApi.tabs.query({});
+      for (const t of all) {
+        try {
+          if (t.active && t.url && new URL(t.url).origin === origin) return t;
+        } catch (_e) {}
+      }
+      for (const t of all) {
+        try {
+          if (t.url && new URL(t.url).origin === origin) return t;
+        } catch (_e) {}
+      }
+    }
+    const act = await extApi.tabs.query({ active: true, lastFocusedWindow: true });
+    if (act && act.length) return act[0];
+  } catch (_e) {}
+  return null;
+}
+
 extApi.downloads.onCreated.addListener((item) => {
   if (!item || processedDownloadIds.has(item.id)) return;
 
@@ -837,6 +922,11 @@ extApi.downloads.onCreated.addListener((item) => {
     }
   } catch (_e) {}
 
+  // v3.14.2: içerik-tipi torrent -> DOSYA olarak değil onay penceresiyle
+  if (check.torrent) {
+    dispatchTorrentPopup(item, check);
+    return;
+  }
   dispatchInterceptedToIdm(item, check);
 });
 
@@ -1370,6 +1460,58 @@ extApi.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         }
       }
       sendResponse(respPayload);
+      return;
+    }
+
+    // v3.14.2: popup 'Dosyayı İndir' — torrent İÇERİĞİNİ değil .torrent DOSYASINI
+    // normal IDM indirme akışına (/api/download) verir; IDM kendi penceresiyle indirir
+    if (msg.type === "IDM_TORRENT_FILE_DOWNLOAD") {
+      const href = String(msg.href || "").trim();
+      if (!/^https?:\/\//i.test(href)) {
+        sendResponse({ ok: false, message: "Geçersiz .torrent bağlantısı." });
+        return;
+      }
+      let cookies = "";
+      try { cookies = await getCookiesHeader(href); } catch (_e) {}
+      let origin = "";
+      try { if (msg.referer) origin = new URL(msg.referer).origin; } catch (_e) {}
+      const filePayload = {
+        url: href,
+        referer: msg.referer || topTabUrl || "",
+        origin,
+        cookies,
+        userAgent: navigator.userAgent,
+        force: true,
+        source: "ext-torrent-file"
+      };
+      let fileRes = await callBridge("/api/download", "POST", filePayload, "download");
+      if (!fileRes) {
+        // köprü uykudaydı — callBridge uyandırdı; 2 sn bekle + son bir şans
+        await new Promise((r) => setTimeout(r, 2000));
+        fileRes = await callBridge("/api/download", "POST", filePayload, "download");
+      }
+      if (fileRes && typeof fileRes === "object") {
+        sendResponse(fileRes);
+      } else {
+        sendResponse({ ok: false, offline: true, message: "" });
+      }
+      return;
+    }
+
+    // v3.14.2: popup 'Hayır' — bu URL 10 sn boyunca torrent popup'ına düşmesin
+    // (kullanıcı tarayıcı indirmesini seçti; döngü koruması)
+    if (msg.type === "IDM_TORRENT_DECLINE") {
+      const declineUrl = String(msg.url || "").trim();
+      if (declineUrl) {
+        torrentDeclineUrls.set(declineUrl, Date.now() + 10000);
+        if (torrentDeclineUrls.size > 300) {
+          const nowMs = Date.now();
+          for (const [k, ts] of torrentDeclineUrls) {
+            if (ts < nowMs) torrentDeclineUrls.delete(k);
+          }
+        }
+      }
+      sendResponse({ ok: true });
       return;
     }
 

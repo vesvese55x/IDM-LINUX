@@ -355,19 +355,19 @@
   const TORRENT_I18N = (() => {
     const lang = (navigator.language || "en").slice(0, 2).toLowerCase();
     const M = {
-      tr: { title: "Torrent İndirme Onayı", ask: "Bu torrenti indirmek istiyor musunuz?", engine: "İçerik IDM Linux torrent motoru (aria2c) ile indirilecek.", autoInstall: "aria2c kurulu değil — indirme başlarken otomatik kurulacak (yetki penceresini onaylayın).", yes: "Evet, IDM ile İndir", no: "Hayır", fail: "Torrent başlatılamadı — IDM Linux köprüsüne ulaşılamadı. Paneli açıp köprüyi başlatın.", sent: "✓ Torrent IDM Linux'a gönderildi — köprü penceresini açabilirsiniz." },
-      en: { title: "Torrent Download Confirmation", ask: "Do you want to download this torrent?", engine: "It will be downloaded via the IDM Linux torrent engine (aria2c).", autoInstall: "aria2c is not installed — it will be installed automatically when the download starts (approve the auth window).", yes: "Yes, Download with IDM", no: "No", fail: "Could not start torrent — IDM Linux bridge unreachable. Start it from the Control Center.", sent: "✓ Torrent sent to IDM Linux." },
-      de: { title: "Torrent-Download bestätigen", ask: "Diesen Torrent herunterladen?", engine: "Der Download erfolgt über die IDM-Linux-Torrent-Engine (aria2c).", autoInstall: "aria2c ist nicht installiert — es wird beim Download-Start automatisch installiert (Auth-Fenster bestätigen).", yes: "Ja, mit IDM laden", no: "Nein", fail: "Torrent konnte nicht gestartet werden — IDM-Linux-Bridge nicht erreichbar.", sent: "✓ Torrent an IDM Linux gesendet." },
-      fr: { title: "Confirmation du téléchargement torrent", ask: "Voulez-vous télécharger ce torrent ?", engine: "Il sera téléchargé via le moteur torrent IDM Linux (aria2c).", autoInstall: "aria2c n'est pas installé — il sera installé automatiquement au démarrage du téléchargement (approuvez la fenêtre d'autorisation).", yes: "Oui, télécharger avec IDM", no: "Non", fail: "Impossible de démarrer le torrent — pont IDM Linux injoignable.", sent: "✓ Torrent envoyé à IDM Linux." },
-      ru: { title: "Подтверждение загрузки торрента", ask: "Скачать этот торрент?", engine: "Загрузка будет выполнена через торрент-движок IDM Linux (aria2c).", autoInstall: "aria2c не установлен — он будет установлен автоматически при запуске загрузки (подтвердите окно авторизации).", yes: "Да, скачать через IDM", no: "Нет", fail: "Не удалось запустить торрент — мост IDM Linux недоступен.", sent: "✓ Торрент отправлен в IDM Linux." },
-      es: { title: "Confirmar descarga de torrent", ask: "¿Quieres descargar este torrent?", engine: "Se descargará con el motor torrent de IDM Linux (aria2c).", autoInstall: "aria2c no está instalado — se instalará automáticamente al iniciar la descarga (apruebe la ventana de autorización).", yes: "Sí, descargar con IDM", no: "No", fail: "No se pudo iniciar el torrent: puente de IDM Linux no disponible.", sent: "✓ Torrent enviado a IDM Linux." },
-      it: { title: "Conferma download torrent", ask: "Vuoi scaricare questo torrent?", engine: "Verrà scaricato con il motore torrent di IDM Linux (aria2c).", autoInstall: "aria2c non è installato — verrà installato automaticamente all'avvio del download (approva la finestra di autorizzazione).", yes: "Sì, scarica con IDM", no: "No", fail: "Impossibile avviare il torrent: bridge IDM Linux non raggiungibile.", sent: "✓ Torrent inviato a IDM Linux." },
-      pt: { title: "Confirmação de download de torrent", ask: "Deseja baixar este torrent?", engine: "Será baixado pelo motor torrent do IDM Linux (aria2c).", autoInstall: "aria2c não está instalado — será instalado automaticamente ao iniciar o download (aprovar a janela de autorização).", yes: "Sim, baixar com IDM", no: "Não", fail: "Não foi possível iniciar o torrent — ponte IDM Linux inacessível.", sent: "✓ Torrent enviado ao IDM Linux." },
-      zh: { title: "种子下载确认", ask: "要下载这个种子吗？", engine: "将通过 IDM Linux 种子引擎 (aria2c) 下载。", autoInstall: "aria2c 未安装 — 下载开始时将自动安装（请在授权窗口中确认）。", yes: "是，用 IDM 下载", no: "否", fail: "无法启动种子 — IDM Linux 桥接不可用。", sent: "✓ 种子已发送到 IDM Linux。" },
-      ja: { title: "トレント ダウンロードの確認", ask: "このトレントをダウンロードしますか？", engine: "IDM Linux トレントエンジン (aria2c) でダウンロードします。", autoInstall: "aria2c が未インストール — ダウンロード開始時に自動導入されます（認証ウィンドウを承認してください）。", yes: "はい、IDM でダウンロード", no: "いいえ", fail: "トレントを開始できません — IDM Linux ブリッジに接続できません。", sent: "✓ トレントを IDM Linux に送信しました。" },
-      ar: { title: "تأكيد تنزيل التورنت", ask: "هل تريد تنزيل هذا التورنت؟", engine: "سيتم التنزيل عبر محرك IDM Linux للتورنت (aria2c).", autoInstall: "aria2c غير مثبت — سيتم تثبيته تلقائيًا عند بدء التنزيل (وافق على نافذة التصريح).", yes: "نعم، نزّل عبر IDM", no: "لا", fail: "تعذر بدء التورنت — جسر IDM Linux غير متوفر.", sent: "✓ تم إرسال التورنت إلى IDM Linux." },
-      az: { title: "Torrent endirmə təsdiqi", ask: "Bu torrenti endirmək istəyirsiniz?", engine: "IDM Linux torrent mühərriki (aria2c) ilə endiriləcək.", autoInstall: "aria2c quraşdırılmayıb — endirmə başlayanda avtomatik quraşdırılacaq (avalandırma pəncərəsini təsdiqləyin).", yes: "Bəli, IDM ilə endir", no: "Xeyr", fail: "Torrent başladıla bilmədi — IDM Linux körpüsü əlçatmazdır.", sent: "✓ Torrent IDM Linux-a göndərildi." },
-      id: { title: "Konfirmasi Unduh Torrent", ask: "Unduh torrent ini?", engine: "Akan diunduh via mesin torrent IDM Linux (aria2c).", autoInstall: "aria2c belum terpasang — akan terpasang otomatis saat unduhan dimulai (setujui jendela otorisasi).", yes: "Ya, unduh dengan IDM", no: "Tidak", fail: "Torrent gagal dimulai — bridge IDM Linux tidak terjangkau.", sent: "✓ Torrent dikirim ke IDM Linux." },
+      tr: { title: "Torrent İndirme Onayı", ask: "Bu torrenti indirmek istiyor musunuz?", engine: "İçerik IDM Linux torrent motoru (aria2c) ile indirilecek.", autoInstall: "aria2c kurulu değil — indirme başlarken otomatik kurulacak (yetki penceresini onaylayın).", file: "Dosyayı İndir", yes: "Evet, IDM ile İndir", no: "Hayır", fail: "Torrent başlatılamadı — IDM Linux köprüsüne ulaşılamadı. Paneli açıp köprüyi başlatın.", sent: "✓ Torrent IDM Linux'a gönderildi — köprü penceresini açabilirsiniz." },
+      en: { title: "Torrent Download Confirmation", ask: "Do you want to download this torrent?", engine: "It will be downloaded via the IDM Linux torrent engine (aria2c).", autoInstall: "aria2c is not installed — it will be installed automatically when the download starts (approve the auth window).", file: "Download the File", yes: "Yes, Download with IDM", no: "No", fail: "Could not start torrent — IDM Linux bridge unreachable. Start it from the Control Center.", sent: "✓ Torrent sent to IDM Linux." },
+      de: { title: "Torrent-Download bestätigen", ask: "Diesen Torrent herunterladen?", engine: "Der Download erfolgt über die IDM-Linux-Torrent-Engine (aria2c).", autoInstall: "aria2c ist nicht installiert — es wird beim Download-Start automatisch installiert (Auth-Fenster bestätigen).", file: "Datei herunterladen", yes: "Ja, mit IDM laden", no: "Nein", fail: "Torrent konnte nicht gestartet werden — IDM-Linux-Bridge nicht erreichbar.", sent: "✓ Torrent an IDM Linux gesendet." },
+      fr: { title: "Confirmation du téléchargement torrent", ask: "Voulez-vous télécharger ce torrent ?", engine: "Il sera téléchargé via le moteur torrent IDM Linux (aria2c).", autoInstall: "aria2c n'est pas installé — il sera installé automatiquement au démarrage du téléchargement (approuvez la fenêtre d'autorisation).", file: "Télécharger le fichier", yes: "Oui, télécharger avec IDM", no: "Non", fail: "Impossible de démarrer le torrent — pont IDM Linux injoignable.", sent: "✓ Torrent envoyé à IDM Linux." },
+      ru: { title: "Подтверждение загрузки торрента", ask: "Скачать этот торрент?", engine: "Загрузка будет выполнена через торрент-движок IDM Linux (aria2c).", autoInstall: "aria2c не установлен — он будет установлен автоматически при запуске загрузки (подтвердите окно авторизации).", file: "Скачать файл", yes: "Да, скачать через IDM", no: "Нет", fail: "Не удалось запустить торрент — мост IDM Linux недоступен.", sent: "✓ Торрент отправлен в IDM Linux." },
+      es: { title: "Confirmar descarga de torrent", ask: "¿Quieres descargar este torrent?", engine: "Se descargará con el motor torrent de IDM Linux (aria2c).", autoInstall: "aria2c no está instalado — se instalará automáticamente al iniciar la descarga (apruebe la ventana de autorización).", file: "Descargar el archivo", yes: "Sí, descargar con IDM", no: "No", fail: "No se pudo iniciar el torrent: puente de IDM Linux no disponible.", sent: "✓ Torrent enviado a IDM Linux." },
+      it: { title: "Conferma download torrent", ask: "Vuoi scaricare questo torrent?", engine: "Verrà scaricato con il motore torrent di IDM Linux (aria2c).", autoInstall: "aria2c non è installato — verrà installato automaticamente all'avvio del download (approva la finestra di autorizzazione).", file: "Scarica il file", yes: "Sì, scarica con IDM", no: "No", fail: "Impossibile avviare il torrent: bridge IDM Linux non raggiungibile.", sent: "✓ Torrent inviato a IDM Linux." },
+      pt: { title: "Confirmação de download de torrent", ask: "Deseja baixar este torrent?", engine: "Será baixado pelo motor torrent do IDM Linux (aria2c).", autoInstall: "aria2c não está instalado — será instalado automaticamente ao iniciar o download (aprovar a janela de autorização).", file: "Baixar o arquivo", yes: "Sim, baixar com IDM", no: "Não", fail: "Não foi possível iniciar o torrent — ponte IDM Linux inacessível.", sent: "✓ Torrent enviado ao IDM Linux." },
+      zh: { title: "种子下载确认", ask: "要下载这个种子吗？", engine: "将通过 IDM Linux 种子引擎 (aria2c) 下载。", autoInstall: "aria2c 未安装 — 下载开始时将自动安装（请在授权窗口中确认）。", file: "下载文件", yes: "是，用 IDM 下载", no: "否", fail: "无法启动种子 — IDM Linux 桥接不可用。", sent: "✓ 种子已发送到 IDM Linux。" },
+      ja: { title: "トレント ダウンロードの確認", ask: "このトレントをダウンロードしますか？", engine: "IDM Linux トレントエンジン (aria2c) でダウンロードします。", autoInstall: "aria2c が未インストール — ダウンロード開始時に自動導入されます（認証ウィンドウを承認してください）。", file: "ファイルをダウンロード", yes: "はい、IDM でダウンロード", no: "いいえ", fail: "トレントを開始できません — IDM Linux ブリッジに接続できません。", sent: "✓ トレントを IDM Linux に送信しました。" },
+      ar: { title: "تأكيد تنزيل التورنت", ask: "هل تريد تنزيل هذا التورنت؟", engine: "سيتم التنزيل عبر محرك IDM Linux للتورنت (aria2c).", autoInstall: "aria2c غير مثبت — سيتم تثبيته تلقائيًا عند بدء التنزيل (وافق على نافذة التصريح).", file: "تنزيل الملف", yes: "نعم، نزّل عبر IDM", no: "لا", fail: "تعذر بدء التورنت — جسر IDM Linux غير متوفر.", sent: "✓ تم إرسال التورنت إلى IDM Linux." },
+      az: { title: "Torrent endirmə təsdiqi", ask: "Bu torrenti endirmək istəyirsiniz?", engine: "IDM Linux torrent mühərriki (aria2c) ilə endiriləcək.", autoInstall: "aria2c quraşdırılmayıb — endirmə başlayanda avtomatik quraşdırılacaq (avalandırma pəncərəsini təsdiqləyin).", file: "Faylı endir", yes: "Bəli, IDM ilə endir", no: "Xeyr", fail: "Torrent başladıla bilmədi — IDM Linux körpüsü əlçatmazdır.", sent: "✓ Torrent IDM Linux-a göndərildi." },
+      id: { title: "Konfirmasi Unduh Torrent", ask: "Unduh torrent ini?", engine: "Akan diunduh via mesin torrent IDM Linux (aria2c).", autoInstall: "aria2c belum terpasang — akan terpasang otomatis saat unduhan dimulai (setujui jendela otorisasi).", file: "Unduh Berkas", yes: "Ya, unduh dengan IDM", no: "Tidak", fail: "Torrent gagal dimulai — bridge IDM Linux tidak terjangkau.", sent: "✓ Torrent dikirim ke IDM Linux." },
     };
     return M[lang] || M.en;
   })();
@@ -659,9 +659,15 @@
     const noBtn = document.createElement("button");
     noBtn.textContent = TORRENT_I18N.no;
     noBtn.style.cssText = "padding:9px 16px;border-radius:9px;border:1px solid #475569;background:#1e293b;color:#e2e8f0;font-size:12px;font-weight:600;cursor:pointer;";
+    // v3.14.2: 'Dosyayı İndir' — torrentun İÇERİĞİNİ değil, .torrent DOSYASININ kendisini
+    // normal IDM indirme akışıyla indirir (kullanıcı istegi: 'Hayır'ın solunda dursun)
+    const fileBtn = document.createElement("button");
+    fileBtn.textContent = TORRENT_I18N.file || "Dosyayı İndir";
+    fileBtn.style.cssText = "padding:9px 16px;border-radius:9px;border:1px solid #334155;background:#0b1220;color:#7dd3fc;font-size:12px;font-weight:600;cursor:pointer;";
     const yesBtn = document.createElement("button");
     yesBtn.textContent = TORRENT_I18N.yes;
     yesBtn.style.cssText = "padding:9px 16px;border-radius:9px;border:none;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(37,99,235,.35);";
+    row.appendChild(fileBtn);
     row.appendChild(noBtn);
     row.appendChild(yesBtn);
     card.appendChild(hdr);
@@ -686,9 +692,32 @@
     });
     document.addEventListener("keydown", onKey, true);
     noBtn.addEventListener("click", () => {
+      // v3.14.2: 'Hayır' -> arka plana bildir; bu URL 10 sn boyunca torrent popup'ına
+      // düşmesin (döngü koruması), tarayıcı kendi davranışıyla devam etsin
+      try { sendMsg({ type: "IDM_TORRENT_DECLINE", url: href }); } catch (_e) {}
       close();
-      // 'Hayır' -> tarayıcı kendi davranışıyla devam etsin (harici işleyici / normal indirme)
       try { location.href = href; } catch (_e) {}
+    });
+    // v3.14.2: 'Dosyayı İndir' -> .torrent DOSYASININ kendisi normal IDM indirmesine
+    // gider (İÇERİK değil!) — daemon /api/download köprüsü üzerinden
+    fileBtn.addEventListener("click", async () => {
+      yesBtn.disabled = true;
+      noBtn.disabled = true;
+      fileBtn.disabled = true;
+      ask.textContent = "⏳ …";
+      let res = null;
+      try { res = await sendMsg({ type: "IDM_TORRENT_FILE_DOWNLOAD", href, referer: location.href }); } catch (_e) {}
+      if (res && res.ok) {
+        close();
+      } else {
+        const off = res && res.offline;
+        ask.textContent = off ? TORRENT_I18N.fail : ((res && (res.message || res.error)) || TORRENT_I18N.fail);
+        ask.style.color = "#f87171";
+        ask.style.whiteSpace = "pre-line";
+        yesBtn.disabled = false;
+        noBtn.disabled = false;
+        fileBtn.disabled = false;
+      }
     });
     yesBtn.addEventListener("click", async () => {
       yesBtn.disabled = true;
@@ -2085,6 +2114,21 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   if (msg && msg.type === "IDM_CONFIRM_UI") {
     const ok = window.confirm(msg.message || "İndirilsin mi?");
     sendResponse({ ok });
+    return true;
+  }
+  // v3.14.2: arka plan, içerik-tipi torrent indirmesini yakaladı (filmix.gg/download/<id>
+  // gibi '.torrent' ile bitmeyen dinamik URL'ler) — 'Torrent İndirme Onayı' popup'ını BURADA aç
+  if (msg && msg.type === "IDM_SHOW_TORRENT_POPUP") {
+    try {
+      if (typeof window.__idmLinuxTorrentPopup === "function" && msg.url) {
+        window.__idmLinuxTorrentPopup(msg.url, "torrent");
+        sendResponse({ ok: true });
+      } else {
+        sendResponse({ ok: false });
+      }
+    } catch (e) {
+      try { sendResponse({ ok: false }); } catch (_e) {}
+    }
     return true;
   }
   return false;
