@@ -1,0 +1,65 @@
+{
+  "manifest_version": 3,
+  "name": "IDM Integration & Video Bar for Linux",
+  "short_name": "IDM Linux",
+  "version": "1.0.0",
+  "description": "Gerçek Internet Download Manager (IDM) için Linux indirme yakalayıcı ve 'Bu videoyu indir' yüzen video bar eklentisi.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtN1RWXPjuZnlI6AAeBHEK/TnhdtDOxrsczc/IXAYxNH1aSiAxZpvQdjlmll7YLbdSTreImslKsaK2oADKCarIqXtsHTAIFJmafTUcIgeDl4IYg+DimQQcUsg1Rq6ITjHZVZYUNquCqh2BxKeHjspZGqqoJoy/LY3q8X4ycNTgpGs0nY7dfn4k+ytenlkKuihNb2fF5z7CCEleuYTiov4xaOoauFx8o+KVCQWI+67gUvprrwwyuBChhpoejm5g7qygmSWd1EZ5+/sHhXo6P95e+RIVFfV1sHES6MyVbzcblPLUSKJuwPXLv9i2IJXEl1toniKDjMbwGEGVHW2W9F6SwIDAQAB",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "IDM Linux Entegrasyonu",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "permissions": [
+    "downloads",
+    "cookies",
+    "tabs",
+    "webRequest",
+    "contextMenus",
+    "storage",
+    "nativeMessaging",
+    "webNavigation"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "page_hook.js"
+      ],
+      "all_frames": true,
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "all_frames": true,
+      "run_at": "document_start"
+    }
+  ]
+}

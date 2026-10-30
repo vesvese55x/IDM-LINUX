@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=IDM-Linux Kurulum & Kontrol Merkezi
+Comment=IDM 6.43 Build 16 Modern Grafik Kurulum Sihirbazı ve Kontrol Paneli
+Exec=sh -c 'DIR="$(dirname "$(realpath "%k")")"; exec "$DIR/install.sh" --gui'
+Icon=system-software-install
+Terminal=false
+Categories=Network;System;Utility;

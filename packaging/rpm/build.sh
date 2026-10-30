@@ -7,7 +7,7 @@ command -v rpmbuild >/dev/null 2>&1 || { sudo apt-get update -qq && sudo apt-get
 
 # Kaynak kontrolü: uygulama giriş noktası yoksa anlamlı hata ver
 SRC_ENTRY=""
-for c in idm-linux.sh run.sh start.sh idm-linux main.py app.py idm_linux.py gui.py; do
+for c in idm-linux.sh run.sh start.sh idm-linux bin/idm-linux main.py app.py idm_linux.py gui.py; do
   if [ -f "$c" ] || [ -x "$c" ]; then SRC_ENTRY="$c"; break; fi
 done
 if [ -z "$SRC_ENTRY" ]; then
@@ -23,7 +23,7 @@ mkdir -p "$TOP/BUILD" "$TOP/RPMS" "$TOP/SOURCES" "$TOP/SPECS" "$TOP/SRPMS" dist
 
 # Kaynak ağacını paketle
 tar -czf "$TOP/SOURCES/${APP_ID}.tar.gz" \
-  --exclude=./.git --exclude=./.github --exclude=./build --exclude=./dist .
+  --exclude=./.git --exclude=./.github --exclude=./build --exclude=./dist --exclude=./tests --exclude=./docs .
 
 # İkon
 ICON=""

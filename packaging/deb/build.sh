@@ -6,7 +6,7 @@ source packaging/vars.sh
 
 # Kaynak kontrolü: uygulama giriş noktası yoksa anlamlı hata ver
 SRC_ENTRY=""
-for c in idm-linux.sh run.sh start.sh idm-linux main.py app.py idm_linux.py gui.py; do
+for c in idm-linux.sh run.sh start.sh idm-linux bin/idm-linux main.py app.py idm_linux.py gui.py; do
   if [ -f "$c" ] || [ -x "$c" ]; then SRC_ENTRY="$c"; break; fi
 done
 if [ -z "$SRC_ENTRY" ]; then
@@ -23,7 +23,7 @@ mkdir -p "${STAGE}/DEBIAN" "${STAGE}/opt/${APP_ID}" "${STAGE}/usr/bin" \
          "${STAGE}/usr/share/doc/${APP_ID}" dist
 
 # Uygulama ağacı
-tar -cf - --exclude=./.git --exclude=./.github --exclude=./build --exclude=./dist . \
+tar -cf - --exclude=./.git --exclude=./.github --exclude=./build --exclude=./dist --exclude=./tests --exclude=./docs . \
   | tar -xf - -C "${STAGE}/opt/${APP_ID}"
 
 install -m 0755 packaging/launcher.sh "${STAGE}/usr/bin/${APP_ID}"

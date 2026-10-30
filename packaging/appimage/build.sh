@@ -6,7 +6,7 @@ source packaging/vars.sh
 
 # Kaynak kontrolü: uygulama giriş noktası yoksa anlamlı hata ver
 SRC_ENTRY=""
-for c in idm-linux.sh run.sh start.sh idm-linux main.py app.py idm_linux.py gui.py; do
+for c in idm-linux.sh run.sh start.sh idm-linux bin/idm-linux main.py app.py idm_linux.py gui.py; do
   if [ -f "$c" ] || [ -x "$c" ]; then SRC_ENTRY="$c"; break; fi
 done
 if [ -z "$SRC_ENTRY" ]; then
@@ -22,7 +22,7 @@ mkdir -p "$APPDIR/usr/bin" "$APPDIR/usr/share/applications" "$APPDIR/usr/share/i
          "$APPDIR/usr/share/icons/hicolor/256x256/apps" dist
 
 # Uygulama ağacını AppDir içine kopyala
-tar -cf - --exclude=./.git --exclude=./.github --exclude=./build --exclude=./dist . \
+tar -cf - --exclude=./.git --exclude=./.github --exclude=./build --exclude=./dist --exclude=./tests --exclude=./docs . \
   | tar -xf - -C "$APPDIR/usr/share/idm-linux"
 install -m 0755 packaging/launcher.sh "$APPDIR/usr/bin/${APP_ID}"
 rm -rf "$APPDIR/usr/share/idm-linux/packaging"

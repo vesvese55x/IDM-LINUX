@@ -1,0 +1,61 @@
+{
+  "manifest_version": 2,
+  "name": "IDM Integration & Video Bar for Linux",
+  "short_name": "IDM Linux",
+  "version": "1.0.0",
+  "description": "Wine üzerindeki orijinal Internet Download Manager (IDM) için %100 Linux indirme yakalayıcı ve 'Bu videoyu indir' yüzen video barı.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "idm-linux-companion@idmlinux.local",
+      "strict_min_version": "91.0"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "browser_action": {
+    "default_title": "IDM Linux Entegrasyonu",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png"
+    }
+  },
+  "permissions": [
+    "downloads",
+    "cookies",
+    "tabs",
+    "contextMenus",
+    "storage",
+    "webRequest",
+    "nativeMessaging",
+    "<all_urls>",
+    "webNavigation"
+  ],
+  "background": {
+    "scripts": [
+      "background.js"
+    ],
+    "persistent": true
+  },
+  "web_accessible_resources": [
+    "page_hook.js"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ]
+}

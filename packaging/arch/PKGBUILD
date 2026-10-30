@@ -19,7 +19,9 @@ package() {
          "${pkgdir}/opt/${pkgname}/.github" \
          "${pkgdir}/opt/${pkgname}/packaging" \
          "${pkgdir}/opt/${pkgname}/build" \
-         "${pkgdir}/opt/${pkgname}/dist"
+         "${pkgdir}/opt/${pkgname}/dist" \
+         "${pkgdir}/opt/${pkgname}/tests" \
+         "${pkgdir}/opt/${pkgname}/docs"
   rm -f  "${pkgdir}/opt/${pkgname}/.gitignore"
 
   install -Dm0755 "${startdir}/packaging/launcher.sh" "${pkgdir}/usr/bin/${pkgname}"

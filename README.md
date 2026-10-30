@@ -2,6 +2,9 @@
 
 # 🚀 IDM LINUX (BELGESELSEMO)
 
+[![Build & Release](https://github.com/vesvese55x/IDM-LINUX/actions/workflows/build.yml/badge.svg)](https://github.com/vesvese55x/IDM-LINUX/actions/workflows/build.yml)
+[![Tests](https://github.com/vesvese55x/IDM-LINUX/actions/workflows/tests.yml/badge.svg)](https://github.com/vesvese55x/IDM-LINUX/actions/workflows/tests.yml)
+
 ![Version](https://img.shields.io/badge/s%C3%BCr%C3%BCm-1.0.0-0ea5e9?style=for-the-badge)
 ![Platform](https://img.shields.io/badge/platform-Linux%20x86__64-f97316?style=for-the-badge)
 ![Wine](https://img.shields.io/badge/back--end-Wine-red?style=for-the-badge)

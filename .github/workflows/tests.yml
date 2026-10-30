@@ -1,0 +1,38 @@
+# IDM LINUX — uçtan uca test paketi (projenin kendi E2E süitesi)
+name: Tests
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e-linux:
+    name: E2E Testleri (Linux)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Sistem bağımlılıkları
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends xvfb ffmpeg aria2 imagemagick
+
+      - name: E2E test paketi
+        env:
+          PYTHONPATH: src
+        run: python -m unittest discover -s tests -p "test_suite.py" -v

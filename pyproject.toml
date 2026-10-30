@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "idm-linux"
+version = "1.0.0"
+description = "Internet Download Manager (IDM) Evrensel Linux Kurulum, Resmi com.tonec.idm Protokol Köprüsü, 20-Dilli Kontrol Merkezi ve Hibrit Video Bar Paketi"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+  {name = "BELGESELSEMO"}
+]
+
+[project.scripts]
+idm-linux = "idm_linux.cli:main"
+idm-native-host = "idm_linux.native_host:run_native_messaging_loop"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+idm_linux = ["assets/*.png", "language/*.txt"]

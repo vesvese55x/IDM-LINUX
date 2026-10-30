@@ -42,7 +42,7 @@ jobs:
         id: check
         run: |
           FOUND=""
-          for f in idm-linux.sh run.sh start.sh idm-linux main.py app.py idm_linux.py gui.py; do
+          for f in idm-linux.sh run.sh start.sh idm-linux bin/idm-linux main.py app.py idm_linux.py gui.py; do
             if [ -f "$f" ] || [ -x "$f" ]; then FOUND="$f"; break; fi
           done
           if [ -n "$FOUND" ]; then

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>IDM Linux Entegrasyonu</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { width: 340px; background: #0f172a; color: #f8fafc; padding: 14px; }
+    .hdr { display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid #1e293b; }
+    .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; }
+    .status-pill { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 99px; background: #1e293b; color: #f59e0b; }
+    .status-pill.ok { background: rgba(34, 197, 94, 0.16); color: #4ade80; }
+    .status-pill.err { background: rgba(239, 68, 68, 0.16); color: #f87171; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px; margin-top: 10px; }
+    .row { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; font-size: 12.5px; }
+    .muted { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+    input[type="checkbox"] { width: 16px; height: 16px; accent-color: #0284c7; cursor: pointer; }
+    .url-box { display: flex; gap: 6px; margin-top: 6px; }
+    .url-in { flex: 1; background: #020617; border: 1px solid #334155; border-radius: 6px; color: #f8fafc; padding: 6px 8px; font-size: 12px; }
+    .btn { border: none; border-radius: 6px; padding: 7px 11px; font-size: 12px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
+    .btn:hover { opacity: 0.9; }
+    .btn-pri { background: #0284c7; color: #fff; }
+    .btn-green { background: #16a34a; color: #fff; width: 100%; margin-top: 10px; }
+    .btn-sec { background: #334155; color: #e2e8f0; width: 100%; margin-top: 8px; }
+    .hint { font-size: 10.5px; color: #64748b; margin-top: 10px; text-align: center; line-height: 1.4; }
+  </style>
+</head>
+<body>
+  <div class="hdr">
+    <div class="brand">
+      <img src="icons/icon32.png" width="22" height="22" alt="IDM"/>
+      <span>IDM Linux Köprüsü</span>
+    </div>
+    <span class="status-pill" id="statusBadge">Bağlanıyor...</span>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <label for="chkCapture">Tarayıcı İndirmelerini Yakala</label>
+      <input type="checkbox" id="chkCapture" checked />
+    </div>
+    <div class="row">
+      <label for="chkVideoBar">"Bu Videoyu İndir" Barını Göster</label>
+      <input type="checkbox" id="chkVideoBar" checked />
+    </div>
+    <div class="muted" id="coexistNote"></div>
+  </div>
+
+  <div class="card">
+    <div style="font-size:12px;font-weight:600;">Hızlı URL / Magnet / Torrent Gönder (IDM)</div>
+    <div class="url-box">
+      <input class="url-in" id="urlInput" placeholder="https://... veya magnet:?xt=..." />
+      <button class="btn btn-pri" id="sendUrlBtn">İndir</button>
+    </div>
+  </div>
+
+  <button class="btn btn-sec" id="toggleDomainBtn">Bu Siteyi Hariç Tut</button>
+  <button class="btn btn-green" id="openIdmBtn">Internet Download Manager'ı Aç</button>
+
+  <div class="hint">
+    İpucu: Tıklarken <b>Alt</b> tuşuna basılı tutarsanız IDM atlanır,<br/><b>Insert</b> tuşuyla zorla yakalanır.
+  </div>
+
+  <div style="margin-top:10px;padding-top:8px;border-top:1px solid #1e293b;text-align:center;font-size:10.5px;color:#94a3b8;line-height:1.45;">
+    Bu araç <b style="color:#38bdf8;">BELGESELSEMO</b> tarafından <b style="color:#4ade80;">ARENA.AI</b> &amp; <b style="color:#a78bfa;">Z.AI</b> sayesinde yapılmıştır<br/>
+    <a href="https://belgeselsemo.com.tr" target="_blank" rel="noopener noreferrer" style="color:#38bdf8;text-decoration:none;font-weight:600;">belgeselsemo.com.tr ↗</a>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
