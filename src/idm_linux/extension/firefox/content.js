@@ -1581,7 +1581,9 @@
       } else if (probeMeta.ytdlpUpdating) {
         msg = "⏳ Video motoru (yt-dlp) güncelleniyor… 1-2 dakika içinde 'Yenile'ye basın.";
       } else if (probeMeta.ytdlpMissing) {
-        msg = "Video motoru (yt-dlp) kurulu değil: Panel → 'Eksik Araçları Kur' veya `pip install -U yt-dlp`.";
+        // v3.14.1: motor KÖPRÜ AÇILIŞINDA otomatik kurulur; kurulum 1-2 dk sürebilir.
+        // Deneme sayısı 6->40 (40 x 30 sn = 20 dk tavan) — kurulum biter bitmez bar dolarsın.
+        msg = "Video motoru (yt-dlp) arka planda otomatik kuruluyor… Bu işlem 1-2 dakika sürebilir; liste kendiliğinden dolacak.";
       } else {
         msg = "İndirilebilir akış bulunamadı — ↻ Yenile ile tekrar tarayın (sayfa oynatıcıyı henüz açmamış olabilir).";
       }
@@ -1594,9 +1596,9 @@
         // ayrıca kısa arayla yoklarız (3 sn — YouTube ilk açılış bekleme süresi bitti)
         emptyAutoRetries += 1;
         setTimeout(() => { loadFormatsIntoMenu(true).catch(() => {}); }, 3000);
-      } else if ((probeMeta.ytdlpUpdating || probeMeta.ytdlpMissing) && emptyAutoRetries < 6) {
+      } else if ((probeMeta.ytdlpUpdating || probeMeta.ytdlpMissing) && emptyAutoRetries < 40) {
         emptyAutoRetries += 1;
-        setTimeout(() => { loadFormatsIntoMenu(true).catch(() => {}); }, 30000);
+        setTimeout(() => { loadFormatsIntoMenu(true).catch(() => {}); }, probeMeta.ytdlpMissing ? 10000 : 30000);
       } else if (capturedNetworkCount > 0 && emptyAutoRetries < 5) {
         // v3.0.0: yakalanan akış VAR ama probe boş döndü -> kısa arayla otomatik yeniden dene
         emptyAutoRetries += 1;

@@ -388,10 +388,16 @@ def launch_control_panel(initial_page: str = "overview", project_root: Optional[
 
             def _open_belgeselsemo(_event: Any = None) -> None:
                 url = "https://belgeselsemo.com.tr"
-                if shutil.which("xdg-open"):
-                    subprocess.Popen(["xdg-open", url], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                else:
-                    webbrowser.open(url)
+                # v3.14.1: sandbox-engelli ortamlarda --no-sandbox ile aç (kalıcı hafıza)
+                try:
+                    from .sandbox import open_url as _sb_open
+
+                    _sb_open(url)
+                except Exception:
+                    if shutil.which("xdg-open"):
+                        subprocess.Popen(["xdg-open", url], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    else:
+                        webbrowser.open(url)
 
             # Alt İmza Kartı: İçerik alanındaki YÖNTEM / üst Hero kartlarıyla BİREBİR AYNI sol-sağ hizasında (padx=22) ve kart stilinde!
             CREDIT_BG = "#101b33"

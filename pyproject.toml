@@ -21,4 +21,22 @@ idm-native-host = "idm_linux.native_host:run_native_messaging_loop"
 where = ["src"]
 
 [tool.setuptools.package-data]
-idm_linux = ["assets/*.png", "language/*.txt"]
+# Yeni depo düzeni: tüm uygulama verileri idm_linux paketi içindedir.
+idm_linux = [
+  "assets/*.png",
+  "language/*.txt",
+  "bin/*",
+  "docs/*.md",
+  "IDM-Linux-Kurulum.desktop",
+  "install.sh",
+  "extension/*.js",
+  "extension/*.html",
+  "extension/*.json",
+  "extension/*.crx",
+  "extension/*.zip",
+  "extension/*.xpi",
+  "extension/chromium/*",
+  "extension/chromium/icons/*",
+  "extension/firefox/*",
+  "extension/firefox/icons/*",
+]

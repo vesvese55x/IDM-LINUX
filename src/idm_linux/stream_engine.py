@@ -2568,7 +2568,9 @@ def _ytdlp_upgrade_window_open() -> bool:
 # birlikte güncellenir; ZORLANMIŞ client listesi (default,tv,mweb) kırılgandır.
 # 1. deneme: yt-dlp YEREL VARSAYILANLARI (bakımcıların güncel tuttuğu set)
 # 2. deneme: PO-token gerektirmeyen yedek istemciler (tv_simply/tv/web_safari/mweb)
-YT_FALLBACK_EXTRACTOR_ARGS = "youtube:player_client=tv_simply,tv,web_safari,mweb"
+# v3.14.1: android_vr EKLENDİ — giriş gerektirmeyen, PO-token istemeyen VR istemcisi;
+# oturum açılmamış ortamlarda (kanka labı) 1080p'ye kadar kaynak garantisi verir.
+YT_FALLBACK_EXTRACTOR_ARGS = "youtube:player_client=tv_simply,tv,web_safari,mweb,android_vr"
 # v3.4.0: PROBE için hız önceliği — tv + web_safari istemcileri POT (proof-of-origin)
 # beklemeksizin yanıt verir; web_safari ayrıca 1080p'ye kadar sınırsız formattır.
 YT_FAST_EXTRACTOR_ARGS = "youtube:player_client=tv,web_safari"

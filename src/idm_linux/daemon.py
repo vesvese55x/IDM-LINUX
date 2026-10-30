@@ -3184,6 +3184,17 @@ def _run_daemon_foreground_inner() -> int:
     set_probe_done_notifier(lambda payload: _ws_broadcast(payload))
     logger.info("Hibrit Köprü HTTP/Stream API aktif: http://127.0.0.1:%s", state.cfg.http_port)
 
+    # v3.14.1 YOUTUBE İYİLEŞTİRMESİ: yt-dlp kurulum/güncelleme işini İLK probe'a değil
+    # köprü açılışına taşı. Kullanıcı lab ortamında 'yt-dlp=✗' idi ve YouTube barı
+    # 'kaynak bulunamadı' diyordu — kök neden buydu. Artık köprü kalkar kalkmaz motor
+    # arka planda kurulur/güncellenir; kullanıcı video açtığında hazırdır.
+    try:
+        from .stream_engine import ensure_ytdlp_background, find_ytdlp, ytdlp_update_due
+
+        ensure_ytdlp_background(upgrade=bool(find_ytdlp() and ytdlp_update_due()))
+    except Exception:
+        pass
+
     # v3.2.2: policy force-install portunu her açılışta tazele (port değişse bile canlı kurulum çalışır)
     try:
         threading.Thread(

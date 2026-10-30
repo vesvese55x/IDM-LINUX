@@ -1,6 +1,6 @@
 # Maintainer: BELGESELSEMO <vesvese55x@users.noreply.github.com>
-# Bu PKGBUILD, repo kökünde çalışacak şekilde tasarlandı: makepkg dosyasının
-# bulunduğu packaging/arch/ dizininde çalıştırın (CI da böyle yapar).
+# PKGBUILD — YENİ DEPO DÜZENİ: tüm uygulama ağacı src/idm_linux altındadır;
+# bu dosya src/idm_linux/packaging/arch/ dizininde durur (CI ve makepkg burada çalıştırır).
 pkgname=idm-linux
 pkgver=1.0.0
 pkgrel=1
@@ -9,51 +9,43 @@ arch=('any')
 url="https://github.com/vesvese55x/IDM-LINUX"
 license=('custom')
 depends=('wine' 'python' 'tk')
-optdepends=('xdg-utils: masaüstü entegrasyonu')
+optdepends=('yt-dlp: YouTube/video kaynak tespiti'
+            'ffmpeg: birleştirme ve canlı kayıt'
+            'aria2: hızlı çok parçalı indirme'
+            'xdg-utils: masaüstü entegrasyonu')
 options=('!strip' '!emptydirs')
 source=()
 md5sums=()
 
 package() {
-  local ROOT="$(cd "${startdir}/../.." && pwd)"
+  # arch/ → packaging → idm_linux → src → depo kökü (4 üst dizin)
+  local ROOT="$(cd "${startdir}/../../../.." && pwd)"
+  local APP="${ROOT}/src/idm_linux"
 
   install -d "${pkgdir}/opt/${pkgname}"
-  # Uygulama ağacını kopyala; makepkg'in kendi pkg/ ve src/ dizinleri ile
-  # sürüm kontrolü/CI klasörleri pakete girmez. Uygulamanın kendi src/ klasörü
-  # (Python paketi) bilinçli olarak DAHİLDİR.
-  tar -cf - -C "${ROOT}" \
-      --exclude=./.git \
-      --exclude=./.github \
-      --exclude=./build \
-      --exclude=./dist \
+  # Uygulama ağacı: src/idm_linux içeriği (packaging/tests/docs hariç) → /opt/idm-linux/src/idm_linux
+  tar -cf - -C "${APP}" \
+      --exclude=./__pycache__ \
+      --exclude=./p2p/__pycache__ \
+      --exclude='*.pyc' \
       --exclude=./tests \
       --exclude=./docs \
-      --exclude=./packaging/arch/pkg \
-      --exclude=./packaging/arch/src \
-      . | tar -xf - -C "${pkgdir}/opt/${pkgname}"
+      --exclude=./packaging \
+      . | tar -xf - -C "${pkgdir}/opt/${pkgname}/src/idm_linux"
 
-  rm -rf "${pkgdir}/opt/${pkgname}/.git" \
-         "${pkgdir}/opt/${pkgname}/.github" \
-         "${pkgdir}/opt/${pkgname}/packaging" \
-         "${pkgdir}/opt/${pkgname}/build" \
-         "${pkgdir}/opt/${pkgname}/dist" \
-         "${pkgdir}/opt/${pkgname}/tests" \
-         "${pkgdir}/opt/${pkgname}/docs"
-  rm -f  "${pkgdir}/opt/${pkgname}/.gitignore"
-
-  install -Dm0755 "${ROOT}/packaging/launcher.sh" "${pkgdir}/usr/bin/${pkgname}"
+  install -Dm0755 "${APP}/packaging/launcher.sh" "${pkgdir}/usr/bin/${pkgname}"
   # Büyük/küçük harf kolaylığı
   ln -sf "/usr/bin/${pkgname}" "${pkgdir}/usr/bin/IDM-LINUX"
   ln -sf "/usr/bin/${pkgname}" "${pkgdir}/usr/bin/IDM-Linux"
-  install -Dm0644 "${ROOT}/packaging/idm-linux.desktop" "${pkgdir}/usr/share/applications/${pkgname}.desktop"
+  install -Dm0644 "${APP}/packaging/idm-linux.desktop" "${pkgdir}/usr/share/applications/${pkgname}.desktop"
   install -Dm0644 "${ROOT}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
 
   local _icon=""
-  for c in icons/idm-linux.png icons/icon.png icon.png idm-linux.png; do
-    if [ -f "${ROOT}/${c}" ]; then _icon="${ROOT}/${c}"; break; fi
+  for c in "${APP}/assets/idm-linux-icon.png" "icons/idm-linux.png" "icons/icon.png" "icon.png" "idm-linux.png"; do
+    if [ -f "${APP}/${c}" ]; then _icon="${APP}/${c}"; break; fi
   done
   if [ -z "${_icon}" ]; then
-    python3 "${ROOT}/packaging/icon_gen.py" "${srcdir}/idm-linux.png"
+    python3 "${APP}/packaging/icon_gen.py" "${srcdir}/idm-linux.png"
     _icon="${srcdir}/idm-linux.png"
   fi
   install -Dm0644 "${_icon}" "${pkgdir}/usr/share/icons/hicolor/256x256/apps/${pkgname}.png"

@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="assets/idm-linux-icon.png" width="128" alt="IDM LINUX uygulama simgesi" />
+  <img src="src/idm_linux/assets/idm-linux-icon.png" width="128" alt="IDM LINUX uygulama simgesi" />
 
 # 🚀 IDM LINUX (BELGESELSEMO)
 
@@ -133,7 +133,7 @@ Torrent hızı, tracker/peer durumuna bağlıdır. Motor DHT ile peer keşfi yap
 Dosya barındırma siteleri zaman zaman API/CDN tarafını değiştirir. Sistem Doktoru'ndaki ilgili çözümleyici kayıtlarını kontrol et; sorun sürüyorsa güncel çözümleyici için depoda hata (issue) aç.
 
 **Paketleri nasıl derlerim?**
-`packaging/` klasöründeki betiklerle kendi makinenizde derleyebilirsin: `appimage/build.sh`, `deb/build.sh`, `rpm/build.sh`, Arch için `arch/PKGBUILD` (`makepkg -f`). Ayrıntılar için [`RELEASING.md`](RELEASING.md).
+`src/idm_linux/packaging/` klasöründeki betiklerle kendi makinenizde derleyebilirsin: `appimage/build.sh`, `deb/build.sh`, `rpm/build.sh`, Arch için `arch/PKGBUILD` (veya CI'daki gibi `arch/build_zst.sh`). Ayrıntılar için [`RELEASING.md`](src/idm_linux/docs/RELEASING.md).
 
 ### 🩺 Sorun Giderme
 
@@ -145,7 +145,7 @@ Dosya barındırma siteleri zaman zaman API/CDN tarafını değiştirir. Sistem 
 ### 🛠️ Sürüm Akışı
 
 - **v1.0.0** paketleri, *"IDM-LINUX-1.0.0 Building (İnşa Ediliyor)"* iş akışının nihai çalıştırmasıyla derlendi ve doğrudan [Release](https://github.com/vesvese55x/IDM-LINUX/releases/tag/v1.0.0)'e eklendi; geçici iş akışları kaldırıldı, Actions geçmişinde yalnızca bu nihai çalıştırma korunur.
-- Yeni bir sürüm çıkarırken paketleri `packaging/` betikleriyle kendi makinen derleyip yeni etikete (örn. `v1.0.1`) elle ekleyebilirsin — adımlar için [`RELEASING.md`](RELEASING.md).
+- Yeni bir sürüm çıkarırken paketleri `src/idm_linux/packaging/` betikleriyle kendi makinen derleyip yeni etikete (örn. `v1.0.1`) elle ekleyebilirsin — adımlar için [`RELEASING.md`](src/idm_linux/docs/RELEASING.md).
 
 ### 📜 Sürüm Geçmişi
 
@@ -270,7 +270,7 @@ Torrent speed depends on tracker/peer availability. The engine discovers peers v
 File hosting sites change their API/CDN from time to time. Check the resolver entries in the System Doctor; if the problem persists, open an issue for the updated resolver.
 
 **How do I build the packages?**
-Build them on your own machine with the scripts under `packaging/`: `appimage/build.sh`, `deb/build.sh`, `rpm/build.sh`, and `arch/PKGBUILD` (`makepkg -f`) for Arch. See [`RELEASING.md`](RELEASING.md) for details.
+Build them on your own machine with the scripts under `src/idm_linux/packaging/`: `appimage/build.sh`, `deb/build.sh`, `rpm/build.sh`, and `arch/PKGBUILD` (or `arch/build_zst.sh` as CI does) for Arch. See [`RELEASING.md`](src/idm_linux/docs/RELEASING.md) for details.
 
 ### 🩺 Troubleshooting
 
@@ -282,7 +282,7 @@ Build them on your own machine with the scripts under `packaging/`: `appimage/bu
 ### 🛠️ Release Flow
 
 - The **v1.0.0** packages were built by the single final run of the *"IDM-LINUX-1.0.0 Building (İnşa Ediliyor)"* workflow and attached directly to the [Release](https://github.com/vesvese55x/IDM-LINUX/releases/tag/v1.0.0); temporary workflows were removed and only this final run is kept in the Actions history.
-- For a new release, build the packages with the `packaging/` scripts on your own machine and attach them to a fresh tag (e.g. `v1.0.1`) — see [`RELEASING.md`](RELEASING.md) for the steps.
+- For a new release, build the packages with the `src/idm_linux/packaging/` scripts on your own machine and attach them to a fresh tag (e.g. `v1.0.1`) — see [`RELEASING.md`](src/idm_linux/docs/RELEASING.md) for the steps.
 
 ### 📜 Changelog
 
@@ -407,7 +407,7 @@ sudo pacman -U idm-linux-1.0.0-1-any.pkg.tar.zst
 Файлообменники периодически меняют API/CDN. Проверьте записи решателя в Системном докторе; если проблема остаётся — откройте issue в репозитории.
 
 **Как собрать пакеты самому?**
-Соберите их на своей машине скриптами из `packaging/`: `appimage/build.sh`, `deb/build.sh`, `rpm/build.sh`, для Arch — `arch/PKGBUILD` (`makepkg -f`). Подробности — в [`RELEASING.md`](RELEASING.md).
+Соберите их на своей машине скриптами из `src/idm_linux/packaging/`: `appimage/build.sh`, `deb/build.sh`, `rpm/build.sh`, для Arch — `arch/PKGBUILD` (или `arch/build_zst.sh`, как в CI). Подробности — в [`RELEASING.md`](src/idm_linux/docs/RELEASING.md).
 
 ### 🩺 Устранение неполадок
 
@@ -419,7 +419,7 @@ sudo pacman -U idm-linux-1.0.0-1-any.pkg.tar.zst
 ### 🛠️ Процесс релизов
 
 - Пакеты **v1.0.0** собраны единственным финальным запуском workflow *«IDM-LINUX-1.0.0 Building (İnşa Ediliyor)»* и приложены прямо к [Release](https://github.com/vesvese55x/IDM-LINUX/releases/tag/v1.0.0); временные workflow удалены, в истории Actions остался только этот финальный запуск.
-- Для нового релиза соберите пакеты скриптами `packaging/` на своей машине и приложите их к новой метке (например `v1.0.1`) — шаги в [`RELEASING.md`](RELEASING.md).
+- Для нового релиза соберите пакеты скриптами `src/idm_linux/packaging/` на своей машине и приложите их к новой метке (например `v1.0.1`) — шаги в [`RELEASING.md`](src/idm_linux/docs/RELEASING.md).
 
 ### 📜 История версий
 
@@ -544,7 +544,7 @@ sudo pacman -U idm-linux-1.0.0-1-any.pkg.tar.zst
 文件托管站会不定期调整 API/CDN。查看系统医生中的解析器日志；仍未解决请在仓库提交 issue。
 
 **如何自行构建软件包？**
-使用 `packaging/` 下的脚本在本机构建：`appimage/build.sh`、`deb/build.sh`、`rpm/build.sh`，Arch 用 `arch/PKGBUILD`（`makepkg -f`）。详见 [`RELEASING.md`](RELEASING.md)。
+使用 `src/idm_linux/packaging/` 下的脚本在本机构建：`appimage/build.sh`、`deb/build.sh`、`rpm/build.sh`，Arch 用 `arch/PKGBUILD`（或 CI 中的 `arch/build_zst.sh`）。详见 [`RELEASING.md`](src/idm_linux/docs/RELEASING.md)。
 
 ### 🩺 故障排除
 
@@ -556,7 +556,7 @@ sudo pacman -U idm-linux-1.0.0-1-any.pkg.tar.zst
 ### 🛠️ 发布流程
 
 - **v1.0.0** 的软件包由 *「IDM-LINUX-1.0.0 Building (İnşa Ediliyor)」* 工作流的唯一最终运行构建，并直接附加到 [Release](https://github.com/vesvese55x/IDM-LINUX/releases/tag/v1.0.0)；临时工作流已移除，Actions 历史中仅保留该最终运行。
-- 发布新版本时，用 `packaging/` 脚本在本机构建软件包，再附加到新标签（如 `v1.0.1`）— 步骤见 [`RELEASING.md`](RELEASING.md)。
+- 发布新版本时，用 `src/idm_linux/packaging/` 脚本在本机构建软件包，再附加到新标签（如 `v1.0.1`）— 步骤见 [`RELEASING.md`](src/idm_linux/docs/RELEASING.md)。
 
 ### 📜 更新日志
 

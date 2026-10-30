@@ -54,13 +54,13 @@ git push -u origin main
 
 ```bash
 # AppImage
-bash packaging/appimage/build.sh
+bash src/idm_linux/packaging/appimage/build.sh
 # DEB
-bash packaging/deb/build.sh
+bash src/idm_linux/packaging/deb/build.sh
 # RPM
-bash packaging/rpm/build.sh
+bash src/idm_linux/packaging/rpm/build.sh
 # Arch (zst) — makepkg gerektirir
-cd packaging/arch && makepkg -f --nodeps && mv *.pkg.tar.zst ../../
+bash src/idm_linux/packaging/arch/build_zst.sh
 ```
 
 - Ardından **Releases → Draft a new release** ile yeni etiketi (örn. `v1.0.1`) oluştur, derlenen 4 paketi sürükle-bırak ekle ve publish et.
@@ -70,8 +70,8 @@ cd packaging/arch && makepkg -f --nodeps && mv *.pkg.tar.zst ../../
 ## 4) Sürüm Numaraları
 
 - Uygulama **ve** tarayıcı eklentisi sürüm numaraları **1.0.0** olarak ayarlanır.
-- `packaging/vars.sh` içindeki `VERSION="1.0.0"` değeri, paket dosya adlarını (örn. `idm-linux_1.0.0_all.deb`) besler.
-- Yeni sürümde: kod (`src/idm_linux/__init__.py`, `pyproject.toml`, eklenti manifest'leri) + `packaging/vars.sh` içindeki `VERSION` değerini güncelle, paketleri derleyip `vX.Y.Z` etiketiyle yeni release'e ekle.
+- `src/idm_linux/packaging/vars.sh` içindeki `VERSION="1.0.0"` değeri, paket dosya adlarını (örn. `idm-linux_1.0.0_all.deb`) besler.
+- Yeni sürümde: kod (`src/idm_linux/__init__.py`, `pyproject.toml`, eklenti manifest'leri) + `src/idm_linux/packaging/vars.sh` içindeki `VERSION` değerini güncelle, paketleri derleyip `vX.Y.Z` etiketiyle yeni release'e ekle.
 
 ---
 

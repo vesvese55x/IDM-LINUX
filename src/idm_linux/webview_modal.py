@@ -611,6 +611,14 @@ def open_standalone_iframe_window(
         browsers = _discover_window_browsers()
         for bin_path, fam in browsers:
             if fam == "chromium":
+                # v3.14.1 SANDBOX UYUMLULUĞU: root/kapsayıcı/userns kapalı ortamlarda
+                # (veya araç daha önce engele takıldıysa — kalıcı hafıza) --no-sandbox ile aç
+                try:
+                    from .sandbox import sandbox_launch_args
+
+                    compat_args = sandbox_launch_args(bin_path)
+                except Exception:
+                    compat_args = []
                 # --app=<url> mevcut açık Brave/Chrome oturumuyla bile sekme açmadan yeni bağımsız uygulama penceresi açar!
                 cmd = [
                     bin_path,
@@ -623,6 +631,7 @@ def open_standalone_iframe_window(
                     cmd.append("--ozone-platform=x11")
             else:
                 # Firefox/Zen/LibreWolf: --no-remote KULLANMADAN --new-window ile yeni pencerede açar!
+                compat_args = []
                 env = dict(os.environ)
                 if os.environ.get("WAYLAND_DISPLAY"):
                     env["MOZ_ENABLE_WAYLAND"] = "0"  # v2.8.6: X11'de aç -> --width/--height geçerli
@@ -634,8 +643,35 @@ def open_standalone_iframe_window(
                     local_url,
                 ]
                 threading.Thread(target=_best_effort_resize, args=(width, height), daemon=True).start()
-            if _spawn_and_check_alive(cmd, env=env if fam != "chromium" else None):
+            if _spawn_and_check_alive(cmd + compat_args, env=env if fam != "chromium" else None):
                 return
+            # v3.14.1: bayraksız başlatma öldüyse ve sandbox imzası varsa — aracı
+            # KALICI işaretle ve --no-sandbox ile bir kez daha dene (kökten çözüm)
+            if fam == "chromium" and not compat_args:
+                try:
+                    from .sandbox import looks_like_sandbox_error, remember_no_sandbox
+
+                    diag = subprocess.Popen(
+                        cmd,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.PIPE,
+                        start_new_session=True,
+                    )
+                    time.sleep(0.9)
+                    if diag.poll() is None:
+                        return  # bu deneme canlı kaldı — pencere açıldı, sandbox sorunu yok
+                    err_txt = ""
+                    try:
+                        err_txt = (diag.stderr.read() or b"").decode("utf-8", "ignore")
+                    except Exception:
+                        pass
+                    if looks_like_sandbox_error(err_txt):
+                        remember_no_sandbox(bin_path, reason=err_txt.strip()[:180])
+                        compat_args = ["--no-sandbox"]
+                        if _spawn_and_check_alive(cmd + compat_args):
+                            return
+                except Exception:
+                    pass
 
         # Son çare: xdg-open ile yerel iframe kabuğunu aç
         xdg = shutil.which("xdg-open")

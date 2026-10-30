@@ -59,10 +59,18 @@ def _load_real_idm_icon_photo(tk_mod: Any, cfg: Any, img_refs: List[Any]) -> Opt
 
 
 def open_external_url(url: str) -> None:
-    if shutil.which("xdg-open"):
-        subprocess.Popen(["xdg-open", url], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    else:
-        webbrowser.open(url)
+    # v3.14.1: sandbox-engelli ortamlarda (root/kapsayıcı/userns kapalı) tarayıcı
+    # --no-sandbox bayrağıyla açılır; engel bir kez görüldüyse KALICI hafızadan
+    # daima uygulanır (bkz. idm_linux.sandbox).
+    try:
+        from .sandbox import open_url
+
+        open_url(url)
+    except Exception:
+        if shutil.which("xdg-open"):
+            subprocess.Popen(["xdg-open", url], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        else:
+            webbrowser.open(url)
 
 
 def load_window_icons(tk_mod: Any) -> List[Any]:

@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 # RPM derleme (Fedora/openSUSE vb., noarch). Çıktı: dist/idm-linux-<sürüm>-1.noarch.rpm
+# Yeni depo düzeni: betik src/idm_linux/packaging/rpm/ altındadır; kök üç üst dizin.
 set -euo pipefail
-cd "$(dirname "$0")/../.."
-source packaging/vars.sh
+cd "$(dirname "$0")/../../.."
+source src/idm_linux/packaging/vars.sh
 command -v rpmbuild >/dev/null 2>&1 || { sudo apt-get update -qq && sudo apt-get install -y -qq rpm; }
 
 # Kaynak kontrolü: uygulama giriş noktası yoksa anlamlı hata ver
 SRC_ENTRY=""
-for c in idm-linux.sh run.sh start.sh idm-linux bin/idm-linux main.py app.py idm_linux.py gui.py; do
+for c in src/idm_linux/bin/idm-linux bin/idm-linux idm-linux.sh run.sh start.sh idm-linux main.py app.py idm_linux.py gui.py; do
   if [ -f "$c" ] || [ -x "$c" ]; then SRC_ENTRY="$c"; break; fi
 done
 if [ -z "$SRC_ENTRY" ]; then
-  echo "HATA: Uygulama kaynak ağacı bulunamadı (main.py/app.py/idm_linux.py/gui.py/idm-linux.sh...)." >&2
-  echo "       Kaynak ağacı repo köküne koyup tekrar deneyin." >&2
+  echo "HATA: Uygulama kaynak ağacı bulunamadı (src/idm_linux/bin/idm-linux ...)" >&2
   exit 1
 fi
 echo "Kaynak bulundu: $SRC_ENTRY"
@@ -21,13 +21,16 @@ TOP="build/rpmbuild"
 rm -rf build/rpmbuild
 mkdir -p "$TOP/BUILD" "$TOP/RPMS" "$TOP/SOURCES" "$TOP/SPECS" "$TOP/SRPMS" dist
 
-# Kaynak ağacını paketle
+# Kaynak ağacını paketle (yeni düzen: her şey src/idm_linux altında)
 tar -czf "$TOP/SOURCES/${APP_ID}.tar.gz" \
-  --exclude=./.git --exclude=./.github --exclude=./build --exclude=./dist --exclude=./tests --exclude=./docs .
+  --exclude=./.git --exclude=./.github --exclude=./build --exclude=./dist \
+  --exclude='__pycache__' --exclude='*.pyc' \
+  --exclude=./src/idm_linux/tests --exclude=./src/idm_linux/docs --exclude=./src/idm_linux/packaging \
+  .
 
 # İkon
 ICON=""
-for c in icons/idm-linux.png icons/icon.png icon.png idm-linux.png; do
+for c in src/idm_linux/assets/idm-linux-icon.png icons/idm-linux.png icons/icon.png icon.png idm-linux.png; do
   if [ -f "$c" ]; then ICON="$c"; break; fi
 done
 if [ -z "$ICON" ]; then
@@ -64,12 +67,12 @@ Kurulum & Kontrol Merkezi (GUI sihirbazi) baslar. (BELGESELSEMO)
 %install
 mkdir -p %{buildroot}/opt/%{name}
 cp -a %{_builddir}/%{name}-%{version}/. %{buildroot}/opt/%{name}/
-install -Dm0755 %{buildroot}/opt/%{name}/packaging/launcher.sh %{buildroot}/usr/bin/%{name}
+install -Dm0755 %{buildroot}/opt/%{name}/src/idm_linux/packaging/launcher.sh %{buildroot}/usr/bin/%{name}
 ln -sf %{name} %{buildroot}/usr/bin/IDM-LINUX
 ln -sf %{name} %{buildroot}/usr/bin/IDM-Linux
-install -Dm0644 %{buildroot}/opt/%{name}/packaging/idm-linux.desktop %{buildroot}/usr/share/applications/%{name}.desktop
+install -Dm0644 %{buildroot}/opt/%{name}/src/idm_linux/packaging/idm-linux.desktop %{buildroot}/usr/share/applications/%{name}.desktop
 install -Dm0644 %{SOURCE1} %{buildroot}/usr/share/icons/hicolor/256x256/apps/%{name}.png
-rm -rf %{buildroot}/opt/%{name}/packaging
+rm -rf %{buildroot}/opt/%{name}/src/idm_linux/packaging %{buildroot}/opt/%{name}/packaging
 rm -f  %{buildroot}/opt/%{name}/.gitignore
 
 %post
