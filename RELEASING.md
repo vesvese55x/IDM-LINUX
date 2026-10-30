@@ -48,34 +48,38 @@ git push -u origin main
 
 ## 3) CI & Sürüm Akışı
 
-- **Her push / PR:** `.github/workflows/build.yml` çalışır → AppImage, deb, rpm, zst derlenir → **Actions → (run) → Artifacts** (30 gün saklanır). Bu paketler release'e **eklenmez**.
-- **Sürüm yayınlamak istediğinde** (örn. 1.0.0):
+- **v1.0.0** paketleri, *"IDM-LINUX-1.0.0 Building (İnşa Ediliyor)"* iş akışının **nihai çalıştırmasıyla** derlendi ve doğrudan GitHub Release'e eklendi.
+- Geçici iş akışları (build/tests) kaldırıldı; Actions geçmişinde yalnızca bu nihai çalıştırma korunur.
+- **Yeni sürüm (örn. 1.0.1) çıkarken** paketleri kendi makinen derleyip release'e elle ekleyebilirsin:
 
 ```bash
-git tag v1.0.0
-git push origin v1.0.0
+# AppImage
+bash packaging/appimage/build.sh
+# DEB
+bash packaging/deb/build.sh
+# RPM
+bash packaging/rpm/build.sh
+# Arch (zst) — makepkg gerektirir
+cd packaging/arch && makepkg -f --nodeps && mv *.pkg.tar.zst ../../
 ```
 
-- Etiket pushlanınca 4 paket otomatik olarak **taslak (draft) GitHub Release**'e eklenir.
-- Yayın kararı sende: **Releases → v1.0.0 (draft) → düzenle → Publish release**.
-- "Buildleri ben söylersem release'e ekleyelim" isteğin için akış tam olarak budur: etiketi ne zaman pushlarsak paketler o an release'e düşer, sen de publish edersin.
+- Ardından **Releases → Draft a new release** ile yeni etiketi (örn. `v1.0.1`) oluştur, derlenen 4 paketi sürükle-bırak ekle ve publish et.
 
 ---
 
 ## 4) Sürüm Numaraları
 
 - Uygulama **ve** tarayıcı eklentisi sürüm numaraları **1.0.0** olarak ayarlanır.
-- Workflow dosyasındaki `VERSION: "1.0.0"` değeri, paket dosya adlarını (örn. `idm-linux_1.0.0_all.deb`) ve release etiketini besler.
-- Yeni sürümde: kodda + workflow'daki `VERSION` değerini güncelle, `vX.Y.Z` etiketi pushla.
+- `packaging/vars.sh` içindeki `VERSION="1.0.0"` değeri, paket dosya adlarını (örn. `idm-linux_1.0.0_all.deb`) besler.
+- Yeni sürümde: kod (`src/idm_linux/__init__.py`, `pyproject.toml`, eklenti manifest'leri) + `packaging/vars.sh` içindeki `VERSION` değerini güncelle, paketleri derleyip `vX.Y.Z` etiketiyle yeni release'e ekle.
 
 ---
 
-## 5) Kontrol Listesi (ilk yayın)
+## 5) Kontrol Listesi (v1.0.0 — tamamlandı ✅)
 
-- [ ] Boş repo oluşturuldu (README/gitignore/license seçilmeden)
-- [ ] Kaynak zip birleştirildi, sürüm numaraları 1.0.0 yapıldı
-- [ ] `git push -u origin main` tamam
-- [ ] Actions sekmesinde "Build & Release" yeşil ✔
-- [ ] Artifacts altında 4 paket görünüyor
-- [ ] `v1.0.0` etiketi pushlandı → taslak release oluştu
-- [ ] Release Publish edildi 🎉
+- [x] Repo oluşturuldu; kaynak birleştirildi, sürüm numaraları 1.0.0 yapıldı
+- [x] `git push -u origin main` tamam
+- [x] `v1.0.0` etiketi pushlandı → *"IDM-LINUX-1.0.0 Building (İnşa Ediliyor)"* çalıştı
+- [x] 4 paket release'e eklendi (AppImage / deb / rpm / zst) ve yayından önce doğrulandı
+- [x] Release **v1.0.0** yayınlandı 🎉
+- [x] Geçici iş akışları ve eski run'lar temizlendi; Actions'ta yalnızca nihai çalıştırma kaldı
