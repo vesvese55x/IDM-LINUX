@@ -47,13 +47,14 @@ License:        Proprietary — see LICENSE
 URL:            ${HOMEPAGE}
 Source0:        ${APP_ID}.tar.gz
 Source1:        ${APP_ID}.png
-Requires:       wine, python3
+Requires:       wine, python3, python3-tkinter
 
 %description
 IDM LINUX, Internet Download Manager'in tum gucunu Linux'a tasiyan
-entegrasyon katmanidir: tarayici entegrasyonu, gofile destegi, gomulu
-torrent motoru (DHT), canli yayin/DVR kaydi, deneme suresi sifirlama ve
-Sistem Doktoru teshis paneli. (BELGESELSEMO)
+entegrasyon katmanidir: tarayici entegrasyonu, dosya barindirma sitesi
+destegi, gomulu torrent motoru (DHT), canli yayin/DVR kaydi, deneme
+suresi sifirlama ve Sistem Doktoru teshis paneli. Menuden ilk acilista
+Kurulum & Kontrol Merkezi (GUI sihirbazi) baslar. (BELGESELSEMO)
 
 %prep
 %setup -q -c
@@ -64,14 +65,25 @@ Sistem Doktoru teshis paneli. (BELGESELSEMO)
 mkdir -p %{buildroot}/opt/%{name}
 cp -a %{_builddir}/%{name}-%{version}/. %{buildroot}/opt/%{name}/
 install -Dm0755 %{buildroot}/opt/%{name}/packaging/launcher.sh %{buildroot}/usr/bin/%{name}
+ln -sf %{name} %{buildroot}/usr/bin/IDM-LINUX
+ln -sf %{name} %{buildroot}/usr/bin/IDM-Linux
 install -Dm0644 %{buildroot}/opt/%{name}/packaging/idm-linux.desktop %{buildroot}/usr/share/applications/%{name}.desktop
 install -Dm0644 %{SOURCE1} %{buildroot}/usr/share/icons/hicolor/256x256/apps/%{name}.png
 rm -rf %{buildroot}/opt/%{name}/packaging
 rm -f  %{buildroot}/opt/%{name}/.gitignore
 
+%post
+echo ""
+echo "  IDM LINUX kuruldu (BELGESELSEMO) — Menüden 'IDM LINUX' girdisini açın:"
+echo "  Kurulum & Kontrol Merkezi (GUI sihirbazı) IDM'yi Wine'a kurar, tarayıcı"
+echo "  CRX3/Native Messaging kaydını ve eksik araçları tamamlar."
+echo ""
+
 %files
 /opt/%{name}
 /usr/bin/%{name}
+/usr/bin/IDM-LINUX
+/usr/bin/IDM-Linux
 /usr/share/applications/%{name}.desktop
 /usr/share/icons/hicolor/256x256/apps/%{name}.png
 %doc LICENSE

@@ -95,6 +95,8 @@ sudo pacman -U idm-linux-1.0.0-1-any.pkg.tar.zst
 ```
 
 > Paketler uygulama dosyalarını `/opt/idm-linux` altına kurar; `idm-linux` komutunu, uygulama menüsü girdisini ve ikonu sisteme kaydeder. Çalıştırılmadan önce sistemde **wine** ve **python3** bulunmalıdır (paket yöneticisi bağımlılıkları otomatik çeker).
+>
+> 🧙 **İlk açılış sihirbazı:** Paketi kurduktan sonra menüden **IDM LINUX** girdisini aç — **Kurulum & Kontrol Merkezi** (GUI sihirbazı) IDM'nin Wine'a kurulumunu, tarayıcı CRX3/Native Messaging kaydını ve eksik araçları (yt-dlp/ffmpeg/aria2c) tamamlar. Bu, `install.sh`'nin yaptığı işi paket kurulumundan sonra senin adına yürütür. Terminalden de: `idm-linux install`.
 
 ### 🚀 Hızlı Başlangıç
 
@@ -230,6 +232,8 @@ sudo pacman -U idm-linux-1.0.0-1-any.pkg.tar.zst
 ```
 
 > Packages install the app under `/opt/idm-linux`, register the `idm-linux` command, the menu entry and the icon. **wine** and **python3** must be present on the system (package managers pull the dependencies automatically).
+>
+> 🧙 **First-launch wizard:** After installing the package, open **IDM LINUX** from the app menu — the **Setup & Control Center** (GUI wizard) installs IDM into Wine, registers the browser CRX3/Native Messaging hooks and installs missing tools (yt-dlp/ffmpeg/aria2c). It performs the same job `install.sh` does, on your behalf, right after the package installation. From a terminal: `idm-linux install`.
 
 ### 🚀 Quick Start
 
@@ -365,6 +369,8 @@ sudo pacman -U idm-linux-1.0.0-1-any.pkg.tar.zst
 ```
 
 > Пакеты устанавливают приложение в `/opt/idm-linux`, регистрируют команду `idm-linux`, пункт меню и значок. Требуются **wine** и **python3** (пакетные менеджеры подтянут зависимости автоматически).
+>
+> 🧙 **Мастер первого запуска:** после установки пакета откройте **IDM LINUX** в меню приложений — **Центр установки и управления** (GUI-мастер) установит IDM в Wine, зарегистрирует CRX3/Native Messaging в браузере и доустановит недостающие инструменты (yt-dlp/ffmpeg/aria2c). Он выполняет ту же работу, что и `install.sh`, сразу после установки пакета. Из терминала: `idm-linux install`.
 
 ### 🚀 Быстрый старт
 
@@ -500,6 +506,8 @@ sudo pacman -U idm-linux-1.0.0-1-any.pkg.tar.zst
 ```
 
 > 软件包安装到 `/opt/idm-linux`，注册 `idm-linux` 命令、菜单入口和图标；需要系统已安装 **wine** 与 **python3**（包管理器会自动拉取依赖）。
+>
+> 🧙 **首启向导：** 安装软件包后，在应用菜单中打开 **IDM LINUX** — **安装与控制中心**（GUI 向导）会把 IDM 安装到 Wine、注册浏览器 CRX3/Native Messaging 并补齐缺失工具（yt-dlp/ffmpeg/aria2c）。它会在包安装完成后替你完成与 `install.sh` 相同的工作。终端方式：`idm-linux install`。
 
 ### 🚀 快速上手
 

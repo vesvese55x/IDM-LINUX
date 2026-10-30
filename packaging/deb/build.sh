@@ -27,6 +27,9 @@ tar -cf - --exclude=./.git --exclude=./.github --exclude=./build --exclude=./dis
   | tar -xf - -C "${STAGE}/opt/${APP_ID}"
 
 install -m 0755 packaging/launcher.sh "${STAGE}/usr/bin/${APP_ID}"
+# Büyük/küçük harf kolaylığı: IDM-LINUX ve IDM-Linux da çalışsın
+ln -sf "${APP_ID}" "${STAGE}/usr/bin/IDM-LINUX"
+ln -sf "${APP_ID}" "${STAGE}/usr/bin/IDM-Linux"
 install -m 0644 packaging/idm-linux.desktop "${STAGE}/usr/share/applications/${APP_ID}.desktop"
 install -m 0644 LICENSE "${STAGE}/usr/share/doc/${APP_ID}/copyright"
 rm -rf "${STAGE}/opt/${APP_ID}/packaging"
@@ -49,21 +52,33 @@ Version: ${VERSION}
 Section: net
 Priority: optional
 Architecture: all
-Depends: wine, python3
+Depends: wine, python3, python3-tk
 Recommends: xdg-utils
 Installed-Size: $(du -sk "${STAGE}/opt/${APP_ID}" | cut -f1)
 Maintainer: ${MAINTAINER}
 Homepage: ${HOMEPAGE}
 Description: IDM LINUX (BELGESELSEMO) — Internet Download Manager'ı Linux'ta tam işlevsel kullanma katmanı
- IDM'nin tüm gücünü Linux'a taşır: tarayıcı entegrasyonu, gofile desteği,
- gömülü torrent motoru (DHT), canlı yayın/DVR kaydı, deneme süresi
- sıfırlama ve Sistem Doktoru teşhis paneli.
+ IDM'nin tüm gücünü Linux'a taşır: tarayıcı entegrasyonu, dosya barındırma
+ sitesi desteği, gömülü torrent motoru (DHT), canlı yayın/DVR kaydı, deneme
+ süresi sıfırlama ve Sistem Doktoru teşhis paneli.
+ Menüden ilk açılışta Kurulum & Kontrol Merkezi (GUI sihirbazı) başlar.
 EOF
 
 cat > "${STAGE}/DEBIAN/postinst" <<'EOF'
 #!/bin/sh
 set -e
 command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database -q || true
+echo ""
+echo "  =============================================================="
+echo "   IDM LINUX kuruldu (BELGESELSEMO)"
+echo "  =============================================================="
+echo "   Sonraki adım: Uygulama menüsünden 'IDM LINUX' girdisini açın."
+echo "   Kurulum & Kontrol Merkezi (GUI sihirbazı) açılır; IDM'yi Wine"
+echo "   ortamına kurar, tarayıcı CRX3/Native Messaging kaydını ve eksik"
+echo "   araçları (yt-dlp/ffmpeg/aria2c) tamamlar."
+echo "   Terminal: idm-linux install | status | doctor | panel"
+echo "  =============================================================="
+echo ""
 exit 0
 EOF
 chmod 0755 "${STAGE}/DEBIAN/postinst"

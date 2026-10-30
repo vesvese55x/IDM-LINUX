@@ -2,10 +2,10 @@
 Type=Application
 Version=1.0
 Name=IDM LINUX
-GenericName=Download Manager
-GenericName[tr]=İndirme Yöneticisi
-Comment=Internet Download Manager Linux integration (BELGESELSEMO)
-Comment[tr]=Internet Download Manager Linux entegrasyonu (BELGESELSEMO)
+GenericName=Download Manager & Control Center
+GenericName[tr]=İndirme Yöneticisi & Kontrol Merkezi
+Comment=Internet Download Manager Linux integration — opens the setup wizard & control center (BELGESELSEMO)
+Comment[tr]=Internet Download Manager Linux entegrasyonu — Kurulum Sihirbazı ve Kontrol Merkezi'ni açar (BELGESELSEMO)
 Exec=idm-linux
 TryExec=idm-linux
 Icon=idm-linux

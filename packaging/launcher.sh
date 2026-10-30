@@ -20,6 +20,19 @@ if [ -z "$APP_HOME" ]; then
 fi
 cd "$APP_HOME"
 
+# install.sh davranışı (paket kurulumlarının ilk açılış sözü):
+# Argümansız çağrıda grafik oturum varsa "Kurulum & Kontrol Merkezi"ni (GUI
+# sihirbazı) aç — IDM'nin Wine'a kurulumu, CRX3/native messaging kaydı ve
+# eksik araçların kurulumunu sihirbaz tamamlar. Ekransız ortamda (SSH vb.)
+# durum raporunu bas. Açıkça verilen argümanlar hiç dokunulmadan iletilir.
+if [ "$#" -eq 0 ]; then
+  if [ -n "${DISPLAY:-}" ] || [ -n "${WAYLAND_DISPLAY:-}" ]; then
+    set -- install
+  else
+    set -- status
+  fi
+fi
+
 # 1) Kabuk başlatıcıları dene (kaynak ağacın bin/idm-linux girişi dahil)
 for c in idm-linux.sh run.sh start.sh idm-linux bin/idm-linux; do
   if [ -x "$c" ]; then

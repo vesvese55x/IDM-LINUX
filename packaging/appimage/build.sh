@@ -25,6 +25,8 @@ mkdir -p "$APPDIR/usr/bin" "$APPDIR/usr/share/applications" "$APPDIR/usr/share/i
 tar -cf - --exclude=./.git --exclude=./.github --exclude=./build --exclude=./dist --exclude=./tests --exclude=./docs . \
   | tar -xf - -C "$APPDIR/usr/share/idm-linux"
 install -m 0755 packaging/launcher.sh "$APPDIR/usr/bin/${APP_ID}"
+ln -sf "${APP_ID}" "$APPDIR/usr/bin/IDM-LINUX"
+ln -sf "${APP_ID}" "$APPDIR/usr/bin/IDM-Linux"
 rm -rf "$APPDIR/usr/share/idm-linux/packaging"
 
 # Masaüstü girdisi
@@ -34,8 +36,8 @@ Type=Application
 Name=${DISPLAY_NAME}
 GenericName=Download Manager
 GenericName[tr]=İndirme Yöneticisi
-Comment=Internet Download Manager Linux integration (BELGESELSEMO)
-Comment[tr]=Internet Download Manager Linux entegrasyonu (BELGESELSEMO)
+Comment=Internet Download Manager Linux integration — opens the setup wizard & control center (BELGESELSEMO)
+Comment[tr]=Internet Download Manager Linux entegrasyonu — Kurulum Sihirbazı ve Kontrol Merkezi'ni açar (BELGESELSEMO)
 Exec=${APP_ID}
 TryExec=${APP_ID}
 Icon=${APP_ID}

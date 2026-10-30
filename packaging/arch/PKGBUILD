@@ -8,7 +8,7 @@ pkgdesc="IDM LINUX (BELGESELSEMO) — Internet Download Manager'ı Linux'ta tam 
 arch=('any')
 url="https://github.com/vesvese55x/IDM-LINUX"
 license=('custom')
-depends=('wine' 'python')
+depends=('wine' 'python' 'tk')
 optdepends=('xdg-utils: masaüstü entegrasyonu')
 options=('!strip' '!emptydirs')
 source=()
@@ -42,6 +42,9 @@ package() {
   rm -f  "${pkgdir}/opt/${pkgname}/.gitignore"
 
   install -Dm0755 "${ROOT}/packaging/launcher.sh" "${pkgdir}/usr/bin/${pkgname}"
+  # Büyük/küçük harf kolaylığı
+  ln -sf "/usr/bin/${pkgname}" "${pkgdir}/usr/bin/IDM-LINUX"
+  ln -sf "/usr/bin/${pkgname}" "${pkgdir}/usr/bin/IDM-Linux"
   install -Dm0644 "${ROOT}/packaging/idm-linux.desktop" "${pkgdir}/usr/share/applications/${pkgname}.desktop"
   install -Dm0644 "${ROOT}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
 
