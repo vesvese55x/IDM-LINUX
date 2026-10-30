@@ -1,0 +1,74 @@
+name: "IDM-LINUX-1.0.0 Building (İnşa Ediliyor)"
+
+# Yeni depo düzenine göre 4'lü paket derlemesi:
+#   AppImage + deb + rpm + Arch zst → mevcut IDM-LINUX-1.0.0 (v1.0.0) release'ine
+#   AYNI dosya adlarıyla yüklenir (--clobber; sürüm numaraları DEĞİŞMEZ).
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+concurrency:
+  group: idm-linux-build
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: 4'lü Paket Derleme (AppImage/deb/rpm/zst)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Kaynak kodu al
+        uses: actions/checkout@v4
+
+      - name: Python 3.12 kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Sistem bağımlılıkları (rpm, zstd)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq rpm zstd file
+
+      - name: Test süiti (kalite kapısı — 208 test)
+        timeout-minutes: 12
+        run: |
+          export PYTHONPATH="$GITHUB_WORKSPACE/src"
+          python3 src/idm_linux/tests/test_suite.py
+
+      - name: DEB derle (gdebi-uyumlu postinst)
+        run: bash src/idm_linux/packaging/deb/build.sh
+
+      - name: RPM derle
+        run: bash src/idm_linux/packaging/rpm/build.sh
+
+      - name: AppImage derle
+        run: bash src/idm_linux/packaging/appimage/build.sh
+
+      - name: Arch zst derle (makepkg'siz)
+        run: bash src/idm_linux/packaging/arch/build_zst.sh
+
+      - name: Paketleri doğrula
+        run: |
+          ls -la dist/
+          test -f "dist/IDM-LINUX-1.0.0-x86_64.AppImage"
+          test -f "dist/idm-linux_1.0.0_all.deb"
+          test -f "dist/idm-linux-1.0.0-1.noarch.rpm"
+          test -f "dist/idm-linux-1.0.0-1-any.pkg.tar.zst"
+          echo "4/4 paket hazır ✓"
+
+      - name: IDM-LINUX-1.0.0 release'ine yükle (aynı sürüm — asset'ler tazelenir)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload v1.0.0 dist/IDM-LINUX-1.0.0-x86_64.AppImage \
+            dist/idm-linux_1.0.0_all.deb \
+            dist/idm-linux-1.0.0-1.noarch.rpm \
+            dist/idm-linux-1.0.0-1-any.pkg.tar.zst \
+            --clobber --repo "${GITHUB_REPOSITORY}"
+          echo "Release asset'leri (yeni build):"
+          gh release view v1.0.0 --repo "${GITHUB_REPOSITORY}" --json assets -q '.assets[] | .name + "  " + (.size|tostring) + " bayt"'

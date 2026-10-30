@@ -2,7 +2,7 @@
 # AppImage derleme (x86_64). Çıktı: dist/IDM-LINUX-<sürüm>-x86_64.AppImage
 # Yeni depo düzeni: betik src/idm_linux/packaging/appimage/ altındadır; kök üç üst dizin.
 set -euo pipefail
-cd "$(dirname "$0")/../../.."
+cd "$(dirname "$0")/../../../.."
 source src/idm_linux/packaging/vars.sh
 
 # Kaynak kontrolü: uygulama giriş noktası yoksa anlamlı hata ver

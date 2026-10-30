@@ -2,7 +2,7 @@
 # RPM derleme (Fedora/openSUSE vb., noarch). Çıktı: dist/idm-linux-<sürüm>-1.noarch.rpm
 # Yeni depo düzeni: betik src/idm_linux/packaging/rpm/ altındadır; kök üç üst dizin.
 set -euo pipefail
-cd "$(dirname "$0")/../../.."
+cd "$(dirname "$0")/../../../.."
 source src/idm_linux/packaging/vars.sh
 command -v rpmbuild >/dev/null 2>&1 || { sudo apt-get update -qq && sudo apt-get install -y -qq rpm; }
 

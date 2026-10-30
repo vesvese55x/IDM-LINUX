@@ -2,7 +2,7 @@
 # DEB derleme (Debian/Ubuntu). Çıktı: dist/idm-linux_<sürüm>_all.deb
 # Yeni depo düzeni: betik src/idm_linux/packaging/deb/ altındadır; kök üç üst dizin.
 set -euo pipefail
-cd "$(dirname "$0")/../../.."
+cd "$(dirname "$0")/../../../.."
 source src/idm_linux/packaging/vars.sh
 
 # Kaynak kontrolü: uygulama giriş noktası yoksa anlamlı hata ver
