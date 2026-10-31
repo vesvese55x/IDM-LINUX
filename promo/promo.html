@@ -204,6 +204,36 @@
   .install-notes span{color:var(--muted);font-size:.9rem}
   .install-notes b{color:var(--fg)}
 
+  /* ---------- PACKAGE TABLE ---------- */
+  .pkg-table-wrap{
+    margin-top:34px;background:linear-gradient(170deg,var(--bg-card),#0d1524);
+    border:1px solid var(--border-soft);border-radius:17px;padding:20px 18px 16px;
+  }
+  .pkg-table-title{font-weight:800;font-size:.98rem;margin-bottom:14px;color:var(--fg)}
+  .pkg-table-scroll{overflow-x:auto;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+  .pkg-table{width:100%;min-width:760px;border-collapse:collapse}
+  .pkg-table th{
+    text-align:start;font-size:.7rem;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--cyan);
+    background:rgba(0,174,239,.07);border-bottom:1px solid var(--border);padding:10px 12px;white-space:nowrap;
+  }
+  .pkg-table td{padding:13px 12px;border-bottom:1px solid var(--border-soft);vertical-align:middle;color:var(--muted);font-size:.87rem}
+  .pkg-table tbody tr{transition:background .2s}
+  .pkg-table tbody tr:last-child td{border-bottom:none}
+  .pkg-table tbody tr:hover{background:rgba(0,174,239,.045)}
+  .pt-name{font-weight:800;color:var(--fg);font-size:.94rem;white-space:nowrap}
+  .pkg-table td:nth-child(2){min-width:200px}
+  .pkg-table td:nth-child(3){min-width:300px}
+  .pt-dl{text-align:center}
+  .btn-dl{
+    display:inline-block;background:var(--green);color:#fff;font-weight:800;font-size:.75rem;letter-spacing:.8px;
+    padding:9px 18px;border-radius:9px;text-decoration:none;transition:.2s;white-space:nowrap;
+  }
+  .btn-dl:hover{filter:brightness(1.15);transform:translateY(-1px);box-shadow:0 6px 18px rgba(16,185,129,.35)}
+  .pkg-table .code{padding:7px 9px}
+  .pkg-table .code code{font-size:.7rem}
+  .pkg-table .copy{font-size:.66rem;padding:5px 8px}
+  .pkg-table-note{margin-top:13px;color:var(--muted);font-size:.83rem}
+
   /* ---------- MOBILE ---------- */
   .mob-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(178px,1fr))}
   .mob{
@@ -386,6 +416,43 @@
         <div class="code"><code>sudo pacman -U idm-linux-1.0.0-1-any.pkg.tar.zst</code><button class="copy" type="button" data-i18n="btn_copy">KOPYALA</button></div>
       </div>
     </div>
+    <div class="pkg-table-wrap rv">
+      <div class="pkg-table-title" data-i18n="tb_title">📋 Paket tablosu — tek bakışta karşılaştır</div>
+      <div class="pkg-table-scroll">
+        <table class="pkg-table">
+          <thead>
+            <tr><th data-i18n="th_pkg">Paket</th><th data-i18n="th_what">Ne için?</th><th data-i18n="th_cmd">Kurulum / Çalıştırma komutu</th><th data-i18n="th_dl">İndir</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="pt-name">📦 AppImage</span></td>
+              <td data-i18n="tb_p1d">Kurulum gerektirmez; indir, çalıştırılabilir yap, çift tıkla</td>
+              <td><div class="code"><code>chmod +x IDM-LINUX-1.0.0-x86_64.AppImage &amp;&amp; ./IDM-LINUX-1.0.0-x86_64.AppImage</code><button class="copy" type="button" data-i18n="btn_copy">KOPYALA</button></div></td>
+              <td class="pt-dl"><a class="btn-dl" href="https://github.com/vesvese55x/IDM-LINUX/releases/latest/download/IDM-LINUX-1.0.0-x86_64.AppImage" target="_blank" rel="noreferrer" data-i18n="btn_dl">İNDİR</a></td>
+            </tr>
+            <tr>
+              <td><span class="pt-name">🐧 deb</span></td>
+              <td data-i18n="tb_p2d">Debian / Ubuntu / Mint ve türevleri; gdebi gibi GUI yükleyicilerle de uyumlu</td>
+              <td><div class="code"><code>sudo apt install ./idm-linux_1.0.0_all.deb</code><button class="copy" type="button" data-i18n="btn_copy">KOPYALA</button></div></td>
+              <td class="pt-dl"><a class="btn-dl" href="https://github.com/vesvese55x/IDM-LINUX/releases/latest/download/idm-linux_1.0.0_all.deb" target="_blank" rel="noreferrer" data-i18n="btn_dl">İNDİR</a></td>
+            </tr>
+            <tr>
+              <td><span class="pt-name">🎩 rpm</span></td>
+              <td data-i18n="tb_p3d">Fedora / openSUSE / RHEL türevleri</td>
+              <td><div class="code"><code>sudo dnf install ./idm-linux-1.0.0-1.noarch.rpm</code><button class="copy" type="button" data-i18n="btn_copy">KOPYALA</button></div></td>
+              <td class="pt-dl"><a class="btn-dl" href="https://github.com/vesvese55x/IDM-LINUX/releases/latest/download/idm-linux-1.0.0-1.noarch.rpm" target="_blank" rel="noreferrer" data-i18n="btn_dl">İNDİR</a></td>
+            </tr>
+            <tr>
+              <td><span class="pt-name">🏔️ zst</span></td>
+              <td data-i18n="tb_p4d">Arch / Manjaro ve türevleri</td>
+              <td><div class="code"><code>sudo pacman -U idm-linux-1.0.0-1-any.pkg.tar.zst</code><button class="copy" type="button" data-i18n="btn_copy">KOPYALA</button></div></td>
+              <td class="pt-dl"><a class="btn-dl" href="https://github.com/vesvese55x/IDM-LINUX/releases/latest/download/idm-linux-1.0.0-1-any.pkg.tar.zst" target="_blank" rel="noreferrer" data-i18n="btn_dl">İNDİR</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="pkg-table-note" data-i18n="tb_note">🌟 Tablodaki <b>İNDİR</b> butonları daima GitHub Releases'teki <em>en güncel</em> paketi indirir; tüm paketler aynı <strong>IDM-LINUX-1.0.0</strong> sürümünü taşır.</p>
+    </div>
     <div class="install-notes rv">
       <span data-i18n="note1">🧰 Kurulum sihirbazı; <b>Wine</b>, <b>resmî IDM</b>, tarayıcı eklentileri ve <b>yt-dlp / ffmpeg / aria2</b> araçlarını gerektiğinde otomatik indirip kurar.</span>
       <span data-i18n="note2">🧩 Gereksinimler: Linux (x86_64 önerilir) ve <b>Python 3.8+</b>; GUI için X11/Wayland masaüstü önerilir.</span>
@@ -487,6 +554,9 @@ p1t:`📦 Kurulumsuz çalıştır`,p1d:`İndir, çalıştırılabilir yap, çift
 p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`gdebi ve benzeri GUI deb yükleyicileriyle de sorunsuz kurulur.`,
 p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`RPM tabanlı dağıtımlar için noarch paket.`,
 p4t:`🏔️ Arch / Manjaro`,p4d:`pacman ile doğrudan kurulum; makepkg gerektirmez.`,
+tb_title:`📋 Paket tablosu — tek bakışta karşılaştır`,th_pkg:`Paket`,th_what:`Ne için?`,th_cmd:`Kurulum / Çalıştırma komutu`,th_dl:`İndir`,
+tb_p1d:`Kurulum gerektirmez; indir, çalıştırılabilir yap, çift tıkla`,tb_p2d:`Debian / Ubuntu / Mint ve türevleri; gdebi gibi GUI yükleyicilerle de uyumlu`,tb_p3d:`Fedora / openSUSE / RHEL türevleri`,tb_p4d:`Arch / Manjaro ve türevleri`,
+btn_dl:`İNDİR`,tb_note:`🌟 Tablodaki <b>İNDİR</b> butonları daima GitHub Releases'teki <em>en güncel</em> paketi indirir; tüm paketler aynı <strong>IDM-LINUX-1.0.0</strong> sürümünü taşır.`,
 btn_copy:`KOPYALA`,btn_copied:`KOPYALANDI ✓`,
 note1:`🧰 Kurulum sihirbazı; <b>Wine</b>, <b>resmî IDM</b>, tarayıcı eklentileri ve <b>yt-dlp / ffmpeg / aria2</b> araçlarını gerektiğinde otomatik indirip kurar.`,
 note2:`🧩 Gereksinimler: Linux (x86_64 önerilir) ve <b>Python 3.8+</b>; GUI için X11/Wayland masaüstü önerilir.`,
@@ -526,6 +596,9 @@ p1t:`📦 Run without installing`,p1d:`Download, make it executable, double-clic
 p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`Also installs smoothly with gdebi and similar GUI deb installers.`,
 p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`A noarch package for RPM-based distributions.`,
 p4t:`🏔️ Arch / Manjaro`,p4d:`Direct install with pacman; no makepkg required.`,
+tb_title:`📋 Package table — compare at a glance`,th_pkg:`Package`,th_what:`What for?`,th_cmd:`Install / Run command`,th_dl:`Download`,
+tb_p1d:`No installation needed; download, make executable, double-click`,tb_p2d:`Debian / Ubuntu / Mint and derivatives; also works with GUI installers like gdebi`,tb_p3d:`Fedora / openSUSE / RHEL derivatives`,tb_p4d:`Arch / Manjaro and derivatives`,
+btn_dl:`DOWNLOAD`,tb_note:`🌟 The <b>DOWNLOAD</b> buttons in the table always fetch the <em>latest</em> package from GitHub Releases; all packages carry the same <strong>IDM-LINUX-1.0.0</strong> version.`,
 btn_copy:`COPY`,btn_copied:`COPIED ✓`,
 note1:`🧰 The setup wizard automatically downloads and installs <b>Wine</b>, the <b>official IDM</b>, browser extensions and the <b>yt-dlp / ffmpeg / aria2</b> tools when needed.`,
 note2:`🧩 Requirements: Linux (x86_64 recommended) and <b>Python 3.8+</b>; an X11/Wayland desktop is recommended for the GUI.`,
@@ -565,6 +638,9 @@ p1t:`📦 Ohne Installation starten`,p1d:`Herunterladen, ausführbar machen, dop
 p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`Installiert auch problemlos mit gdebi und ähnlichen GUI-deb-Installern.`,
 p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`Ein noarch-Paket für RPM-basierte Distributionen.`,
 p4t:`🏔️ Arch / Manjaro`,p4d:`Direkte Installation mit pacman; kein makepkg nötig.`,
+tb_title:`📋 Pakettabelle — auf einen Blick vergleichen`,th_pkg:`Paket`,th_what:`Wofür?`,th_cmd:`Installations-/Startbefehl`,th_dl:`Herunterladen`,
+tb_p1d:`Keine Installation nötig; herunterladen, ausführbar machen, doppelklicken`,tb_p2d:`Debian / Ubuntu / Mint und Derivate; auch kompatibel mit GUI-Installern wie gdebi`,tb_p3d:`Fedora / openSUSE / RHEL-Derivate`,tb_p4d:`Arch / Manjaro und Derivate`,
+btn_dl:`DOWNLOAD`,tb_note:`🌟 Die <b>DOWNLOAD</b>-Buttons in der Tabelle laden immer das <em>neueste</em> Paket aus GitHub Releases; alle Pakete tragen dieselbe Version <strong>IDM-LINUX-1.0.0</strong>.`,
 btn_copy:`KOPIEREN`,btn_copied:`KOPIERT ✓`,
 note1:`🧰 Der Setup-Assistent lädt und installiert bei Bedarf <b>Wine</b>, das <b>offizielle IDM</b>, Browser-Erweiterungen und <b>yt-dlp / ffmpeg / aria2</b> automatisch.`,
 note2:`🧩 Voraussetzungen: Linux (x86_64 empfohlen) und <b>Python 3.8+</b>; für die GUI wird ein X11/Wayland-Desktop empfohlen.`,
@@ -604,6 +680,9 @@ p1t:`📦 Exécuter sans installer`,p1d:`Téléchargez, rendez exécutable, doub
 p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`S'installe aussi sans problème avec gdebi et les installateurs deb graphiques similaires.`,
 p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`Un paquet noarch pour les distributions à base RPM.`,
 p4t:`🏔️ Arch / Manjaro`,p4d:`Installation directe avec pacman ; makepkg n'est pas nécessaire.`,
+tb_title:`📋 Tableau des paquets — comparaison en un coup d'œil`,th_pkg:`Paquet`,th_what:`Pour quoi ?`,th_cmd:`Commande d'installation / d'exécution`,th_dl:`Télécharger`,
+tb_p1d:`Aucune installation requise ; téléchargez, rendez exécutable, double-cliquez`,tb_p2d:`Debian / Ubuntu / Mint et dérivés ; compatible aussi avec les installateurs graphiques comme gdebi`,tb_p3d:`Dérivés de Fedora / openSUSE / RHEL`,tb_p4d:`Arch / Manjaro et dérivés`,
+btn_dl:`TÉLÉCHARGER`,tb_note:`🌟 Les boutons <b>TÉLÉCHARGER</b> du tableau récupèrent toujours le paquet le <em>plus récent</em> depuis GitHub Releases ; tous les paquets portent la même version <strong>IDM-LINUX-1.0.0</strong>.`,
 btn_copy:`COPIER`,btn_copied:`COPIÉ ✓`,
 note1:`🧰 L'assistant d'installation télécharge et installe automatiquement, si nécessaire, <b>Wine</b>, l'<b>IDM officiel</b>, les extensions navigateur et les outils <b>yt-dlp / ffmpeg / aria2</b>.`,
 note2:`🧩 Prérequis : Linux (x86_64 recommandé) et <b>Python 3.8+</b> ; un bureau X11/Wayland est recommandé pour l'interface.`,
@@ -643,6 +722,9 @@ p1t:`📦 Запуск без установки`,p1d:`Скачайте, сде�
 p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`Также без проблем ставится через gdebi и подобные графические deb-установщики.`,
 p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`Пакет noarch для дистрибутивов на базе RPM.`,
 p4t:`🏔️ Arch / Manjaro`,p4d:`Прямая установка через pacman; makepkg не требуется.`,
+tb_title:`📋 Таблица пакетов — сравнение одним взглядом`,th_pkg:`Пакет`,th_what:`Для чего?`,th_cmd:`Команда установки / запуска`,th_dl:`Скачать`,
+tb_p1d:`Установка не требуется; скачайте, сделайте исполняемым, дважды щёлкните`,tb_p2d:`Debian / Ubuntu / Mint и производные; совместим и с GUI-установщиками вроде gdebi`,tb_p3d:`Производные Fedora / openSUSE / RHEL`,tb_p4d:`Arch / Manjaro и производные`,
+btn_dl:`СКАЧАТЬ`,tb_note:`🌟 Кнопки <b>СКАЧАТЬ</b> в таблице всегда загружают <em>самый свежий</em> пакет с GitHub Releases; все пакеты несут одну и ту же версию <strong>IDM-LINUX-1.0.0</strong>.`,
 btn_copy:`КОПИРОВАТЬ`,btn_copied:`СКОПИРОВАНО ✓`,
 note1:`🧰 Мастер установки при необходимости автоматически скачивает и ставит <b>Wine</b>, <b>официальный IDM</b>, браузерные расширения и инструменты <b>yt-dlp / ffmpeg / aria2</b>.`,
 note2:`🧩 Требования: Linux (рекомендуется x86_64) и <b>Python 3.8+</b>; для GUI рекомендуется рабочий стол X11/Wayland.`,
@@ -682,6 +764,9 @@ p1t:`📦 免安装直接运行`,p1d:`下载、赋予执行权限、双击即可
 p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`也可通过 gdebi 等图形化 deb 安装器顺畅安装。`,
 p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`面向 RPM 系发行版的 noarch 软件包。`,
 p4t:`🏔️ Arch / Manjaro`,p4d:`使用 pacman 直接安装；无需 makepkg。`,
+tb_title:`📋 软件包对照表 — 一目了然`,th_pkg:`软件包`,th_what:`用途`,th_cmd:`安装 / 运行命令`,th_dl:`下载`,
+tb_p1d:`无需安装；下载、赋予执行权限、双击即可`,tb_p2d:`Debian / Ubuntu / Mint 及其衍生版；也兼容 gdebi 等图形安装器`,tb_p3d:`Fedora / openSUSE / RHEL 衍生版`,tb_p4d:`Arch / Manjaro 及其衍生版`,
+btn_dl:`下载`,tb_note:`🌟 表格中的 <b>下载</b> 按钮始终从 GitHub Releases 获取<em>最新</em>软件包；所有软件包均为同一 <strong>IDM-LINUX-1.0.0</strong> 版本。`,
 btn_copy:`复制`,btn_copied:`已复制 ✓`,
 note1:`🧰 安装向导会按需自动下载并安装 <b>Wine</b>、<b>官方 IDM</b>、浏览器扩展以及 <b>yt-dlp / ffmpeg / aria2</b> 工具。`,
 note2:`🧩 系统要求：Linux（推荐 x86_64）和 <b>Python 3.8+</b>；图形界面建议使用 X11/Wayland 桌面。`,
@@ -721,6 +806,9 @@ p1t:`📦 インストールせず実行`,p1d:`ダウンロードして実行権
 p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`gdebi など GUI の deb インストーラでも問題なくインストールできます。`,
 p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`RPM 系ディストロ向けの noarch パッケージ。`,
 p4t:`🏔️ Arch / Manjaro`,p4d:`pacman で直接インストール。makepkg は不要です。`,
+tb_title:`📋 パッケージ比較表 — ひと目でわかる`,th_pkg:`パッケージ`,th_what:`用途`,th_cmd:`インストール / 実行コマンド`,th_dl:`ダウンロード`,
+tb_p1d:`インストール不要。ダウンロードして実行権を付け、ダブルクリックするだけ`,tb_p2d:`Debian / Ubuntu / Mint とその派生。gdebi などの GUI インストーラにも対応`,tb_p3d:`Fedora / openSUSE / RHEL 派生ディストロ`,tb_p4d:`Arch / Manjaro とその派生`,
+btn_dl:`ダウンロード`,tb_note:`🌟 表の <b>ダウンロード</b> ボタンは常に GitHub Releases の<em>最新</em>パッケージを取得します。すべてのパッケージは同じ <strong>IDM-LINUX-1.0.0</strong> バージョンです。`,
 btn_copy:`コピー`,btn_copied:`コピー済み ✓`,
 note1:`🧰 セットアップウィザードは必要に応じて <b>Wine</b>、<b>正規 IDM</b>、ブラウザ拡張、<b>yt-dlp / ffmpeg / aria2</b> を自動でダウンロード・インストールします。`,
 note2:`🧩 要件：Linux（x86_64 推奨）と <b>Python 3.8+</b>。GUI には X11/Wayland デスクトップを推奨します。`,
@@ -760,6 +848,9 @@ p1t:`📦 बिना इंस्टॉल चलाएँ`,p1d:`डाउन�
 p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`gdebi जैसे GUI deb इंस्टॉलर से भी आसानी से इंस्टॉल होता है।`,
 p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`RPM-आधारित वितरणों के लिए noarch पैकेज।`,
 p4t:`🏔️ Arch / Manjaro`,p4d:`pacman से सीधा इंस्टॉल; makepkg की ज़रूरत नहीं।`,
+tb_title:`📋 पैकेज तालिका — एक नज़र में तुलना`,th_pkg:`पैकेज`,th_what:`किसके लिए?`,th_cmd:`इंस्टॉल / रन कमांड`,th_dl:`डाउनलोड`,
+tb_p1d:`इंस्टॉलेशन की ज़रूरत नहीं; डाउनलोड करें, एक्ज़ीक्यूटेबल बनाएँ, डबल-क्लिक करें`,tb_p2d:`Debian / Ubuntu / Mint और व्युत्पन्न; gdebi जैसे GUI इंस्टॉलरों के साथ भी संगत`,tb_p3d:`Fedora / openSUSE / RHEL व्युत्पन्न`,tb_p4d:`Arch / Manjaro और व्युत्पन्न`,
+btn_dl:`डाउनलोड`,tb_note:`🌟 तालिका के <b>डाउनलोड</b> बटन हमेशा GitHub Releases से <em>नवीनतम</em> पैकेज लेते हैं; सभी पैकेज एक ही <strong>IDM-LINUX-1.0.0</strong> संस्करण रखते हैं।`,
 btn_copy:`कॉपी`,btn_copied:`कॉपी हुआ ✓`,
 note1:`🧰 इंस्टॉल विज़ार्ड ज़रूरत पर <b>Wine</b>, <b>आधिकारिक IDM</b>, ब्राउज़र एक्सटेंशन और <b>yt-dlp / ffmpeg / aria2</b> औज़ार अपने आप डाउनलोड-इंस्टॉल करता है।`,
 note2:`🧩 आवश्यकताएँ: Linux (x86_64 अनुशंसित) और <b>Python 3.8+</b>; GUI के लिए X11/Wayland डेस्कटॉप अनुशंसित।`,
@@ -799,6 +890,9 @@ p1t:`📦 شغّل بلا تثبيت`,p1d:`نزّل، اجعله قابلاً ل
 p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`يُثبَّت أيضاً بسلاسة عبر gdebi ومثبتات deb الرسومية المشابهة.`,
 p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`حزمة noarch للتوزيعات المبنية على RPM.`,
 p4t:`🏔️ Arch / Manjaro`,p4d:`تثبيت مباشر عبر pacman؛ لا حاجة إلى makepkg.`,
+tb_title:`📋 جدول الحزم — مقارنة بنظرة واحدة`,th_pkg:`الحزمة`,th_what:`لماذا؟`,th_cmd:`أمر التثبيت / التشغيل`,th_dl:`تنزيل`,
+tb_p1d:`لا يحتاج إلى تثبيت؛ نزّله، اجعله قابلاً للتنفيذ، ثم انقر نقراً مزدوجاً`,tb_p2d:`ديبيان / أوبونتو / مينت ومشتقاتها؛ متوافق أيضاً مع مثبّتات الواجهة الرسومية مثل gdebi`,tb_p3d:`مشتقات Fedora / openSUSE / RHEL`,tb_p4d:`آرتش / مانجارو ومشتقاتها`,
+btn_dl:`تنزيل`,tb_note:`🌟 أزرار <b>تنزيل</b> في الجدول تجلب دائماً <em>أحدث</em> حزمة من GitHub Releases؛ جميع الحزم تحمل الإصدار نفسه <strong>IDM-LINUX-1.0.0</strong>.`,
 btn_copy:`نسخ`,btn_copied:`تم النسخ ✓`,
 note1:`🧰 معالج الإعداد ينزّل ويثبّت تلقائياً عند الحاجة <b>Wine</b> و<b>IDM الرسمي</b> وإضافات المتصفح وأدوات <b>yt-dlp / ffmpeg / aria2</b>.`,
 note2:`🧩 المتطلبات: Linux (يُنصح بـx86_64) و<b>Python 3.8+</b>؛ ويُنصح بسطح مكتب X11/Wayland للواجهة.`,
@@ -838,6 +932,9 @@ p1t:`📦 Uitvoeren zonder installatie`,p1d:`Downloaden, uitvoerbaar maken, dubb
 p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`Installeert ook moeiteloos via gdebi en vergelijkbare grafische deb-installateurs.`,
 p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`Een noarch-pakket voor op RPM gebaseerde distributies.`,
 p4t:`🏔️ Arch / Manjaro`,p4d:`Directe installatie met pacman; makepkg is niet nodig.`,
+tb_title:`📋 Pakettabel — in één oogopslag vergelijken`,th_pkg:`Pakket`,th_what:`Waarvoor?`,th_cmd:`Installatie-/startopdracht`,th_dl:`Downloaden`,
+tb_p1d:`Geen installatie nodig; downloaden, uitvoerbaar maken, dubbelklikken`,tb_p2d:`Debian / Ubuntu / Mint en derivaten; ook compatibel met GUI-installers zoals gdebi`,tb_p3d:`Fedora / openSUSE / RHEL-derivaten`,tb_p4d:`Arch / Manjaro en derivaten`,
+btn_dl:`DOWNLOADEN`,tb_note:`🌟 De <b>DOWNLOADEN</b>-knoppen in de tabel halen altijd het <em>nieuwste</em> pakket op uit GitHub Releases; alle paketten dragen dezelfde versie <strong>IDM-LINUX-1.0.0</strong>.`,
 btn_copy:`KOPIËREN`,btn_copied:`GEKOPIEERD ✓`,
 note1:`🧰 De installatiewizard downloadt en installeert automatisch <b>Wine</b>, de <b>officiële IDM</b>, browserextensies en de tools <b>yt-dlp / ffmpeg / aria2</b> wanneer nodig.`,
 note2:`🧩 Vereisten: Linux (x86_64 aanbevolen) en <b>Python 3.8+</b>; voor de GUI wordt een X11/Wayland-bureaublad aanbevolen.`,
@@ -877,6 +974,9 @@ p1t:`📦 اجرا بدون نصب`,p1d:`دانلود کن، اجرایی کن،
 p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`با gdebi و نصاب‌های گرافیکی مشابه deb هم بی‌دردسر نصب می‌شود.`,
 p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`بسته noarch برای توزیع‌های مبتنی بر RPM.`,
 p4t:`🏔️ Arch / Manjaro`,p4d:`نصب مستقیم با pacman؛ نیازی به makepkg نیست.`,
+tb_title:`📋 جدول بسته‌ها — مقایسه در یک نگاه`,th_pkg:`بسته`,th_what:`برای چه؟`,th_cmd:`دستور نصب / اجرا`,th_dl:`دانلود`,
+tb_p1d:`نیازی به نصب نیست؛ دانلود کنید، اجرایی کنید، دوبار کلیک کنید`,tb_p2d:`دبیان / اوبونتو / مینت و مشتقات؛ سازگار با نصب‌کننده‌های گرافیکی مانند gdebi`,tb_p3d:`مشتقات Fedora / openSUSE / RHEL`,tb_p4d:`آرچ / مانجارو و مشتقات`,
+btn_dl:`دانلود`,tb_note:`🌟 دکمه‌های <b>دانلود</b> در جدول همیشه <em>تازه‌ترین</em> بسته را از GitHub Releases می‌گیرند؛ همه بسته‌ها نسخه یکسان <strong>IDM-LINUX-1.0.0</strong> دارند.`,
 btn_copy:`کپی`,btn_copied:`کپی شد ✓`,
 note1:`🧰 ویزارد نصب در صورت نیاز <b>Wine</b>، <b>IDM رسمی</b>، افزونه مرورگرها و ابزارهای <b>yt-dlp / ffmpeg / aria2</b> را خودکار دانلود و نصب می‌کند.`,
 note2:`🧩 پیش‌نیازها: لینوکس (x86_64 پیشنهاد می‌شود) و <b>Python 3.8+</b>؛ برای رابط گرافیکی دسکتاپ X11/Wayland پیشنهاد می‌شود.`,
@@ -916,6 +1016,9 @@ p1t:`📦 Εκτέλεση χωρίς εγκατάσταση`,p1d:`Κατεβά�
 p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`Εγκαθίσταται επίσης ομαλά με gdebi και παρόμοια GUI εργαλεία deb.`,
 p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`Πακέτο noarch για διανομές βάσει RPM.`,
 p4t:`🏔️ Arch / Manjaro`,p4d:`Άμεση εγκατάσταση με pacman· δεν απαιτείται makepkg.`,
+tb_title:`📋 Πίνακας πακέτων — σύγκριση με μια ματιά`,th_pkg:`Πακέτο`,th_what:`Για τι;`,th_cmd:`Εντολή εγκατάστασης / εκτέλεσης`,th_dl:`Λήψη`,
+tb_p1d:`Χωρίς εγκατάσταση· κατεβάστε, κάντε το εκτελέσιμο, διπλό κλικ`,tb_p2d:`Debian / Ubuntu / Mint και παράγωγα· συμβατό και με GUI εγκαταστάτες όπως το gdebi`,tb_p3d:`Παράγωγα Fedora / openSUSE / RHEL`,tb_p4d:`Arch / Manjaro και παράγωγα`,
+btn_dl:`ΛΗΨΗ`,tb_note:`🌟 Τα κουμπιά <b>ΛΗΨΗ</b> στον πίνακα φέρνουν πάντα το <em>πιο πρόσφατο</em> πακέτο από το GitHub Releases· όλα τα πακέτα φέρουν την ίδια έκδοση <strong>IDM-LINUX-1.0.0</strong>.`,
 btn_copy:`ΑΝΤΙΓΡΑΦΗ`,btn_copied:`ΑΝΤΙΓΡΑΦΗΚΕ ✓`,
 note1:`🧰 Ο οδηγός εγκατάστασης κατεβάζει και εγκαθιστά αυτόματα, όταν χρειάζεται, το <b>Wine</b>, το <b>επίσημο IDM</b>, τις επεκτάσεις browsers και τα εργαλεία <b>yt-dlp / ffmpeg / aria2</b>.`,
 note2:`🧩 Απαιτήσεις: Linux (συνιστάται x86_64) και <b>Python 3.8+</b>· για το GUI συνιστάται επιφάνεια εργασίας X11/Wayland.`,
@@ -955,6 +1058,9 @@ p1t:`📦 Executar sem instalar`,p1d:`Descarregue, torne executável, duplo cliq
 p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`Também instala sem problemas com gdebi e instaladores deb gráficos semelhantes.`,
 p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`Um pacote noarch para distribuições baseadas em RPM.`,
 p4t:`🏔️ Arch / Manjaro`,p4d:`Instalação direta com pacman; não precisa de makepkg.`,
+tb_title:`📋 Tabela de pacotes — comparação num relance`,th_pkg:`Pacote`,th_what:`Para quê?`,th_cmd:`Comando de instalação / execução`,th_dl:`Transferir`,
+tb_p1d:`Não requer instalação; transfira, torne executável, clique duas vezes`,tb_p2d:`Debian / Ubuntu / Mint e derivados; também compatível com instaladores gráficos como o gdebi`,tb_p3d:`Derivados de Fedora / openSUSE / RHEL`,tb_p4d:`Arch / Manjaro e derivados`,
+btn_dl:`TRANSFERIR`,tb_note:`🌟 Os botões <b>TRANSFERIR</b> da tabela vão sempre buscar o pacote <em>mais recente</em> do GitHub Releases; todos os pacotes trazem a mesma versão <strong>IDM-LINUX-1.0.0</strong>.`,
 btn_copy:`COPIAR`,btn_copied:`COPIADO ✓`,
 note1:`🧰 O assistente de configuração descarrega e instala automaticamente, quando necessário, o <b>Wine</b>, o <b>IDM oficial</b>, as extensões de navegador e as ferramentas <b>yt-dlp / ffmpeg / aria2</b>.`,
 note2:`🧩 Requisitos: Linux (x86_64 recomendado) e <b>Python 3.8+</b>; para a GUI recomenda-se um ambiente de trabalho X11/Wayland.`,
@@ -994,6 +1100,9 @@ p1t:`📦 Chạy không cần cài`,p1d:`Tải về, đánh dấu thực thi, nh
 p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`Cũng cài mượt mà bằng gdebi và các trình cài deb đồ họa tương tự.`,
 p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`Gói noarch cho các bản phân phối dựa trên RPM.`,
 p4t:`🏔️ Arch / Manjaro`,p4d:`Cài trực tiếp bằng pacman; không cần makepkg.`,
+tb_title:`📋 Bảng gói — so sánh trong một cái nhìn`,th_pkg:`Gói`,th_what:`Dùng cho?`,th_cmd:`Lệnh cài đặt / chạy`,th_dl:`Tải xuống`,
+tb_p1d:`Không cần cài đặt; tải về, đánh dấu thực thi, nhấp đúp`,tb_p2d:`Debian / Ubuntu / Mint và dẫn xuất; cũng tương thích với trình cài GUI như gdebi`,tb_p3d:`Các bản dẫn xuất Fedora / openSUSE / RHEL`,tb_p4d:`Arch / Manjaro và dẫn xuất`,
+btn_dl:`TẢI XUỐNG`,tb_note:`🌟 Các nút <b>TẢI XUỐNG</b> trong bảng luôn lấy gói <em>mới nhất</em> từ GitHub Releases; mọi gói đều mang cùng phiên bản <strong>IDM-LINUX-1.0.0</strong>.`,
 btn_copy:`SAO CHÉP`,btn_copied:`ĐÃ SAO CHÉP ✓`,
 note1:`🧰 Trình cài đặt tự tải và cài khi cần: <b>Wine</b>, <b>IDM chính thức</b>, tiện ích trình duyệt và các công cụ <b>yt-dlp / ffmpeg / aria2</b>.`,
 note2:`🧩 Yêu cầu: Linux (khuyến nghị x86_64) và <b>Python 3.8+</b>; với GUI nên dùng desktop X11/Wayland.`,
@@ -1033,6 +1142,9 @@ p1t:`📦 Quraşdırmadan işə sal`,p1d:`Yüklə, icra ediləbilən et, iki də
 p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`gdebi və bənzər qrafik deb quraşdırıcılarla da problemsiz quraşır.`,
 p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`RPM əsaslı distrolar üçün noarch paket.`,
 p4t:`🏔️ Arch / Manjaro`,p4d:`pacman ilə birbaşa quraşdırma; makepkg lazım deyil.`,
+tb_title:`📋 Paket cədvəli — bir baxışda müqayisə`,th_pkg:`Paket`,th_what:`Nə üçün?`,th_cmd:`Quraşdırma / işə salma əmri`,th_dl:`Endir`,
+tb_p1d:`Quraşdırma tələb etmir; endirin, icra edilə bilən edin, iki dəfə klikləyin`,tb_p2d:`Debian / Ubuntu / Mint və törəmələri; gdebi kimi GUI quraşdırıcılarla da uyğun`,tb_p3d:`Fedora / openSUSE / RHEL törəmələri`,tb_p4d:`Arch / Manjaro və törəmələri`,
+btn_dl:`ENDİR`,tb_note:`🌟 Cədvəldəki <b>ENDİR</b> düymələri həmişə GitHub Releases-dəki ən <em>aktual</em> paketi alır; bütün paketlər eyni <strong>IDM-LINUX-1.0.0</strong> versiyasını daşıyır.`,
 btn_copy:`KÖÇÜR`,btn_copied:`KÖÇÜRÜLDÜ ✓`,
 note1:`🧰 Quraşdırma sehri lazım olduqda <b>Wine</b>, <b>rəsmi IDM</b>, brauzer əlavələri və <b>yt-dlp / ffmpeg / aria2</b> alətlərini avtomatik yükləyib quraşdırır.`,
 note2:`🧩 Tələblər: Linux (x86_64 tövsiyə olunur) və <b>Python 3.8+</b>; GUI üçün X11/Wayland masaüstü tövsiyə olunur.`,
@@ -1072,6 +1184,9 @@ p1t:`📦 Орнотпой иштетүү`,p1d:`Жүктөп алыңыз, ат�
 p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`gdebi жана ушул сыяктуу GUI deb орноткучтар менен да оңой орнотулат.`,
 p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`RPM негизиндегилер үчүн noarch пакет.`,
 p4t:`🏔️ Arch / Manjaro`,p4d:`pacman менен түз орнотуу; makepkg керек эмес.`,
+tb_title:`📋 Пакеттер таблицасы — бир карамада салыштыруу`,th_pkg:`Пакет`,th_what:`Эмне үчүн?`,th_cmd:`Орнотуу / иштетүү буйругу`,th_dl:`Жүктөө`,
+tb_p1d:`Орнотуу талап кылынбайт; жүктөп алыңыз, аткарылуучу кылыңыз, эки жолу басыңыз`,tb_p2d:`Debian / Ubuntu / Mint жана туунду; gdebi сыяктуу GUI орнотгучтар менен да шайкеш`,tb_p3d:`Fedora / openSUSE / RHEL туундулары`,tb_p4d:`Arch / Manjaro жана туундулар`,
+btn_dl:`ЖҮКТӨӨ`,tb_note:`🌟 Таблицадагы <b>ЖҮКТӨӨ</b> баскычтары ар дайым GitHub Releasesтеги эң <em>жаңы</em> пакетти алат; бардык пакеттер бир эле <strong>IDM-LINUX-1.0.0</strong> версиясын алып жүрөт.`,
 btn_copy:`КӨЧҮРҮҮ`,btn_copied:`КӨЧҮРҮЛДҮ ✓`,
 note1:`🧰 Орнотуу чебери керек болгондо <b>Wine</b>, <b>расмий IDM</b>, браузер кеңейтүүлөрү жана <b>yt-dlp / ffmpeg / aria2</b> куралдарын автоматтык жүктөп орнотот.`,
 note2:`🧩 Талаптар: Linux (x86_64 сунушталат) жана <b>Python 3.8+</b>; GUI үчүн X11/Wayland жумушчу столу сунушталат.`,
@@ -1111,6 +1226,9 @@ p1t:`📦 Esegui senza installare`,p1d:`Scarica, rendi eseguibile, doppio clic. 
 p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`Si installa senza problemi anche con gdebi e simili installer deb grafici.`,
 p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`Un pacchetto noarch per le distribuzioni basate su RPM.`,
 p4t:`🏔️ Arch / Manjaro`,p4d:`Installazione diretta con pacman; makepkg non serve.`,
+tb_title:`📋 Tabella dei pacchetti — confronto a colpo d'occhio`,th_pkg:`Pacchetto`,th_what:`Per cosa?`,th_cmd:`Comando di installazione / avvio`,th_dl:`Scarica`,
+tb_p1d:`Nessuna installazione richiesta; scarica, rendi eseguibile, doppio clic`,tb_p2d:`Debian / Ubuntu / Mint e derivate; compatibile anche con installer grafici come gdebi`,tb_p3d:`Derivate di Fedora / openSUSE / RHEL`,tb_p4d:`Arch / Manjaro e derivate`,
+btn_dl:`SCARICA`,tb_note:`🌟 I pulsanti <b>SCARICA</b> della tabella scaricano sempre il pacchetto <em>più recente</em> da GitHub Releases; tutti i pacchetti portano la stessa versione <strong>IDM-LINUX-1.0.0</strong>.`,
 btn_copy:`COPIA`,btn_copied:`COPIATO ✓`,
 note1:`🧰 La procedura di installazione scarica e installa automaticamente, se necessario, <b>Wine</b>, l'<b>IDM ufficiale</b>, le estensioni browser e gli strumenti <b>yt-dlp / ffmpeg / aria2</b>.`,
 note2:`🧩 Requisiti: Linux (consigliato x86_64) e <b>Python 3.8+</b>; per la GUI si consiglia un desktop X11/Wayland.`,
@@ -1150,6 +1268,9 @@ p1t:`📦 Jalankan tanpa instalasi`,p1d:`Unduh, jadikan dapat dieksekusi, klik d
 p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`Juga terpasang mulus dengan gdebi dan penginstal deb GUI serupa.`,
 p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`Paket noarch untuk distribusi berbasis RPM.`,
 p4t:`🏔️ Arch / Manjaro`,p4d:`Instalasi langsung dengan pacman; makepkg tidak diperlukan.`,
+tb_title:`📋 Tabel paket — bandingkan sekilas`,th_pkg:`Paket`,th_what:`Untuk apa?`,th_cmd:`Perintah instal / jalankan`,th_dl:`Unduh`,
+tb_p1d:`Tanpa instalasi; unduh, jadikan dapat dieksekusi, klik dua kali`,tb_p2d:`Debian / Ubuntu / Mint dan turunannya; juga kompatibel dengan penginstal GUI seperti gdebi`,tb_p3d:`Turunan Fedora / openSUSE / RHEL`,tb_p4d:`Arch / Manjaro dan turunannya`,
+btn_dl:`UNDUH`,tb_note:`🌟 Tombol <b>UNDUH</b> di tabel selalu mengambil paket <em>terbaru</em> dari GitHub Releases; semua paket membawa versi yang sama <strong>IDM-LINUX-1.0.0</strong>.`,
 btn_copy:`SALIN`,btn_copied:`TERSALIN ✓`,
 note1:`🧰 Wisata penginstal otomatis mengunduh dan memasang <b>Wine</b>, <b>IDM resmi</b>, ekstensi browser, serta perkakas <b>yt-dlp / ffmpeg / aria2</b> bila diperlukan.`,
 note2:`🧩 Persyaratan: Linux (x86_64 disarankan) dan <b>Python 3.8+</b>; untuk GUI disarankan desktop X11/Wayland.`,
@@ -1189,6 +1310,9 @@ p1t:`📦 გაშვება დაყენების გარეშე`,
 p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`gdebi-თი და მსგავსი გრაფიკული deb-დამყენებლითაც უპრობლემოდ დაყენდება.`,
 p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`noarch პაკეტი RPM-ზე დაფუძნებული დისტრიბუტივებისთვის.`,
 p4t:`🏔️ Arch / Manjaro`,p4d:`პირდაპირი დაყენება pacman-ით; makepkg არ სჭირდება.`,
+tb_title:`📋 პაკეტების ცხრილი — შედარება ერთი ხედვით`,th_pkg:`პაკეტი`,th_what:`რისთვის?`,th_cmd:`ინსტალაციის / გაშვების ბრძანება`,th_dl:`ჩამოტვირთვა`,
+tb_p1d:`ინსტალაცია არ სჭირდება; ჩამოტვირთეთ, გახადეთ გაშვებადი და ორმაგად დააჭირეთ`,tb_p2d:`Debian / Ubuntu / Mint და წარმოებულები; თავსებადია gdebi-ს მსგავს GUI ინსტალატორებთანაც`,tb_p3d:`Fedora / openSUSE / RHEL წარმოებულები`,tb_p4d:`Arch / Manjaro და წარმოებულები`,
+btn_dl:`ჩამოტვირთვა`,tb_note:`🌟 ცხრილის <b>ჩამოტვირთვა</b> ღილაკები ყოველთვის იღებს უახლეს პაკეტს GitHub Releases-იდან; ყველა პაკეტს აქვს იგივე ვერსია <strong>IDM-LINUX-1.0.0</strong>.`,
 btn_copy:`კოპირება`,btn_copied:`დაკოპირდა ✓`,
 note1:`🧰 დაყენების თავი საჭიროებისამებრ ავტომატურად ჩამოტვირთავს და დააყენებს <b>Wine</b>-ს, <b>ოფიციალურ IDM</b>-ს, ბრაუზერის გაფართოებებს და <b>yt-dlp / ffmpeg / aria2</b> ხელსაწყოებს.`,
 note2:`🧩 მოთხოვნები: Linux (რეკომენდირებულია x86_64) და <b>Python 3.8+</b>; GUI-სთვის რეკომენდირებულია X11/Wayland დესკტოპი.`,
@@ -1228,6 +1352,9 @@ p1t:`📦 Rulează fără instalare`,p1d:`Descarcă, fă-l executabil, dublu cli
 p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`Se instalează fără probleme și cu gdebi sau alte instalatoare deb grafice.`,
 p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`Un pachet noarch pentru distribuțiile bazate pe RPM.`,
 p4t:`🏔️ Arch / Manjaro`,p4d:`Instalare directă cu pacman; makepkg nu e necesar.`,
+tb_title:`📋 Tabelul pachetelor — comparație dintr-o privire`,th_pkg:`Pachet`,th_what:`La ce folosește?`,th_cmd:`Comandă de instalare / rulare`,th_dl:`Descarcă`,
+tb_p1d:`Nu necesită instalare; descarcă, fă-l executabil, dublu clic`,tb_p2d:`Debian / Ubuntu / Mint și derivate; compatibil și cu instalatoare grafice precum gdebi`,tb_p3d:`Derivate Fedora / openSUSE / RHEL`,tb_p4d:`Arch / Manjaro și derivate`,
+btn_dl:`DESCARCĂ`,tb_note:`🌟 Butoanele <b>DESCARCĂ</b> din tabel aduc întotdeauna pachetul <em>cel mai recent</em> din GitHub Releases; toate pachetele poartă aceeași versiune <strong>IDM-LINUX-1.0.0</strong>.`,
 btn_copy:`COPIAZĂ`,btn_copied:`COPIAT ✓`,
 note1:`🧰 Asistentul de instalare descarcă și instalează automat, la nevoie, <b>Wine</b>, <b>IDM oficial</b>, extensiile de browser și uneltele <b>yt-dlp / ffmpeg / aria2</b>.`,
 note2:`🧩 Cerințe: Linux (se recomandă x86_64) și <b>Python 3.8+</b>; pentru GUI se recomandă un desktop X11/Wayland.`,
