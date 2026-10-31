@@ -416,6 +416,9 @@
       return origAnchorClick.apply(this, args);
     };
   }
+
+  // v3.14.3 FIX: emitStream, kazıyıcı modüllerin okuyabilmesi için burada (tanım kapsamından) global'e açılır
+  window.__idmEmitStream = emitStream;
 })();
 
 // v2.9.0: programatik indirme tetikleyicilerini YUT (window.open / location.href)
@@ -507,8 +510,11 @@
       } catch (_e) {}
     }, true);
   } catch (_e) {}
-  window.__idmEmitStream = emitStream;
 })();
+
+// v3.14.3 FIX: yanlış IIFE'deki 'window.__idmEmitStream = emitStream;' ataması silindi —
+// emitStream o kapsamda tanımsızdı; her frame'de ReferenceError üretiyor ve bilibili/ok.ru/vk
+// kazıyıcılarını (window.__idmEmitStream'i okuyanlar) sessizce devre dışı bırakıyordu. Doğru atama ilk IIFE'nin sonuna eklendi.
 
 // v2.9.4: bilibili __playinfo__ kazıyıcı — YENİDEN DENYENELİ (player geç açılabilir)
 (function () {
