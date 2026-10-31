@@ -26,6 +26,9 @@
   <a href="https://github.com/vesvese55x/IDM-LINUX" target="_blank" rel="noreferrer"><strong>GITHUB</strong></a>
 </p>
 
+<p align="center">⚡ <strong>Tek satırlık otomatik kurulum / One-line auto install:</strong><br>
+<code>curl -fsSL https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/belgeselsemo-idm-linux-installer | sh</code></p>
+
 ## IDM deneyimi Linux'ta
 
 <p align="justify">IDM LINUX; Wine üzerinde koşan gerçek IDM motorunu, Linux tarafında hafif bir Python kontrol paneliyle buluşturur. Kurulum sihirbazı Wine ortamını ve resmî IDM kurulumunu otomatik hazırlar; Genel Bakış ekranı köprü durumunu, video motorunu ve hızlı indirme araçlarını tek ekranda gösterir. Hızlı bağlantı kutusuna URL, magnet veya yerel .torrent dosyası bırakmanız yeterli — gerisini IDM LINUX halleder.</p>

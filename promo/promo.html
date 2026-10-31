@@ -109,7 +109,16 @@
   .btn-primary:hover{background:var(--cyan-dk);transform:translateY(-2px);text-decoration:none}
   .btn-ghost{background:var(--bg-card);color:var(--fg);border:1px solid var(--border)}
   .btn-ghost:hover{background:var(--bg-card-alt);transform:translateY(-2px);text-decoration:none}
-  .chips{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:34px}
+  .hero-inst{
+    max-width:680px;margin:26px auto 0;text-align:left;
+    background:linear-gradient(170deg,var(--bg-card),#0d1524);
+    border:1px solid var(--border-soft);border-radius:14px;padding:13px 16px;
+  }
+  .hero-inst:hover{border-color:var(--cyan)}
+  .hero-inst .hi-t{display:block;font-weight:800;font-size:.88rem;margin-bottom:9px}
+  .hero-inst .code{padding:10px 12px}
+  .hero-inst .code code{font-size:.72rem}
+  .chips{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:26px}
   .chip{
     font-size:.83rem;font-weight:700;color:var(--muted);
     background:var(--bg-card);border:1px solid var(--border);border-radius:999px;padding:7px 15px;
@@ -277,6 +286,8 @@
 
   @media (max-width:640px){
     .hero-icons img{width:88px;height:88px;border-radius:20px}
+    .hero-inst{margin:22px 6px 0}
+    .hero-inst .hi-t{font-size:.84rem}
     .hero-x{font-size:1.4rem}
     .nav-links a{padding:6px 8px;font-size:.78rem}
     .lang-btn span{display:none}
@@ -320,6 +331,10 @@
   <div class="cta-row">
     <a class="btn btn-primary" href="https://github.com/vesvese55x/IDM-LINUX/releases/latest" target="_blank" rel="noreferrer" data-i18n="cta_download">⬇️ IDM-LINUX-1.0.0'ı İndir</a>
     <a class="btn btn-ghost" href="#ekranlar" data-i18n="cta_screens">📸 Ekranları Gez</a>
+  </div>
+  <div class="hero-inst">
+    <span class="hi-t" data-i18n="ins_title">⚡ Tek satırda otomatik kurulum</span>
+    <div class="code"><code>curl -fsSL https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/belgeselsemo-idm-linux-installer | sh</code><button class="copy" type="button" data-i18n="btn_copy">KOPYALA</button></div>
   </div>
   <div class="chips">
     <span class="chip" data-i18n="chip_ver"><b>v1.0.0</b> sürüm</span>
