@@ -86,26 +86,31 @@
     <td><strong>Paket</strong></td>
     <td><strong>Ne için?</strong></td>
     <td><strong>Kurulum / Çalıştırma komutu</strong></td>
+    <td><strong>İndir</strong></td>
   </tr>
   <tr>
     <td>📦 <strong>AppImage</strong></td>
     <td>Kurulum gerektirmez; indir, çalıştırılabilir yap, çift tıkla</td>
     <td><code>chmod +x IDM-LINUX-1.0.0-x86_64.AppImage &amp;&amp; ./IDM-LINUX-1.0.0-x86_64.AppImage</code></td>
+    <td align="center"><a href="https://github.com/vesvese55x/IDM-LINUX/releases/latest/download/IDM-LINUX-1.0.0-x86_64.AppImage" target="_blank" rel="noreferrer"><img src="https://img.shields.io/badge/%C4%B0ND%C4%B0R-10b981?style=for-the-badge&amp;logo=github&amp;logoColor=white" alt="İNDİR — AppImage"></a></td>
   </tr>
   <tr>
     <td>🐧 <strong>deb</strong></td>
     <td>Debian / Ubuntu / Mint ve türevleri; gdebi gibi GUI yükleyicilerle de uyumlu</td>
     <td><code>sudo apt install ./idm-linux_1.0.0_all.deb</code></td>
+    <td align="center"><a href="https://github.com/vesvese55x/IDM-LINUX/releases/latest/download/idm-linux_1.0.0_all.deb" target="_blank" rel="noreferrer"><img src="https://img.shields.io/badge/%C4%B0ND%C4%B0R-10b981?style=for-the-badge&amp;logo=github&amp;logoColor=white" alt="İNDİR — deb"></a></td>
   </tr>
   <tr>
     <td>🎩 <strong>rpm</strong></td>
     <td>Fedora / openSUSE / RHEL türevleri</td>
     <td><code>sudo dnf install ./idm-linux-1.0.0-1.noarch.rpm</code></td>
+    <td align="center"><a href="https://github.com/vesvese55x/IDM-LINUX/releases/latest/download/idm-linux-1.0.0-1.noarch.rpm" target="_blank" rel="noreferrer"><img src="https://img.shields.io/badge/%C4%B0ND%C4%B0R-10b981?style=for-the-badge&amp;logo=github&amp;logoColor=white" alt="İNDİR — rpm"></a></td>
   </tr>
   <tr>
     <td>🏔️ <strong>zst</strong></td>
     <td>Arch / Manjaro ve türevleri</td>
     <td><code>sudo pacman -U idm-linux-1.0.0-1-any.pkg.tar.zst</code></td>
+    <td align="center"><a href="https://github.com/vesvese55x/IDM-LINUX/releases/latest/download/idm-linux-1.0.0-1-any.pkg.tar.zst" target="_blank" rel="noreferrer"><img src="https://img.shields.io/badge/%C4%B0ND%C4%B0R-10b981?style=for-the-badge&amp;logo=github&amp;logoColor=white" alt="İNDİR — zst"></a></td>
   </tr>
 </table>
 
@@ -120,7 +125,7 @@
   <img src="https://img.shields.io/badge/S%C3%BCr%C3%BCm-IDM--LINUX--1.0.0-8b5cf6?style=flat-square" alt="Sürüm IDM-LINUX-1.0.0">
 </p>
 
-🌟 Tüm paketler aynı <strong>IDM-LINUX-1.0.0</strong> sürümünü taşır ve [GitHub Releases](https://github.com/vesvese55x/IDM-LINUX/releases/tag/v1.0.0) sayfasından indirilir.  
+🌟 Tablodaki <strong>İNDİR</strong> butonları her zaman [GitHub Releases](https://github.com/vesvese55x/IDM-LINUX/releases/latest) sayfasındaki <em>en güncel</em> paketi indirir; tüm paketler aynı <strong>IDM-LINUX-1.0.0</strong> sürümünü taşır.  
 🧰 Kurulum sihirbazı; Wine, resmî IDM, tarayıcı eklentileri ve yt-dlp/ffmpeg/aria2 araçlarını gerektiğinde otomatik indirip kurar.  
 🧩 Gereksinimler: Linux (x86_64 önerilir) ve Python 3.8+; masaüstü ortamı (X11/Wayland) GUI için önerilir.  
 🌐 Arayüz 20 dilde çalışır; Türkçe varsayılan olarak gelir.
