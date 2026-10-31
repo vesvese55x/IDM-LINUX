@@ -60,6 +60,20 @@ jobs:
           test -f "dist/idm-linux-1.0.0-1.noarch.rpm"
           test -f "dist/idm-linux-1.0.0-1-any.pkg.tar.zst"
           echo "4/4 paket hazır ✓"
+          # DEB: eski dpkg/gdebi/GNOME-Software uyumluluğu için xz ZORUNLU
+          # (runner dpkg'si varsayılan zstd'ye geçti — o paketler eski sistemlerde bozuk görünür)
+          DEB_INFO=$(file dist/idm-linux_1.0.0_all.deb)
+          echo "$DEB_INFO"
+          echo "$DEB_INFO" | grep -q "data compression xz" || { echo "HATA: deb xz sıkıştırmalı değil — eski dpkg'ler açamaz"; exit 1; }
+          # RPM: header + dosya listesi okunabilir mi
+          rpm -q --info -p dist/idm-linux-1.0.0-1.noarch.rpm
+          # ZST (ALPM): makepkg-uyumlu metadata — .PKGINFO ve .MTREE İLK iki giriş olmalı
+          # (pamac 'geçersiz veya bozuk paket' hatasının kök nedeni eksik .MTREE idi)
+          ZST_LIST=$(zstd -dc dist/idm-linux-1.0.0-1-any.pkg.tar.zst | tar -tf -)
+          echo "$ZST_LIST" | head -4
+          [ "$(echo "$ZST_LIST" | head -1)" = ".PKGINFO" ] || { echo "HATA: .PKGINFO ilk giriş değil/yok"; exit 1; }
+          [ "$(echo "$ZST_LIST" | sed -n 2p)" = ".MTREE" ] || { echo "HATA: .MTREE ikinci giriş değil/yok — pamac paketi reddeder"; exit 1; }
+          echo "paket doğrulaması (deb-xz / rpm-header / zst-metadata) ✓"
 
       - name: IDM-LINUX-1.0.0 release'ine yükle (aynı sürüm — asset'ler tazelenir)
         env:

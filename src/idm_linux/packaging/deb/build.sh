@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 # DEB derleme (Debian/Ubuntu). Çıktı: dist/idm-linux_<sürüm>_all.deb
 # Yeni depo düzeni: betik src/idm_linux/packaging/deb/ altındadır; kök üç üst dizin.
+#
+# v3.14.2 DÜZELTMESİ: dpkg-deb -Zxz — GitHub Actions runner'ının yeni dpkg'si
+# data.tar'ı VARSAYILAN zstd sıkıştırıyor; eski dpkg'ler (Debian 10/11, Ubuntu
+# 20.04/22.04) ve birçok GUI kurucu (gdebi/GNOME Software/Synaptic eski sürümler)
+# data.tar.zst açamayıp "geçersiz veya bozuk paket / okunamıyor" hatası veriyor.
+# xz her dpkg sürümünde (Debian 6+) okunur — evrensel uyumluluk için xz ZORUNLU.
 set -euo pipefail
 cd "$(dirname "$0")/../../../.."
 source src/idm_linux/packaging/vars.sh
@@ -91,5 +97,6 @@ exit 0
 EOF
 chmod 0755 "${STAGE}/DEBIAN/postinst"
 
-dpkg-deb --build --root-owner-group "${STAGE}" "dist/${APP_ID}_${VERSION}_all.deb"
+# -Zxz: eski dpkg/GUI kurucuların data.tar.zst açamaması kökten çözülür (evrensel uyumluluk)
+dpkg-deb --build --root-owner-group -Zxz "${STAGE}" "dist/${APP_ID}_${VERSION}_all.deb"
 echo "OK: dist/${APP_ID}_${VERSION}_all.deb"

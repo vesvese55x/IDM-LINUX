@@ -2460,6 +2460,44 @@ def cookies_header_to_netscape_file(
     return cfile
 
 
+def _probe_cookie_file(cookies: str, page_url: str) -> Optional[Path]:
+    """v3.14.2 YouTube bot-kontrolü kök çözümü — tarayıcı oturumu fallback'i.
+
+    YouTube'un "robot olmadığını doğrulamak için giriş yap" (Sign in to confirm
+    you're not a bot) engeli çerezsiz/oturumsuz istemlerde IP itibarına dayalı
+    tetiklenir; --no-sandbox ile ilgisi YOKTUR (o bayrak yalnızca Chromium'un
+    kendi sandbox'ını etkiler). Kök neden: tarayıcıdan yakalanan çerez olmadan
+    yt-dlp'nin istemcileri YouTube'a 'anonim bot' gibi görünür.
+
+    Bu katman: uzantıdan yakalanan çerez varsa onu kullanır; YOKSA ve hedef
+    YouTube ise, kullanıcının KENDİ tarayıcılarının (Brave/Chrome/Chromium/Edge/
+    Firefox...) youtube.com oturum çerezlerini sistemden okuyup yt-dlp'ye
+    'gerçek tarayıcı oturumu' sinyali verir (bot-engelinin bilinen en etkili
+    kodsal aşımı). Çerez dosyası geçici: çağıran sonunda unlink eder.
+    """
+    if cookies:
+        return cookies_header_to_netscape_file(cookies, page_url)
+    low = (page_url or "").lower()
+    if not any(h in low for h in ("youtube.com", "youtu.be", "youtube-nocookie.com")):
+        return None
+    try:
+        from .browser_cookies import extract_browser_cookies_for_url
+
+        header = extract_browser_cookies_for_url("https://www.youtube.com/")
+        if header:
+            jar = cookies_header_to_netscape_file(header, "https://www.youtube.com/")
+            if jar:
+                logger.info(
+                    "yt-dlp probe: sistem tarayıcısından %d YouTube çerezi okundu "
+                    "(bot-kontrol önlemi — tarayıcı oturumu fallback)",
+                    header.count("="),
+                )
+            return jar
+    except Exception as exc:
+        logger.debug("tarayıcı çerez fallback hatası: %s", exc)
+    return None
+
+
 def format_bytes(size: Optional[int]) -> str:
     if not size or size <= 0:
         return ""
@@ -4451,7 +4489,9 @@ class StreamEngine:
             and page_url.startswith(("http://", "https://"))
             and not _never_ytdlp_probe(page_url)
         ):
-            cookie_file = cookies_header_to_netscape_file(cookies, page_url)
+            # v3.14.2: uzantı çerezi yoksa YouTube için sistem tarayıcısı oturum çerezleri
+            # okunur (bot-kontrol 'giriş yap' engelinin kökten çözümü)
+            cookie_file = _probe_cookie_file(cookies, page_url)
             try:
                 info, probe_err, drm_flag = _run_ytdlp_probe(
                     ytdlp_bin, page_url, cookie_file, user_agent, referer
@@ -4886,7 +4926,8 @@ def probe_playlist_entries(
     if not ytdlp_bin:
         return {"ok": False, "error": "yt-dlp bulunamadı", "entries": [], "title": ""}
 
-    cookie_file = cookies_header_to_netscape_file(cookies, page_url) if cookies else None
+    # v3.14.2: YouTube liste çözümlemesi de tarayıcı-oturum fallback'inden geçer
+    cookie_file = _probe_cookie_file(cookies, page_url)
     cmd = [
         ytdlp_bin,
         "--no-warnings",
