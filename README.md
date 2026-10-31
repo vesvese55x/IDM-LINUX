@@ -26,21 +26,14 @@
   <a href="https://github.com/vesvese55x/IDM-LINUX" target="_blank" rel="noreferrer"><strong>GITHUB</strong></a>
 </p>
 
-<p align="center">
+<p align="justify">
   <img src="https://github.com/vesvese55x/IDM-LINUX/actions/workflows/build.yml/badge.svg" alt="Derleme &amp; Test durumu">
-  &nbsp;
   <img src="https://img.shields.io/badge/Python-3.8%2B-3776AB?logo=python&amp;logoColor=white" alt="Python 3.8+">
-  &nbsp;
   <img src="https://img.shields.io/badge/Test_S%C3%BCiti-208_test-brightgreen" alt="208 Python paket testi">
-  &nbsp;
-  <img src="https://img.shields.io/badge/%C4%B0ndirmeler-Taray%C4%B1c%C4%B1_%C2%B7_Video_%C2%B7_Torrent_%C2%B7_DVR-10b981" alt="İndirmeler: Tarayıcı · Video · Torrent · DVR">
-  &nbsp;
+  <img src="https://img.shields.io/github/downloads/vesvese55x/IDM-LINUX/total?label=%C4%B0ndirmeler&amp;logo=github&amp;logoColor=white&amp;color=10b981" alt="İndirmeler — toplam indirme sayacı">
   <img src="https://img.shields.io/badge/Platform-Linux_x86__64-f97316" alt="Platform: Linux x86_64">
-  &nbsp;
   <img src="https://img.shields.io/badge/Backend-Wine_%2B_IDM_Engine-3b82f6" alt="Backend: Wine + IDM Engine">
-  &nbsp;
   <img src="https://img.shields.io/badge/Paketler-AppImage_%C2%B7_deb_%C2%B7_rpm_%C2%B7_zst-00AEEF" alt="Paketler">
-  &nbsp;
   <img src="https://img.shields.io/badge/S%C3%BCr%C3%BCm-IDM--LINUX--1.0.0-8b5cf6" alt="Sürüm IDM-LINUX-1.0.0">
 </p>
 
