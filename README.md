@@ -26,8 +26,9 @@
   <a href="https://github.com/vesvese55x/IDM-LINUX" target="_blank" rel="noreferrer"><strong>GITHUB</strong></a>
 </p>
 
-<p align="center">⚡ <strong>Tek satırlık otomatik kurulum / One-line auto install:</strong><br>
-<code>curl -fsSL https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/belgeselsemo-idm-linux-installer | sh</code></p>
+> ⚡ **Tek satırlık otomatik kurulum / One-line auto install**
+>
+> `curl -fsSL https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/belgeselsemo-idm-linux-installer | sh`
 
 ## IDM deneyimi Linux'ta
 
