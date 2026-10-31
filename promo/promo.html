@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🚀 IDM LINUX (BELGESELSEMO) — Tüm Özellikleriyle Tek Sahnede</title>
+<meta name="description" content="IDM LINUX; Internet Download Manager'ın tüm gücünü Linux'a taşır. Tarayıcı yakalama, video motoru, torrent, DVR ve sistem doktoru tek panelde.">
+<style>
+  :root{
+    --bg-root:#090e17; --bg-side:#0f172a; --bg-card:#131c31; --bg-card-alt:#192540;
+    --bg-console:#050811; --border:#23324d; --border-soft:#1a2740;
+    --fg:#f8fafc; --muted:#94a3b8; --dim:#64748b;
+    --cyan:#0ea5e9; --cyan-dk:#0284c7; --green:#10b981; --green-dk:#059669;
+    --amber:#f59e0b; --red:#ef4444;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg-root); color:var(--fg);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","DejaVu Sans",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65; overflow-x:hidden;
+  }
+  ::selection{background:rgba(14,165,233,.35)}
+  a{color:var(--cyan);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+  /* ---------- NAV ---------- */
+  nav{
+    position:sticky;top:0;z-index:50;
+    background:rgba(9,14,23,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--border-soft);
+  }
+  .nav-in{display:flex;align-items:center;gap:14px;height:62px}
+  .nav-in img{width:34px;height:34px;border-radius:9px}
+  .nav-brand{font-weight:800;font-size:1.02rem;letter-spacing:.3px}
+  .nav-brand em{font-style:normal;color:var(--cyan)}
+  .nav-links{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+  .nav-links a{
+    color:var(--muted);font-size:.86rem;font-weight:600;padding:7px 12px;border-radius:9px;
+  }
+  .nav-links a:hover{color:var(--fg);background:var(--bg-card);text-decoration:none}
+
+  /* ---------- HERO ---------- */
+  header{
+    position:relative;text-align:center;
+    padding:86px 20px 74px;
+    background:
+      radial-gradient(720px 340px at 18% -8%, rgba(14,165,233,.16), transparent 62%),
+      radial-gradient(760px 380px at 84% 4%, rgba(16,185,129,.12), transparent 60%),
+      radial-gradient(520px 300px at 50% 108%, rgba(14,165,233,.07), transparent 65%);
+  }
+  .hero-icons{display:flex;justify-content:center;align-items:center;gap:26px;margin-bottom:26px}
+  .hero-icons img{
+    width:118px;height:118px;border-radius:26px;
+    box-shadow:0 18px 46px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.05);
+    transition:transform .35s ease;
+  }
+  .hero-icons img:hover{transform:translateY(-6px) scale(1.03)}
+  .hero-x{font-size:2rem;color:var(--dim);font-weight:300}
+  h1{
+    font-size:clamp(2.1rem,5.2vw,3.3rem);font-weight:900;letter-spacing:-.5px;line-height:1.12;
+    background:linear-gradient(92deg,#f8fafc 12%,#7dd3fc 55%,#34d399 96%);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  }
+  .hero-sub{
+    max-width:860px;margin:18px auto 0;color:var(--muted);font-size:clamp(1rem,1.6vw,1.13rem);
+  }
+  .hero-sub strong{color:var(--fg)}
+  .cta-row{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:32px}
+  .btn{
+    display:inline-flex;align-items:center;gap:9px;font-weight:800;font-size:.95rem;
+    padding:13px 26px;border-radius:13px;border:0;cursor:pointer;transition:.22s;
+  }
+  .btn-primary{background:var(--cyan);color:#fff;box-shadow:0 10px 28px rgba(14,165,233,.35)}
+  .btn-primary:hover{background:var(--cyan-dk);transform:translateY(-2px);text-decoration:none}
+  .btn-ghost{background:var(--bg-card);color:var(--fg);border:1px solid var(--border)}
+  .btn-ghost:hover{background:var(--bg-card-alt);transform:translateY(-2px);text-decoration:none}
+  .chips{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:34px}
+  .chip{
+    font-size:.83rem;font-weight:700;color:var(--muted);
+    background:var(--bg-card);border:1px solid var(--border);border-radius:999px;padding:7px 15px;
+  }
+  .chip b{color:var(--cyan)}
+  .chip.g b{color:var(--green)}
+  .slogan{
+    margin:38px auto 0;max-width:760px;color:var(--dim);font-size:.94rem;font-style:italic;
+  }
+  .slogan b{color:var(--muted);font-style:normal}
+
+  /* ---------- SECTIONS ---------- */
+  section{padding:66px 0 20px}
+  .sec-head{text-align:center;margin-bottom:40px}
+  .sec-kicker{
+    display:inline-block;font-size:.78rem;font-weight:800;letter-spacing:2.4px;color:var(--cyan);
+    text-transform:uppercase;margin-bottom:10px;
+  }
+  .sec-kicker.g{color:var(--green)}
+  h2{font-size:clamp(1.5rem,3vw,2.1rem);font-weight:900;letter-spacing:-.3px}
+  .sec-head p{max-width:780px;margin:12px auto 0;color:var(--muted)}
+
+  /* ---------- FEATURES ---------- */
+  .grid{
+    display:grid;gap:16px;
+    grid-template-columns:repeat(auto-fit,minmax(255px,1fr));
+  }
+  .card{
+    background:linear-gradient(160deg,var(--bg-card),#0e1626);
+    border:1px solid var(--border-soft);border-radius:17px;padding:23px 21px;
+    transition:.25s;position:relative;overflow:hidden;
+  }
+  .card::before{
+    content:"";position:absolute;inset:0 0 auto 0;height:2px;
+    background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+    opacity:0;transition:.3s;
+  }
+  .card:hover{transform:translateY(-4px);border-color:var(--border)}
+  .card:hover::before{opacity:.85}
+  .card .ico{
+    width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+    font-size:1.4rem;background:rgba(14,165,233,.12);border:1px solid rgba(14,165,233,.28);margin-bottom:14px;
+  }
+  .card.g .ico{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.3)}
+  .card.a .ico{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.3)}
+  .card h3{font-size:1.02rem;font-weight:800;margin-bottom:7px}
+  .card p{color:var(--muted);font-size:.9rem}
+
+  /* ---------- SCREENS ---------- */
+  .shot{
+    display:block;background:var(--bg-side);border:1px solid var(--border-soft);
+    border-radius:15px;overflow:hidden;transition:.28s;position:relative;
+  }
+  .shot img{width:100%;display:block;transition:transform .45s ease}
+  .shot:hover{border-color:var(--cyan);box-shadow:0 16px 40px rgba(2,8,20,.6)}
+  .shot:hover img{transform:scale(1.025)}
+  .shot figcaption{
+    display:flex;align-items:center;gap:8px;padding:11px 15px;font-size:.86rem;font-weight:700;color:var(--muted);
+  }
+  .shot figcaption i{width:7px;height:7px;border-radius:50%;background:var(--cyan);flex:none}
+  .shots-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(290px,1fr))}
+  .shot.wide{grid-column:1/-1}
+
+  /* ---------- INSTALL ---------- */
+  .pkg-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(268px,1fr))}
+  .pkg{
+    background:linear-gradient(170deg,var(--bg-card),#0d1524);
+    border:1px solid var(--border-soft);border-radius:17px;padding:22px;transition:.25s;
+  }
+  .pkg:hover{transform:translateY(-4px);border-color:var(--green)}
+  .pkg-tag{
+    display:inline-block;font-size:.72rem;font-weight:800;letter-spacing:1.4px;color:var(--green);
+    background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);
+    padding:3px 10px;border-radius:999px;margin-bottom:12px;text-transform:uppercase;
+  }
+  .pkg h3{font-size:1.05rem;margin-bottom:6px}
+  .pkg p{color:var(--muted);font-size:.88rem;margin-bottom:14px}
+  .code{
+    display:flex;align-items:center;gap:8px;background:var(--bg-console);
+    border:1px solid var(--border-soft);border-radius:11px;padding:11px 13px;
+  }
+  .code code{
+    flex:1;font-family:"DejaVu Sans Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:.78rem;color:#7dd3fc;white-space:nowrap;overflow-x:auto;scrollbar-width:thin;
+  }
+  .copy{
+    flex:none;border:1px solid var(--border);background:var(--bg-card);color:var(--muted);
+    font-size:.72rem;font-weight:800;border-radius:8px;padding:6px 10px;cursor:pointer;transition:.2s;
+  }
+  .copy:hover{color:var(--fg);border-color:var(--cyan)}
+  .install-notes{margin-top:26px;display:grid;gap:9px;justify-items:center}
+  .install-notes span{color:var(--muted);font-size:.9rem}
+  .install-notes b{color:var(--fg)}
+
+  /* ---------- MOBILE ---------- */
+  .mob-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(178px,1fr))}
+  .mob{
+    display:block;text-align:center;background:var(--bg-card);border:1px solid var(--border-soft);
+    border-radius:17px;padding:26px 14px;transition:.25s;color:var(--fg);
+  }
+  .mob:hover{transform:translateY(-4px);border-color:var(--cyan);text-decoration:none;background:var(--bg-card-alt)}
+  .mob img{width:74px;height:74px;border-radius:17px;box-shadow:0 10px 26px rgba(0,0,0,.5);margin-bottom:13px}
+  .mob strong{display:block;font-size:.9rem;margin-bottom:4px}
+  .mob sub{color:var(--dim);font-size:.76rem}
+  .mob.soon{opacity:.62;border-style:dashed}
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    margin-top:74px;border-top:1px solid var(--border-soft);
+    background:linear-gradient(180deg,transparent,rgba(14,165,233,.05));
+    padding:44px 0 34px;text-align:center;
+  }
+  .foot-brand{display:flex;justify-content:center;align-items:center;gap:12px;margin-bottom:16px}
+  .foot-brand img{width:44px;height:44px;border-radius:11px}
+  .foot-brand span{font-weight:900;font-size:1.15rem}
+  .foot-brand em{font-style:normal;color:var(--cyan)}
+  footer p{color:var(--muted);font-size:.88rem;max-width:640px;margin:0 auto 6px}
+  footer .made{color:var(--dim);font-size:.8rem;margin-top:16px}
+  footer .made b{color:var(--green)}
+  .foot-links{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;margin-top:14px;font-size:.86rem;font-weight:700}
+
+  /* ---------- REVEAL ---------- */
+  .rv{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s ease}
+  .rv.in{opacity:1;transform:none}
+
+  @media (max-width:640px){
+    .hero-icons img{width:88px;height:88px;border-radius:20px}
+    .hero-x{font-size:1.4rem}
+    .nav-links a{padding:6px 8px;font-size:.78rem}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-in">
+    <img src="../src/idm_linux/assets/idm-linux-icon.png" alt="IDM LINUX">
+    <span class="nav-brand">IDM <em>LINUX</em></span>
+    <div class="nav-links">
+      <a href="#ozellikler">Özellikler</a>
+      <a href="#ekranlar">Ekranlar</a>
+      <a href="#kurulum">Kurulum</a>
+      <a href="#ekosistem">Ekosistem</a>
+      <a href="https://github.com/vesvese55x/IDM-LINUX" target="_blank" rel="noreferrer">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<header>
+  <div class="hero-icons">
+    <img src="../src/idm_linux/assets/idm-linux-icon.png" alt="IDM LINUX simgesi">
+    <span class="hero-x">×</span>
+    <img src="../src/idm_linux/assets/idm-classic-icon.png" alt="Orijinal IDM simgesi">
+  </div>
+  <h1>🚀 IDM LINUX</h1>
+  <p class="hero-sub">
+    <strong>Internet Download Manager</strong>'ın tüm gücü Linux'ta: tarayıcı yakalama, video motoru, torrent, canlı yayın DVR
+    ve sistem doktoru — <strong>tek bir hafif kontrol panelinde</strong>. İndirmeler gerçek IDM motoru üzerinden maksimum hızda yürür.
+  </p>
+  <div class="cta-row">
+    <a class="btn btn-primary" href="https://github.com/vesvese55x/IDM-LINUX/releases/tag/v1.0.0" target="_blank" rel="noreferrer">⬇️ IDM-LINUX-1.0.0'ı İndir</a>
+    <a class="btn btn-ghost" href="#ekranlar">📸 Ekranları Gez</a>
+  </div>
+  <div class="chips">
+    <span class="chip"><b>v1.0.0</b> sürüm</span>
+    <span class="chip">📦 <b>4</b> paket türü</span>
+    <span class="chip">🌍 <b>20</b> dil</span>
+    <span class="chip g">🩺 <b>6 adımlı</b> otomatik doktor</span>
+    <span class="chip">🎬 <b>HLS/4K</b> video motoru</span>
+    <span class="chip">🧲 <b>DHT</b> torrent</span>
+  </div>
+  <p class="slogan"><b>Bu sayfa;</b> tüm özellikleri ve işlevselliğiyle birlikte IDM LINUX deneyimini tek sahnede anlatır.</p>
+</header>
+
+<section id="ozellikler">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="sec-kicker">Özellikler</span>
+      <h2>Tek panel, on yetenek</h2>
+      <p>IDM LINUX, Wine üzerinde koşan gerçek IDM motorunu Linux tarafındaki hafif bir Python paneliyle buluşturur. Her katman aynı yerel köprü üzerinden konuşur: <code style="color:#7dd3fc">127.0.0.1:17802</code>.</p>
+    </div>
+    <div class="grid">
+      <div class="card rv"><div class="ico">🌐</div><h3>Tarayıcı Entegrasyonu</h3><p>Chromium ve Firefox tabanlı tüm tarayıcılarda eklenti; indirme taleplerini otomatik yakalar, IDM'ye devreder. Tıkla, gerisini IDM LINUX yapsın.</p></div>
+      <div class="card rv"><div class="ico">🎬</div><h3>Video Motoru (HLS/4K)</h3><p>yt-dlp / streamlink motor zinciri; siteye en uygun motor otomatik seçilir, 4K ve HLS akışları dahil doğrudan IDM'ye aktarılır.</p></div>
+      <div class="card rv"><div class="ico">🧲</div><h3>Gömülü Torrent Motoru</h3><p>Magnet ve .torrent desteği, DHT ile tracker'sız peer keşfi. Onay penceresinden içeriği ya da yalnızca .torrent dosyasını indirebilirsin.</p></div>
+      <div class="card rv"><div class="ico">📺</div><h3>Canlı Yayın / DVR</h3><p>Canlı akışlardan kayıt alabilen DVR katmanı; başlat, durdur, yönet — hepsi arayüzden.</p></div>
+      <div class="card rv"><div class="ico">📦</div><h3>Dosya Barındırıcılar</h3><p>Popüler barındırıcı siteler için konuk oturumu ve doğrudan bağlantı çözümleme; dosya bozuk inmez, indirme IDM üzerinden tamamlanır.</p></div>
+      <div class="card g rv"><div class="ico">🩺</div><h3>Sistem Doktoru</h3><p>6 adımlı otomatik teşhis ve tamir: köprü, video motoru, tarayıcı bağlantıları tek tıkla onarılır. Canlı günlükler aynı ekranda akar.</p></div>
+      <div class="card g rv"><div class="ico">🛡️</div><h3>--no-sandbox Kökten Çözüm</h3><p>Gerektiren ortamlar dinamik algılanır; kurulum ve tarayıcı açılışlarında parametre otomatik eklenir, engel hiç yaşanmaz.</p></div>
+      <div class="card a rv"><div class="ico">🌍</div><h3>20 Dil, Türkçe Varsayılan</h3><p>Arayüz 20 dilde çalışır; IDM diliyle otomatik senkronize olur. Sağdan sola diller için RTL ayarı da dahil.</p></div>
+      <div class="card a rv"><div class="ico">✋</div><h3>İptal = Tam Dur</h3><p>Bir indirmeyi iptal ettiğinde arka planda hiçbir motor devam etmez; kaynak yemez, dosya yarım bırakılmaz.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="ekranlar">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="sec-kicker">Ekranlar</span>
+      <h2>Panelden kareler</h2>
+      <p>Modern koyu Slate teması ve Neon Cyan/Emerald paleti — masaüstünde kasma yok, her şey göz önünde.</p>
+    </div>
+    <div class="shots-grid">
+      <a class="shot wide rv" href="assets/screens/overview.png" target="_blank" rel="noreferrer">
+        <img src="assets/screens/overview.png" alt="Genel Bakış & Canlı Kontrol Paneli" loading="lazy">
+        <figcaption><i></i>Genel Bakış &amp; Canlı Kontrol Paneli — köprü durumu, hızlı bağlantı, hızlı işlemler ve oynatma listesi</figcaption>
+      </a>
+      <a class="shot rv" href="assets/screens/installer.png" target="_blank" rel="noreferrer">
+        <img src="assets/screens/installer.png" alt="Kurulum & Güncelleme Sihirbazı" loading="lazy">
+        <figcaption><i></i>Kurulum &amp; Güncelleme Sihirbazı — Wine + resmî IDM otomatik</figcaption>
+      </a>
+      <a class="shot rv" href="assets/screens/browsers.png" target="_blank" rel="noreferrer">
+        <img src="assets/screens/browsers.png" alt="Tarayıcı & Eklentiler" loading="lazy">
+        <figcaption><i></i>Tarayıcı &amp; Eklentiler — Chromium/Firefox native messaging</figcaption>
+      </a>
+      <a class="shot rv" href="assets/screens/doctor.png" target="_blank" rel="noreferrer">
+        <img src="assets/screens/doctor.png" alt="Sistem Doktoru & Canlı Günlükler" loading="lazy">
+        <figcaption><i></i>Sistem Doktoru &amp; Canlı Günlükler — daemon.log akışı</figcaption>
+      </a>
+      <a class="shot rv" href="assets/screens/projects.png" target="_blank" rel="noreferrer">
+        <img src="assets/screens/projects.png" alt="Diğer Projeler & Ekosistem" loading="lazy">
+        <figcaption><i></i>Diğer Projeler — BELGESELSEMO uygulama ekosistemi</figcaption>
+      </a>
+      <a class="shot rv" href="assets/screens/support.png" target="_blank" rel="noreferrer">
+        <img src="assets/screens/support.png" alt="Teşekkür Et & Destekle" loading="lazy">
+        <figcaption><i></i>Teşekkür Et &amp; Destekle — topluluk ve manevi destek</figcaption>
+      </a>
+      <a class="shot rv" href="assets/screens/settings.png" target="_blank" rel="noreferrer">
+        <img src="assets/screens/settings.png" alt="Yakalama & Wine Ayarları" loading="lazy">
+        <figcaption><i></i>Yakalama &amp; Wine Ayarları — portlar, klasörler, dil</figcaption>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section id="kurulum">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="sec-kicker g">Kurulum</span>
+      <h2>Paketini seç, tek komut</h2>
+      <p>Tüm paketler aynı <strong>IDM-LINUX-1.0.0</strong> sürümünü taşır ve <a href="https://github.com/vesvese55x/IDM-LINUX/releases/tag/v1.0.0" target="_blank" rel="noreferrer">GitHub Releases</a> üzerinden dağıtılır.</p>
+    </div>
+    <div class="pkg-grid">
+      <div class="pkg rv">
+        <span class="pkg-tag">AppImage</span>
+        <h3>📦 Kurulumsuz çalıştır</h3>
+        <p>İndir, çalıştırılabilir yap, çift tıkla. Sisteme iz bırakmaz.</p>
+        <div class="code"><code>chmod +x IDM-LINUX-1.0.0-x86_64.AppImage &amp;&amp; ./IDM-LINUX-1.0.0-x86_64.AppImage</code><button class="copy">KOPYALA</button></div>
+      </div>
+      <div class="pkg rv">
+        <span class="pkg-tag">deb</span>
+        <h3>🐧 Debian / Ubuntu / Mint</h3>
+        <p>gdebi ve benzeri GUI deb yükleyicileriyle de sorunsuz kurulur.</p>
+        <div class="code"><code>sudo apt install ./idm-linux_1.0.0_all.deb</code><button class="copy">KOPYALA</button></div>
+      </div>
+      <div class="pkg rv">
+        <span class="pkg-tag">rpm</span>
+        <h3>🎩 Fedora / openSUSE / RHEL</h3>
+        <p>RPM tabanlı dağıtımlar için noarch paket.</p>
+        <div class="code"><code>sudo dnf install ./idm-linux-1.0.0-1.noarch.rpm</code><button class="copy">KOPYALA</button></div>
+      </div>
+      <div class="pkg rv">
+        <span class="pkg-tag">zst</span>
+        <h3>🏔️ Arch / Manjaro</h3>
+        <p>pacman ile doğrudan kurulum; makepkg gerektirmez.</p>
+        <div class="code"><code>sudo pacman -U idm-linux-1.0.0-1-any.pkg.tar.zst</code><button class="copy">KOPYALA</button></div>
+      </div>
+    </div>
+    <div class="install-notes rv">
+      <span>🧰 Kurulum sihirbazı; <b>Wine</b>, <b>resmî IDM</b>, tarayıcı eklentileri ve <b>yt-dlp / ffmpeg / aria2</b> araçlarını gerektiğinde otomatik indirip kurar.</span>
+      <span>🧩 Gereksinimler: Linux (x86_64 önerilir) ve <b>Python 3.8+</b>; GUI için X11/Wayland masaüstü önerilir.</span>
+    </div>
+  </div>
+</section>
+
+<section id="ekosistem">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="sec-kicker">Ekosistem</span>
+      <h2>Mobil BELGESELSEMO ekosistemi</h2>
+      <p>BELGESELSEMO dünyası masaüstüyle sınırlı değil: Android tarafında belgesel, trivia, TV rehberi, nöbetçi eczane ve Nutuk uygulamaları aynı ekosistemi sürdürür.</p>
+    </div>
+    <div class="mob-grid">
+      <a class="mob rv" href="https://play.google.com/store/apps/details?id=com.belgeselsemo.tr" target="_blank" rel="noreferrer">
+        <img src="https://play-lh.googleusercontent.com/vlfs0KVW99715oyn6M4DrX4LBod8m2fjWe7TVG3_2dFfeHGegCSC-hNfDs8ZVlCYMlWe=s256" alt="BELGESELSEMO">
+        <strong>BELGESELSEMO</strong><sub>HD Belgesel &amp; Araçlar Portalı</sub>
+      </a>
+      <a class="mob rv" href="https://play.google.com/store/apps/details?id=com.belgeselsemo.trivia" target="_blank" rel="noreferrer">
+        <img src="https://play-lh.googleusercontent.com/N9SZMLxSJ8VFtIvJsy_-B6EbhiV6rTBEpyB5tXBJrnIHx3CWQyPKoOU8ScUaTgxsAH_Q7y4a0Frm1tzI_Y6D=s256" alt="BELGESELSEMO TRIVIA">
+        <strong>BELGESELSEMO TRIVIA</strong><sub>Bilgi yarışması</sub>
+      </a>
+      <a class="mob rv" href="https://play.google.com/store/apps/details?id=com.belgeselsemo.epgviewer" target="_blank" rel="noreferrer">
+        <img src="https://play-lh.googleusercontent.com/CLmBtb1IF14ygKG1a9-Is7BaFXKroQaMs6CDRVlQSHlzETHFQBEhGeekb47pmUrNWqbuG8emvOL5Y_wxvh1ueQ=s256" alt="BELGESELSEMO TV REHBERİ">
+        <strong>TV REHBERİ (EPG)</strong><sub>Yayın akışı görüntüleyici</sub>
+      </a>
+      <a class="mob rv" href="https://play.google.com/store/apps/details?id=com.belgeselsemo.nb724" target="_blank" rel="noreferrer">
+        <img src="https://play-lh.googleusercontent.com/OMrderXOxOJvAWQj8X912y6tnICDUG1V4pOksxPUIRTWknkX0lfTajssPipGJX9ZssAXGczB1Pk2Ob_hHqNV=s256" alt="Nöbetçi Eczaneler 7/24">
+        <strong>NÖBETÇİ ECZANE 7/24</strong><sub>TR &amp; KKTC</sub>
+      </a>
+      <a class="mob rv" href="https://play.google.com/store/apps/details?id=com.belgeselsemo.nutuk" target="_blank" rel="noreferrer">
+        <img src="https://play-lh.googleusercontent.com/07-bd0NNX6xQA3QtQtbWHrl6So_GlCjs1oHo87IImwhkdoimCM8485EYBu-fwAwqCpNbX64eeD8mX7eEsZOsjw=s256" alt="Nutuk 1919-1927">
+        <strong>NUTUK 1919-1927</strong><sub>Sözlü &amp; sesli</sub>
+      </a>
+      <span class="mob soon rv">
+        <img src="../src/idm_linux/assets/idm-linux-icon.png" alt="BELGESELSEMO ECONOMY">
+        <strong>BELGESELSEMO ECONOMY</strong><sub>Yakında…</sub>
+      </span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-brand">
+      <img src="../src/idm_linux/assets/idm-classic-icon.png" alt="IDM">
+      <span>IDM <em>LINUX</em></span>
+    </div>
+    <p>Internet Download Manager'ın tüm gücü — Linux'ta, tam işlevsel, hafif ve kararlı.</p>
+    <div class="foot-links">
+      <a href="https://github.com/vesvese55x/IDM-LINUX" target="_blank" rel="noreferrer">GitHub</a>
+      <a href="https://github.com/vesvese55x/IDM-LINUX/releases/tag/v1.0.0" target="_blank" rel="noreferrer">Sürümler</a>
+      <a href="https://belgeselsemo.com.tr" target="_blank" rel="noreferrer">belgeselsemo.com.tr</a>
+      <a href="https://github.com/vesvese55x/belgeselsemoflix" target="_blank" rel="noreferrer">BELGESELSEMOFLIX</a>
+    </div>
+    <p class="made">Crafted by <b>BELGESELSEMO</b> — powered by ARENA.AI &amp; Z.AI</p>
+  </div>
+</footer>
+
+<script>
+  // yumuşak reveal
+  const io = new IntersectionObserver((es) => {
+    es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: .12 });
+  document.querySelectorAll('.rv').forEach((el, i) => {
+    el.style.transitionDelay = (i % 4) * 60 + 'ms';
+    io.observe(el);
+  });
+  // kopyala butonları
+  document.querySelectorAll('.copy').forEach((b) => {
+    b.addEventListener('click', () => {
+      const code = b.parentElement.querySelector('code').innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        const old = b.textContent; b.textContent = 'KOPYALANDI ✓';
+        setTimeout(() => { b.textContent = old; }, 1400);
+      });
+    });
+  });
+</script>
+</body>
+</html>
