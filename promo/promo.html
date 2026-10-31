@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" dir="ltr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -38,11 +38,41 @@
   .nav-in img{width:34px;height:34px;border-radius:9px}
   .nav-brand{font-weight:800;font-size:1.02rem;letter-spacing:.3px}
   .nav-brand em{font-style:normal;color:var(--cyan)}
-  .nav-links{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+  .nav-links{margin-inline-start:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
   .nav-links a{
     color:var(--muted);font-size:.86rem;font-weight:600;padding:7px 12px;border-radius:9px;
   }
   .nav-links a:hover{color:var(--fg);background:var(--bg-card);text-decoration:none}
+
+  /* ---------- DİL SEÇİCİ ---------- */
+  .lang{position:relative}
+  .lang-btn{
+    display:inline-flex;align-items:center;gap:7px;
+    background:var(--bg-card);border:1px solid var(--border);color:var(--fg);
+    font-weight:700;font-size:.84rem;padding:7px 11px;border-radius:10px;cursor:pointer;transition:.2s;
+  }
+  .lang-btn:hover{border-color:var(--cyan)}
+  .lang-btn img{width:19px;height:14px;border-radius:2.5px;object-fit:cover;box-shadow:0 0 0 1px rgba(255,255,255,.14)}
+  .lang-btn .chev{color:var(--dim);font-size:.68rem}
+  .lang-menu{
+    position:absolute;top:calc(100% + 8px);inset-inline-end:0;width:min(430px,92vw);
+    background:var(--bg-side);border:1px solid var(--border);border-radius:14px;
+    box-shadow:0 22px 54px rgba(2,8,20,.72);padding:8px;display:none;
+    grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;max-height:min(430px,68vh);overflow-y:auto;z-index:60;
+    scrollbar-width:thin;
+  }
+  .lang-menu.open{display:grid}
+  .lang-item{
+    display:flex;align-items:center;gap:9px;background:transparent;border:0;color:var(--muted);
+    font-weight:600;font-size:.86rem;padding:8px 10px;border-radius:9px;cursor:pointer;
+    transition:.15s;text-align:start;font-family:inherit;line-height:1.35;
+  }
+  .lang-item:hover{background:var(--bg-card);color:var(--fg)}
+  .lang-item.active{background:rgba(14,165,233,.14);color:var(--cyan)}
+  .lang-item img{width:21px;height:15px;border-radius:3px;object-fit:cover;box-shadow:0 0 0 1px rgba(255,255,255,.14);flex:none}
+  .lang-item .ln{flex:1 1 auto;min-width:0;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lang-item .le{margin-inline-start:auto;font-size:.66rem;color:var(--dim);font-weight:700;flex:none;padding-inline-start:6px}
+  .lang-item.active .le{color:var(--cyan)}
 
   /* ---------- HERO ---------- */
   header{
@@ -209,6 +239,8 @@
     .hero-icons img{width:88px;height:88px;border-radius:20px}
     .hero-x{font-size:1.4rem}
     .nav-links a{padding:6px 8px;font-size:.78rem}
+    .lang-btn span{display:none}
+    .lang-menu{grid-template-columns:1fr}
   }
 </style>
 </head>
@@ -216,61 +248,67 @@
 
 <nav>
   <div class="wrap nav-in">
-    <img src="../src/idm_linux/assets/idm-linux-icon.png" alt="IDM LINUX">
+    <img src="https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/src/idm_linux/assets/idm-linux-icon.png" alt="IDM LINUX">
     <span class="nav-brand">IDM <em>LINUX</em></span>
     <div class="nav-links">
-      <a href="#ozellikler">Özellikler</a>
-      <a href="#ekranlar">Ekranlar</a>
-      <a href="#kurulum">Kurulum</a>
-      <a href="#ekosistem">Ekosistem</a>
+      <a href="#ozellikler" data-i18n="nav_features">Özellikler</a>
+      <a href="#ekranlar" data-i18n="nav_screens">Ekranlar</a>
+      <a href="#kurulum" data-i18n="nav_install">Kurulum</a>
+      <a href="#ekosistem" data-i18n="nav_ecosystem">Ekosistem</a>
       <a href="https://github.com/vesvese55x/IDM-LINUX" target="_blank" rel="noreferrer">GitHub</a>
+      <div class="lang">
+        <button id="lang-btn" class="lang-btn" type="button" aria-label="Language / Dil">
+          <span id="lang-current"></span><span class="chev">▼</span>
+        </button>
+        <div id="lang-menu" class="lang-menu" role="menu" aria-label="Language menu"></div>
+      </div>
     </div>
   </div>
 </nav>
 
 <header>
   <div class="hero-icons">
-    <img src="../src/idm_linux/assets/idm-linux-icon.png" alt="IDM LINUX simgesi">
+    <img src="https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/src/idm_linux/assets/idm-linux-icon.png" alt="IDM LINUX simgesi">
     <span class="hero-x">×</span>
-    <img src="../src/idm_linux/assets/idm-classic-icon.png" alt="Orijinal IDM simgesi">
+    <img src="https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/src/idm_linux/assets/idm-classic-icon.png" alt="Orijinal IDM simgesi">
   </div>
   <h1>🚀 IDM LINUX</h1>
-  <p class="hero-sub">
+  <p class="hero-sub" data-i18n="hero_sub">
     <strong>Internet Download Manager</strong>'ın tüm gücü Linux'ta: tarayıcı yakalama, video motoru, torrent, canlı yayın DVR
     ve sistem doktoru — <strong>tek bir hafif kontrol panelinde</strong>. İndirmeler gerçek IDM motoru üzerinden maksimum hızda yürür.
   </p>
   <div class="cta-row">
-    <a class="btn btn-primary" href="https://github.com/vesvese55x/IDM-LINUX/releases/tag/v1.0.0" target="_blank" rel="noreferrer">⬇️ IDM-LINUX-1.0.0'ı İndir</a>
-    <a class="btn btn-ghost" href="#ekranlar">📸 Ekranları Gez</a>
+    <a class="btn btn-primary" href="https://github.com/vesvese55x/IDM-LINUX/releases/latest" target="_blank" rel="noreferrer" data-i18n="cta_download">⬇️ IDM-LINUX-1.0.0'ı İndir</a>
+    <a class="btn btn-ghost" href="#ekranlar" data-i18n="cta_screens">📸 Ekranları Gez</a>
   </div>
   <div class="chips">
-    <span class="chip"><b>v1.0.0</b> sürüm</span>
-    <span class="chip">📦 <b>4</b> paket türü</span>
-    <span class="chip">🌍 <b>20</b> dil</span>
-    <span class="chip g">🩺 <b>6 adımlı</b> otomatik doktor</span>
-    <span class="chip">🎬 <b>HLS/4K</b> video motoru</span>
-    <span class="chip">🧲 <b>DHT</b> torrent</span>
+    <span class="chip" data-i18n="chip_ver"><b>v1.0.0</b> sürüm</span>
+    <span class="chip" data-i18n="chip_pkg">📦 <b>4</b> paket türü</span>
+    <span class="chip" data-i18n="chip_lang">🌍 <b>20</b> dil</span>
+    <span class="chip g" data-i18n="chip_doc">🩺 <b>6 adımlı</b> otomatik doktor</span>
+    <span class="chip" data-i18n="chip_video">🎬 <b>HLS/4K</b> video motoru</span>
+    <span class="chip" data-i18n="chip_torrent">🧲 <b>DHT</b> torrent</span>
   </div>
-  <p class="slogan"><b>Bu sayfa;</b> tüm özellikleri ve işlevselliğiyle birlikte IDM LINUX deneyimini tek sahnede anlatır.</p>
+  <p class="slogan" data-i18n="slogan"><b>Bu sayfa;</b> tüm özellikleri ve işlevselliğiyle birlikte IDM LINUX deneyimini tek sahnede anlatır.</p>
 </header>
 
 <section id="ozellikler">
   <div class="wrap">
     <div class="sec-head rv">
-      <span class="sec-kicker">Özellikler</span>
-      <h2>Tek panel, on yetenek</h2>
-      <p>IDM LINUX, Wine üzerinde koşan gerçek IDM motorunu Linux tarafındaki hafif bir Python paneliyle buluşturur. Her katman aynı yerel köprü üzerinden konuşur: <code style="color:#7dd3fc">127.0.0.1:17802</code>.</p>
+      <span class="sec-kicker" data-i18n="f_kicker">Özellikler</span>
+      <h2 data-i18n="f_title">Tek panel, on yetenek</h2>
+      <p data-i18n="f_desc">IDM LINUX, Wine üzerinde koşan gerçek IDM motorunu Linux tarafındaki hafif bir Python paneliyle buluşturur. Her katman aynı yerel köprü üzerinden konuşur: <code style="color:#7dd3fc">127.0.0.1:17802</code>.</p>
     </div>
     <div class="grid">
-      <div class="card rv"><div class="ico">🌐</div><h3>Tarayıcı Entegrasyonu</h3><p>Chromium ve Firefox tabanlı tüm tarayıcılarda eklenti; indirme taleplerini otomatik yakalar, IDM'ye devreder. Tıkla, gerisini IDM LINUX yapsın.</p></div>
-      <div class="card rv"><div class="ico">🎬</div><h3>Video Motoru (HLS/4K)</h3><p>yt-dlp / streamlink motor zinciri; siteye en uygun motor otomatik seçilir, 4K ve HLS akışları dahil doğrudan IDM'ye aktarılır.</p></div>
-      <div class="card rv"><div class="ico">🧲</div><h3>Gömülü Torrent Motoru</h3><p>Magnet ve .torrent desteği, DHT ile tracker'sız peer keşfi. Onay penceresinden içeriği ya da yalnızca .torrent dosyasını indirebilirsin.</p></div>
-      <div class="card rv"><div class="ico">📺</div><h3>Canlı Yayın / DVR</h3><p>Canlı akışlardan kayıt alabilen DVR katmanı; başlat, durdur, yönet — hepsi arayüzden.</p></div>
-      <div class="card rv"><div class="ico">📦</div><h3>Dosya Barındırıcılar</h3><p>Popüler barındırıcı siteler için konuk oturumu ve doğrudan bağlantı çözümleme; dosya bozuk inmez, indirme IDM üzerinden tamamlanır.</p></div>
-      <div class="card g rv"><div class="ico">🩺</div><h3>Sistem Doktoru</h3><p>6 adımlı otomatik teşhis ve tamir: köprü, video motoru, tarayıcı bağlantıları tek tıkla onarılır. Canlı günlükler aynı ekranda akar.</p></div>
-      <div class="card g rv"><div class="ico">🛡️</div><h3>--no-sandbox Kökten Çözüm</h3><p>Gerektiren ortamlar dinamik algılanır; kurulum ve tarayıcı açılışlarında parametre otomatik eklenir, engel hiç yaşanmaz.</p></div>
-      <div class="card a rv"><div class="ico">🌍</div><h3>20 Dil, Türkçe Varsayılan</h3><p>Arayüz 20 dilde çalışır; IDM diliyle otomatik senkronize olur. Sağdan sola diller için RTL ayarı da dahil.</p></div>
-      <div class="card a rv"><div class="ico">✋</div><h3>İptal = Tam Dur</h3><p>Bir indirmeyi iptal ettiğinde arka planda hiçbir motor devam etmez; kaynak yemez, dosya yarım bırakılmaz.</p></div>
+      <div class="card rv"><div class="ico">🌐</div><h3 data-i18n="f1t">Tarayıcı Entegrasyonu</h3><p data-i18n="f1d">Chromium ve Firefox tabanlı tüm tarayıcılarda eklenti; indirme taleplerini otomatik yakalar, IDM'ye devreder. Tıkla, gerisini IDM LINUX yapsın.</p></div>
+      <div class="card rv"><div class="ico">🎬</div><h3 data-i18n="f2t">Video Motoru (HLS/4K)</h3><p data-i18n="f2d">yt-dlp / streamlink motor zinciri; siteye en uygun motor otomatik seçilir, 4K ve HLS akışları dahil doğrudan IDM'ye aktarılır.</p></div>
+      <div class="card rv"><div class="ico">🧲</div><h3 data-i18n="f3t">Gömülü Torrent Motoru</h3><p data-i18n="f3d">Magnet ve .torrent desteği, DHT ile tracker'sız peer keşfi. Onay penceresinden içeriği ya da yalnızca .torrent dosyasını indirebilirsin.</p></div>
+      <div class="card rv"><div class="ico">📺</div><h3 data-i18n="f4t">Canlı Yayın / DVR</h3><p data-i18n="f4d">Canlı akışlardan kayıt alabilen DVR katmanı; başlat, durdur, yönet — hepsi arayüzden.</p></div>
+      <div class="card rv"><div class="ico">📦</div><h3 data-i18n="f5t">Dosya Barındırıcılar</h3><p data-i18n="f5d">Popüler barındırıcı siteler için konuk oturumu ve doğrudan bağlantı çözümleme; dosya bozuk inmez, indirme IDM üzerinden tamamlanır.</p></div>
+      <div class="card g rv"><div class="ico">🩺</div><h3 data-i18n="f6t">Sistem Doktoru</h3><p data-i18n="f6d">6 adımlı otomatik teşhis ve tamir: köprü, video motoru, tarayıcı bağlantıları tek tıkla onarılır. Canlı günlükler aynı ekranda akar.</p></div>
+      <div class="card g rv"><div class="ico">🛡️</div><h3 data-i18n="f7t">--no-sandbox Kökten Çözüm</h3><p data-i18n="f7d">Gerektiren ortamlar dinamik algılanır; kurulum ve tarayıcı açılışlarında parametre otomatik eklenir, engel hiç yaşanmaz.</p></div>
+      <div class="card a rv"><div class="ico">🌍</div><h3 data-i18n="f8t">20 Dil, Türkçe Varsayılan</h3><p data-i18n="f8d">Arayüz 20 dilde çalışır; IDM diliyle otomatik senkronize olur. Sağdan sola diller için RTL ayarı da dahil.</p></div>
+      <div class="card a rv"><div class="ico">✋</div><h3 data-i18n="f9t">İptal = Tam Dur</h3><p data-i18n="f9d">Bir indirmeyi iptal ettiğinde arka planda hiçbir motor devam etmez; kaynak yemez, dosya yarım bırakılmaz.</p></div>
     </div>
   </div>
 </section>
@@ -278,38 +316,38 @@
 <section id="ekranlar">
   <div class="wrap">
     <div class="sec-head rv">
-      <span class="sec-kicker">Ekranlar</span>
-      <h2>Panelden kareler</h2>
-      <p>Modern koyu Slate teması ve Neon Cyan/Emerald paleti — masaüstünde kasma yok, her şey göz önünde.</p>
+      <span class="sec-kicker" data-i18n="s_kicker">Ekranlar</span>
+      <h2 data-i18n="s_title">Panelden kareler</h2>
+      <p data-i18n="s_desc">Modern koyu Slate teması ve Neon Cyan/Emerald paleti — masaüstünde kasma yok, her şey göz önünde.</p>
     </div>
     <div class="shots-grid">
-      <a class="shot wide rv" href="assets/screens/overview.png" target="_blank" rel="noreferrer">
-        <img src="assets/screens/overview.png" alt="Genel Bakış & Canlı Kontrol Paneli" loading="lazy">
-        <figcaption><i></i>Genel Bakış &amp; Canlı Kontrol Paneli — köprü durumu, hızlı bağlantı, hızlı işlemler ve oynatma listesi</figcaption>
+      <a class="shot wide rv" href="https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/promo/assets/screens/overview.png" target="_blank" rel="noreferrer">
+        <img src="https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/promo/assets/screens/overview.png" alt="Genel Bakış & Canlı Kontrol Paneli" loading="lazy">
+        <figcaption><i></i><span data-i18n="s1">Genel Bakış &amp; Canlı Kontrol Paneli — köprü durumu, hızlı bağlantı, hızlı işlemler ve oynatma listesi</span></figcaption>
       </a>
-      <a class="shot rv" href="assets/screens/installer.png" target="_blank" rel="noreferrer">
-        <img src="assets/screens/installer.png" alt="Kurulum & Güncelleme Sihirbazı" loading="lazy">
-        <figcaption><i></i>Kurulum &amp; Güncelleme Sihirbazı — Wine + resmî IDM otomatik</figcaption>
+      <a class="shot rv" href="https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/promo/assets/screens/installer.png" target="_blank" rel="noreferrer">
+        <img src="https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/promo/assets/screens/installer.png" alt="Kurulum & Güncelleme Sihirbazı" loading="lazy">
+        <figcaption><i></i><span data-i18n="s2">Kurulum &amp; Güncelleme Sihirbazı — Wine + resmî IDM otomatik</span></figcaption>
       </a>
-      <a class="shot rv" href="assets/screens/browsers.png" target="_blank" rel="noreferrer">
-        <img src="assets/screens/browsers.png" alt="Tarayıcı & Eklentiler" loading="lazy">
-        <figcaption><i></i>Tarayıcı &amp; Eklentiler — Chromium/Firefox native messaging</figcaption>
+      <a class="shot rv" href="https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/promo/assets/screens/browsers.png" target="_blank" rel="noreferrer">
+        <img src="https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/promo/assets/screens/browsers.png" alt="Tarayıcı & Eklentiler" loading="lazy">
+        <figcaption><i></i><span data-i18n="s3">Tarayıcı &amp; Eklentiler — Chromium/Firefox native messaging</span></figcaption>
       </a>
-      <a class="shot rv" href="assets/screens/doctor.png" target="_blank" rel="noreferrer">
-        <img src="assets/screens/doctor.png" alt="Sistem Doktoru & Canlı Günlükler" loading="lazy">
-        <figcaption><i></i>Sistem Doktoru &amp; Canlı Günlükler — daemon.log akışı</figcaption>
+      <a class="shot rv" href="https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/promo/assets/screens/doctor.png" target="_blank" rel="noreferrer">
+        <img src="https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/promo/assets/screens/doctor.png" alt="Sistem Doktoru & Canlı Günlükler" loading="lazy">
+        <figcaption><i></i><span data-i18n="s4">Sistem Doktoru &amp; Canlı Günlükler — daemon.log akışı</span></figcaption>
       </a>
-      <a class="shot rv" href="assets/screens/projects.png" target="_blank" rel="noreferrer">
-        <img src="assets/screens/projects.png" alt="Diğer Projeler & Ekosistem" loading="lazy">
-        <figcaption><i></i>Diğer Projeler — BELGESELSEMO uygulama ekosistemi</figcaption>
+      <a class="shot rv" href="https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/promo/assets/screens/projects.png" target="_blank" rel="noreferrer">
+        <img src="https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/promo/assets/screens/projects.png" alt="Diğer Projeler & Ekosistem" loading="lazy">
+        <figcaption><i></i><span data-i18n="s5">Diğer Projeler — BELGESELSEMO uygulama ekosistemi</span></figcaption>
       </a>
-      <a class="shot rv" href="assets/screens/support.png" target="_blank" rel="noreferrer">
-        <img src="assets/screens/support.png" alt="Teşekkür Et & Destekle" loading="lazy">
-        <figcaption><i></i>Teşekkür Et &amp; Destekle — topluluk ve manevi destek</figcaption>
+      <a class="shot rv" href="https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/promo/assets/screens/support.png" target="_blank" rel="noreferrer">
+        <img src="https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/promo/assets/screens/support.png" alt="Teşekkür Et & Destekle" loading="lazy">
+        <figcaption><i></i><span data-i18n="s6">Teşekkür Et &amp; Destekle — topluluk ve manevi destek</span></figcaption>
       </a>
-      <a class="shot rv" href="assets/screens/settings.png" target="_blank" rel="noreferrer">
-        <img src="assets/screens/settings.png" alt="Yakalama & Wine Ayarları" loading="lazy">
-        <figcaption><i></i>Yakalama &amp; Wine Ayarları — portlar, klasörler, dil</figcaption>
+      <a class="shot rv" href="https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/promo/assets/screens/settings.png" target="_blank" rel="noreferrer">
+        <img src="https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/promo/assets/screens/settings.png" alt="Yakalama & Wine Ayarları" loading="lazy">
+        <figcaption><i></i><span data-i18n="s7">Yakalama &amp; Wine Ayarları — portlar, klasörler, dil</span></figcaption>
       </a>
     </div>
   </div>
@@ -318,39 +356,39 @@
 <section id="kurulum">
   <div class="wrap">
     <div class="sec-head rv">
-      <span class="sec-kicker g">Kurulum</span>
-      <h2>Paketini seç, tek komut</h2>
-      <p>Tüm paketler aynı <strong>IDM-LINUX-1.0.0</strong> sürümünü taşır ve <a href="https://github.com/vesvese55x/IDM-LINUX/releases/tag/v1.0.0" target="_blank" rel="noreferrer">GitHub Releases</a> üzerinden dağıtılır.</p>
+      <span class="sec-kicker g" data-i18n="i_kicker">Kurulum</span>
+      <h2 data-i18n="i_title">Paketini seç, tek komut</h2>
+      <p data-i18n="i_desc">Tüm paketler aynı <strong>IDM-LINUX-1.0.0</strong> sürümünü taşır ve <a href="https://github.com/vesvese55x/IDM-LINUX/releases/latest" target="_blank" rel="noreferrer">GitHub Releases</a> üzerinden dağıtılır.</p>
     </div>
     <div class="pkg-grid">
       <div class="pkg rv">
         <span class="pkg-tag">AppImage</span>
-        <h3>📦 Kurulumsuz çalıştır</h3>
-        <p>İndir, çalıştırılabilir yap, çift tıkla. Sisteme iz bırakmaz.</p>
-        <div class="code"><code>chmod +x IDM-LINUX-1.0.0-x86_64.AppImage &amp;&amp; ./IDM-LINUX-1.0.0-x86_64.AppImage</code><button class="copy">KOPYALA</button></div>
+        <h3 data-i18n="p1t">📦 Kurulumsuz çalıştır</h3>
+        <p data-i18n="p1d">İndir, çalıştırılabilir yap, çift tıkla. Sisteme iz bırakmaz.</p>
+        <div class="code"><code>chmod +x IDM-LINUX-1.0.0-x86_64.AppImage &amp;&amp; ./IDM-LINUX-1.0.0-x86_64.AppImage</code><button class="copy" type="button" data-i18n="btn_copy">KOPYALA</button></div>
       </div>
       <div class="pkg rv">
         <span class="pkg-tag">deb</span>
-        <h3>🐧 Debian / Ubuntu / Mint</h3>
-        <p>gdebi ve benzeri GUI deb yükleyicileriyle de sorunsuz kurulur.</p>
-        <div class="code"><code>sudo apt install ./idm-linux_1.0.0_all.deb</code><button class="copy">KOPYALA</button></div>
+        <h3 data-i18n="p2t">🐧 Debian / Ubuntu / Mint</h3>
+        <p data-i18n="p2d">gdebi ve benzeri GUI deb yükleyicileriyle de sorunsuz kurulur.</p>
+        <div class="code"><code>sudo apt install ./idm-linux_1.0.0_all.deb</code><button class="copy" type="button" data-i18n="btn_copy">KOPYALA</button></div>
       </div>
       <div class="pkg rv">
         <span class="pkg-tag">rpm</span>
-        <h3>🎩 Fedora / openSUSE / RHEL</h3>
-        <p>RPM tabanlı dağıtımlar için noarch paket.</p>
-        <div class="code"><code>sudo dnf install ./idm-linux-1.0.0-1.noarch.rpm</code><button class="copy">KOPYALA</button></div>
+        <h3 data-i18n="p3t">🎩 Fedora / openSUSE / RHEL</h3>
+        <p data-i18n="p3d">RPM tabanlı dağıtımlar için noarch paket.</p>
+        <div class="code"><code>sudo dnf install ./idm-linux-1.0.0-1.noarch.rpm</code><button class="copy" type="button" data-i18n="btn_copy">KOPYALA</button></div>
       </div>
       <div class="pkg rv">
         <span class="pkg-tag">zst</span>
-        <h3>🏔️ Arch / Manjaro</h3>
-        <p>pacman ile doğrudan kurulum; makepkg gerektirmez.</p>
-        <div class="code"><code>sudo pacman -U idm-linux-1.0.0-1-any.pkg.tar.zst</code><button class="copy">KOPYALA</button></div>
+        <h3 data-i18n="p4t">🏔️ Arch / Manjaro</h3>
+        <p data-i18n="p4d">pacman ile doğrudan kurulum; makepkg gerektirmez.</p>
+        <div class="code"><code>sudo pacman -U idm-linux-1.0.0-1-any.pkg.tar.zst</code><button class="copy" type="button" data-i18n="btn_copy">KOPYALA</button></div>
       </div>
     </div>
     <div class="install-notes rv">
-      <span>🧰 Kurulum sihirbazı; <b>Wine</b>, <b>resmî IDM</b>, tarayıcı eklentileri ve <b>yt-dlp / ffmpeg / aria2</b> araçlarını gerektiğinde otomatik indirip kurar.</span>
-      <span>🧩 Gereksinimler: Linux (x86_64 önerilir) ve <b>Python 3.8+</b>; GUI için X11/Wayland masaüstü önerilir.</span>
+      <span data-i18n="note1">🧰 Kurulum sihirbazı; <b>Wine</b>, <b>resmî IDM</b>, tarayıcı eklentileri ve <b>yt-dlp / ffmpeg / aria2</b> araçlarını gerektiğinde otomatik indirip kurar.</span>
+      <span data-i18n="note2">🧩 Gereksinimler: Linux (x86_64 önerilir) ve <b>Python 3.8+</b>; GUI için X11/Wayland masaüstü önerilir.</span>
     </div>
   </div>
 </section>
@@ -358,34 +396,34 @@
 <section id="ekosistem">
   <div class="wrap">
     <div class="sec-head rv">
-      <span class="sec-kicker">Ekosistem</span>
-      <h2>Mobil BELGESELSEMO ekosistemi</h2>
-      <p>BELGESELSEMO dünyası masaüstüyle sınırlı değil: Android tarafında belgesel, trivia, TV rehberi, nöbetçi eczane ve Nutuk uygulamaları aynı ekosistemi sürdürür.</p>
+      <span class="sec-kicker" data-i18n="e_kicker">Ekosistem</span>
+      <h2 data-i18n="e_title">Mobil BELGESELSEMO ekosistemi</h2>
+      <p data-i18n="e_desc">BELGESELSEMO dünyası masaüstüyle sınırlı değil: Android tarafında belgesel, trivia, TV rehberi, nöbetçi eczane ve Nutuk uygulamaları aynı ekosistemi sürdürür.</p>
     </div>
     <div class="mob-grid">
       <a class="mob rv" href="https://play.google.com/store/apps/details?id=com.belgeselsemo.tr" target="_blank" rel="noreferrer">
-        <img src="https://play-lh.googleusercontent.com/vlfs0KVW99715oyn6M4DrX4LBod8m2fjWe7TVG3_2dFfeHGegCSC-hNfDs8ZVlCYMlWe=s256" alt="BELGESELSEMO">
-        <strong>BELGESELSEMO</strong><sub>HD Belgesel &amp; Araçlar Portalı</sub>
+        <img src="https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/src/idm_linux/assets/app_belgeselsemo.png" alt="BELGESELSEMO" loading="lazy">
+        <strong>BELGESELSEMO</strong><sub data-i18n="m1s">HD Belgesel &amp; Araçlar Portalı</sub>
       </a>
       <a class="mob rv" href="https://play.google.com/store/apps/details?id=com.belgeselsemo.trivia" target="_blank" rel="noreferrer">
-        <img src="https://play-lh.googleusercontent.com/N9SZMLxSJ8VFtIvJsy_-B6EbhiV6rTBEpyB5tXBJrnIHx3CWQyPKoOU8ScUaTgxsAH_Q7y4a0Frm1tzI_Y6D=s256" alt="BELGESELSEMO TRIVIA">
-        <strong>BELGESELSEMO TRIVIA</strong><sub>Bilgi yarışması</sub>
+        <img src="https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/src/idm_linux/assets/app_trivia.png" alt="BELGESELSEMO TRIVIA" loading="lazy">
+        <strong>BELGESELSEMO TRIVIA</strong><sub data-i18n="m2s">Bilgi yarışması</sub>
       </a>
       <a class="mob rv" href="https://play.google.com/store/apps/details?id=com.belgeselsemo.epgviewer" target="_blank" rel="noreferrer">
-        <img src="https://play-lh.googleusercontent.com/CLmBtb1IF14ygKG1a9-Is7BaFXKroQaMs6CDRVlQSHlzETHFQBEhGeekb47pmUrNWqbuG8emvOL5Y_wxvh1ueQ=s256" alt="BELGESELSEMO TV REHBERİ">
-        <strong>TV REHBERİ (EPG)</strong><sub>Yayın akışı görüntüleyici</sub>
+        <img src="https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/src/idm_linux/assets/app_epg.png" alt="BELGESELSEMO TV REHBERİ" loading="lazy">
+        <strong data-i18n="m3n">TV REHBERİ (EPG)</strong><sub data-i18n="m3s">Yayın akışı görüntüleyici</sub>
       </a>
       <a class="mob rv" href="https://play.google.com/store/apps/details?id=com.belgeselsemo.nb724" target="_blank" rel="noreferrer">
-        <img src="https://play-lh.googleusercontent.com/OMrderXOxOJvAWQj8X912y6tnICDUG1V4pOksxPUIRTWknkX0lfTajssPipGJX9ZssAXGczB1Pk2Ob_hHqNV=s256" alt="Nöbetçi Eczaneler 7/24">
-        <strong>NÖBETÇİ ECZANE 7/24</strong><sub>TR &amp; KKTC</sub>
+        <img src="https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/src/idm_linux/assets/app_nb724.png" alt="Nöbetçi Eczaneler 7/24" loading="lazy">
+        <strong data-i18n="m4n">NÖBETÇİ ECZANE 7/24</strong><sub data-i18n="m4s">TR &amp; KKTC</sub>
       </a>
       <a class="mob rv" href="https://play.google.com/store/apps/details?id=com.belgeselsemo.nutuk" target="_blank" rel="noreferrer">
-        <img src="https://play-lh.googleusercontent.com/07-bd0NNX6xQA3QtQtbWHrl6So_GlCjs1oHo87IImwhkdoimCM8485EYBu-fwAwqCpNbX64eeD8mX7eEsZOsjw=s256" alt="Nutuk 1919-1927">
-        <strong>NUTUK 1919-1927</strong><sub>Sözlü &amp; sesli</sub>
+        <img src="https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/src/idm_linux/assets/app_nutuk.png" alt="Nutuk 1919-1927" loading="lazy">
+        <strong>NUTUK 1919-1927</strong><sub data-i18n="m5s">Sözlü &amp; sesli</sub>
       </a>
       <span class="mob soon rv">
-        <img src="../src/idm_linux/assets/idm-linux-icon.png" alt="BELGESELSEMO ECONOMY">
-        <strong>BELGESELSEMO ECONOMY</strong><sub>Yakında…</sub>
+        <img src="https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/src/idm_linux/assets/proj_economy.png" alt="BELGESELSEMO ECONOMY" loading="lazy">
+        <strong>BELGESELSEMO ECONOMY</strong><sub data-i18n="m6s">Yakında…</sub>
       </span>
     </div>
   </div>
@@ -394,13 +432,13 @@
 <footer>
   <div class="wrap">
     <div class="foot-brand">
-      <img src="../src/idm_linux/assets/idm-classic-icon.png" alt="IDM">
+      <img src="https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/src/idm_linux/assets/idm-classic-icon.png" alt="IDM">
       <span>IDM <em>LINUX</em></span>
     </div>
-    <p>Internet Download Manager'ın tüm gücü — Linux'ta, tam işlevsel, hafif ve kararlı.</p>
+    <p data-i18n="foot_tag">Internet Download Manager'ın tüm gücü — Linux'ta, tam işlevsel, hafif ve kararlı.</p>
     <div class="foot-links">
       <a href="https://github.com/vesvese55x/IDM-LINUX" target="_blank" rel="noreferrer">GitHub</a>
-      <a href="https://github.com/vesvese55x/IDM-LINUX/releases/tag/v1.0.0" target="_blank" rel="noreferrer">Sürümler</a>
+      <a href="https://github.com/vesvese55x/IDM-LINUX/releases/latest" target="_blank" rel="noreferrer" data-i18n="foot_releases">Sürümler</a>
       <a href="https://belgeselsemo.com.tr" target="_blank" rel="noreferrer">belgeselsemo.com.tr</a>
       <a href="https://github.com/vesvese55x/belgeselsemoflix" target="_blank" rel="noreferrer">BELGESELSEMOFLIX</a>
     </div>
@@ -409,24 +447,883 @@
 </footer>
 
 <script>
-  // yumuşak reveal
-  const io = new IntersectionObserver((es) => {
-    es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
-  }, { threshold: .12 });
-  document.querySelectorAll('.rv').forEach((el, i) => {
-    el.style.transitionDelay = (i % 4) * 60 + 'ms';
-    io.observe(el);
+/* ============================================================
+   IDM LINUX — promo i18n
+   20 dil: GUI'nin LANGUAGE_LIST ile birebir aynı dil kümesi
+   (src/idm_linux/i18n.py). Dil adları yerel adlardır.
+   ============================================================ */
+const RAW_BASE='https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/';
+const I18N={
+tr:{name:`Türkçe`,en:`Turkish`,rtl:false,
+title:`🚀 IDM LINUX (BELGESELSEMO) — Tüm Özellikleriyle Tek Sahnede`,
+meta:`IDM LINUX; Internet Download Manager'ın tüm gücünü Linux'a taşır. Tarayıcı yakalama, video motoru, torrent, DVR ve sistem doktoru tek panelde.`,
+nav_features:`Özellikler`,nav_screens:`Ekranlar`,nav_install:`Kurulum`,nav_ecosystem:`Ekosistem`,
+hero_sub:`<strong>Internet Download Manager</strong>'ın tüm gücü Linux'ta: tarayıcı yakalama, video motoru, torrent, canlı yayın DVR ve sistem doktoru — <strong>tek bir hafif kontrol panelinde</strong>. İndirmeler gerçek IDM motoru üzerinden maksimum hızda yürür.`,
+cta_download:`⬇️ IDM-LINUX-1.0.0'ı İndir`,cta_screens:`📸 Ekranları Gez`,
+chip_ver:`<b>v1.0.0</b> sürüm`,chip_pkg:`📦 <b>4</b> paket türü`,chip_lang:`🌍 <b>20</b> dil`,chip_doc:`🩺 <b>6 adımlı</b> otomatik doktor`,chip_video:`🎬 <b>HLS/4K</b> video motoru`,chip_torrent:`🧲 <b>DHT</b> torrent`,
+slogan:`<b>Bu sayfa;</b> tüm özellikleri ve işlevselliğiyle birlikte IDM LINUX deneyimini tek sahnede anlatır.`,
+f_kicker:`Özellikler`,f_title:`Tek panel, on yetenek`,
+f_desc:`IDM LINUX, Wine üzerinde koşan gerçek IDM motorunu Linux tarafındaki hafif bir Python paneliyle buluşturur. Her katman aynı yerel köprü üzerinden konuşur: <code style="color:#7dd3fc">127.0.0.1:17802</code>.`,
+f1t:`Tarayıcı Entegrasyonu`,f1d:`Chromium ve Firefox tabanlı tüm tarayıcılarda eklenti; indirme taleplerini otomatik yakalar, IDM'ye devreder. Tıkla, gerisini IDM LINUX yapsın.`,
+f2t:`Video Motoru (HLS/4K)`,f2d:`yt-dlp / streamlink motor zinciri; siteye en uygun motor otomatik seçilir, 4K ve HLS akışları dahil doğrudan IDM'ye aktarılır.`,
+f3t:`Gömülü Torrent Motoru`,f3d:`Magnet ve .torrent desteği, DHT ile tracker'sız peer keşfi. Onay penceresinden içeriği ya da yalnızca .torrent dosyasını indirebilirsin.`,
+f4t:`Canlı Yayın / DVR`,f4d:`Canlı akışlardan kayıt alabilen DVR katmanı; başlat, durdur, yönet — hepsi arayüzden.`,
+f5t:`Dosya Barındırıcılar`,f5d:`Popüler barındırıcı siteler için konuk oturumu ve doğrudan bağlantı çözümleme; dosya bozuk inmez, indirme IDM üzerinden tamamlanır.`,
+f6t:`Sistem Doktoru`,f6d:`6 adımlı otomatik teşhis ve tamir: köprü, video motoru, tarayıcı bağlantıları tek tıkla onarılır. Canlı günlükler aynı ekranda akar.`,
+f7t:`--no-sandbox Kökten Çözüm`,f7d:`Gerektiren ortamlar dinamik algılanır; kurulum ve tarayıcı açılışlarında parametre otomatik eklenir, engel hiç yaşanmaz.`,
+f8t:`20 Dil, Türkçe Varsayılan`,f8d:`Arayüz 20 dilde çalışır; IDM diliyle otomatik senkronize olur. Sağdan sola diller için RTL ayarı da dahil.`,
+f9t:`İptal = Tam Dur`,f9d:`Bir indirmeyi iptal ettiğinde arka planda hiçbir motor devam etmez; kaynak yemez, dosya yarım bırakılmaz.`,
+s_kicker:`Ekranlar`,s_title:`Panelden kareler`,s_desc:`Modern koyu Slate teması ve Neon Cyan/Emerald paleti — masaüstünde kasma yok, her şey göz önünde.`,
+s1:`Genel Bakış &amp; Canlı Kontrol Paneli — köprü durumu, hızlı bağlantı, hızlı işlemler ve oynatma listesi`,
+s2:`Kurulum &amp; Güncelleme Sihirbazı — Wine + resmî IDM otomatik`,
+s3:`Tarayıcı &amp; Eklentiler — Chromium/Firefox native messaging`,
+s4:`Sistem Doktoru &amp; Canlı Günlükler — daemon.log akışı`,
+s5:`Diğer Projeler — BELGESELSEMO uygulama ekosistemi`,
+s6:`Teşekkür Et &amp; Destekle — topluluk ve manevi destek`,
+s7:`Yakalama &amp; Wine Ayarları — portlar, klasörler, dil`,
+i_kicker:`Kurulum`,i_title:`Paketini seç, tek komut`,
+i_desc:`Tüm paketler aynı <strong>IDM-LINUX-1.0.0</strong> sürümünü taşır ve <a href="https://github.com/vesvese55x/IDM-LINUX/releases/latest" target="_blank" rel="noreferrer">GitHub Releases</a> üzerinden dağıtılır.`,
+p1t:`📦 Kurulumsuz çalıştır`,p1d:`İndir, çalıştırılabilir yap, çift tıkla. Sisteme iz bırakmaz.`,
+p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`gdebi ve benzeri GUI deb yükleyicileriyle de sorunsuz kurulur.`,
+p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`RPM tabanlı dağıtımlar için noarch paket.`,
+p4t:`🏔️ Arch / Manjaro`,p4d:`pacman ile doğrudan kurulum; makepkg gerektirmez.`,
+btn_copy:`KOPYALA`,btn_copied:`KOPYALANDI ✓`,
+note1:`🧰 Kurulum sihirbazı; <b>Wine</b>, <b>resmî IDM</b>, tarayıcı eklentileri ve <b>yt-dlp / ffmpeg / aria2</b> araçlarını gerektiğinde otomatik indirip kurar.`,
+note2:`🧩 Gereksinimler: Linux (x86_64 önerilir) ve <b>Python 3.8+</b>; GUI için X11/Wayland masaüstü önerilir.`,
+e_kicker:`Ekosistem`,e_title:`Mobil BELGESELSEMO ekosistemi`,e_desc:`BELGESELSEMO dünyası masaüstüyle sınırlı değil: Android tarafında belgesel, trivia, TV rehberi, nöbetçi eczane ve Nutuk uygulamaları aynı ekosistemi sürdürür.`,
+m1s:`HD Belgesel &amp; Araçlar Portalı`,m2s:`Bilgi yarışması`,m3n:`TV REHBERİ (EPG)`,m3s:`Yayın akışı görüntüleyici`,m4n:`NÖBETÇİ ECZANE 7/24`,m4s:`TR &amp; KKTC`,m5s:`Sözlü &amp; sesli`,m6s:`Yakında…`,
+foot_tag:`Internet Download Manager'ın tüm gücü — Linux'ta, tam işlevsel, hafif ve kararlı.`,foot_releases:`Sürümler`},
+en:{name:`English`,en:`English`,rtl:false,
+title:`🚀 IDM LINUX (BELGESELSEMO) — Every Feature on One Stage`,
+meta:`IDM LINUX brings the full power of Internet Download Manager to Linux: browser capture, video engine, torrent, live DVR and system doctor in one lightweight panel.`,
+nav_features:`Features`,nav_screens:`Screens`,nav_install:`Install`,nav_ecosystem:`Ecosystem`,
+hero_sub:`The full power of <strong>Internet Download Manager</strong> on Linux: browser capture, a video engine, torrent, live-stream DVR and a system doctor — <strong>in one lightweight control panel</strong>. Downloads run at maximum speed through the real IDM engine.`,
+cta_download:`⬇️ Download IDM-LINUX-1.0.0`,cta_screens:`📸 Explore the Screens`,
+chip_ver:`<b>v1.0.0</b> release`,chip_pkg:`📦 <b>4</b> package types`,chip_lang:`🌍 <b>20</b> languages`,chip_doc:`🩺 <b>6-step</b> auto doctor`,chip_video:`🎬 <b>HLS/4K</b> video engine`,chip_torrent:`🧲 <b>DHT</b> torrent`,
+slogan:`<b>This page;</b> presents the entire IDM LINUX experience, with all its features and functionality, on a single stage.`,
+f_kicker:`Features`,f_title:`One panel, ten capabilities`,
+f_desc:`IDM LINUX pairs the real IDM engine running on Wine with a lightweight Python panel on the Linux side. Every layer talks over the same local bridge: <code style="color:#7dd3fc">127.0.0.1:17802</code>.`,
+f1t:`Browser Integration`,f1d:`An extension for all Chromium- and Firefox-based browsers; it automatically captures download requests and hands them to IDM. You click, IDM LINUX does the rest.`,
+f2t:`Video Engine (HLS/4K)`,f2d:`yt-dlp / streamlink engine chain; the most suitable engine is chosen automatically per site, and streams — including 4K and HLS — are passed straight to IDM.`,
+f3t:`Built-in Torrent Engine`,f3d:`Magnet and .torrent support with tracker-less peer discovery via DHT. From the confirmation dialog you can download the content or just the .torrent file.`,
+f4t:`Live Stream / DVR`,f4d:`A DVR layer that records live streams; start, stop and manage — all from the UI.`,
+f5t:`File Hosters`,f5d:`Guest-session and direct-link resolution for popular hosting sites; files never come down corrupted, and the download completes through IDM.`,
+f6t:`System Doctor`,f6d:`6-step automatic diagnosis and repair: bridge, video engine and browser links are fixed in one click. Live logs stream on the same screen.`,
+f7t:`--no-sandbox Radical Fix`,f7d:`Environments that require it are detected dynamically; the flag is added automatically at install and browser launch, so you never hit the wall.`,
+f8t:`20 Languages, Turkish Default`,f8d:`The UI works in 20 languages and syncs automatically with the IDM language — including RTL support for right-to-left ones.`,
+f9t:`Cancel = Full Stop`,f9d:`When you cancel a download, no engine keeps running in the background; no resources are eaten, no file is left half-finished.`,
+s_kicker:`Screens`,s_title:`Frames from the panel`,s_desc:`Modern dark Slate theme with a Neon Cyan/Emerald palette — no desktop strain, everything in plain sight.`,
+s1:`Overview &amp; Live Control Panel — bridge status, quick link, quick actions and the playlist`,
+s2:`Install &amp; Update Wizard — Wine + official IDM, automatically`,
+s3:`Browsers &amp; Extensions — Chromium/Firefox native messaging`,
+s4:`System Doctor &amp; Live Logs — daemon.log stream`,
+s5:`Other Projects — the BELGESELSEMO app ecosystem`,
+s6:`Thank &amp; Support Us — community and moral support`,
+s7:`Capture &amp; Wine Settings — ports, folders, language`,
+i_kicker:`Install`,i_title:`Pick your package, one command`,
+i_desc:`All packages carry the same <strong>IDM-LINUX-1.0.0</strong> version and are distributed via <a href="https://github.com/vesvese55x/IDM-LINUX/releases/latest" target="_blank" rel="noreferrer">GitHub Releases</a>.`,
+p1t:`📦 Run without installing`,p1d:`Download, make it executable, double-click. Leaves no trace on the system.`,
+p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`Also installs smoothly with gdebi and similar GUI deb installers.`,
+p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`A noarch package for RPM-based distributions.`,
+p4t:`🏔️ Arch / Manjaro`,p4d:`Direct install with pacman; no makepkg required.`,
+btn_copy:`COPY`,btn_copied:`COPIED ✓`,
+note1:`🧰 The setup wizard automatically downloads and installs <b>Wine</b>, the <b>official IDM</b>, browser extensions and the <b>yt-dlp / ffmpeg / aria2</b> tools when needed.`,
+note2:`🧩 Requirements: Linux (x86_64 recommended) and <b>Python 3.8+</b>; an X11/Wayland desktop is recommended for the GUI.`,
+e_kicker:`Ecosystem`,e_title:`The mobile BELGESELSEMO ecosystem`,e_desc:`The BELGESELSEMO world is not limited to the desktop: on Android, the documentary, trivia, TV guide, pharmacy-on-duty and Nutuk apps sustain the same ecosystem.`,
+m1s:`HD Documentaries &amp; Tools Portal`,m2s:`Quiz game`,m3n:`TV GUIDE (EPG)`,m3s:`Broadcast schedule viewer`,m4n:`PHARMACY ON DUTY 7/24`,m4s:`TR &amp; Northern Cyprus`,m5s:`Spoken &amp; audio`,m6s:`Coming soon…`,
+foot_tag:`The full power of Internet Download Manager — on Linux, fully functional, light and stable.`,foot_releases:`Releases`},
+de:{name:`Deutsch`,en:`German`,rtl:false,
+title:`🚀 IDM LINUX (BELGESELSEMO) — Alle Funktionen auf einer Bühne`,
+meta:`IDM LINUX bringt die volle Kraft von Internet Download Manager auf Linux: Browser-Erfassung, Video-Engine, Torrent, Live-DVR und Systemdoktor in einem leichten Panel.`,
+nav_features:`Funktionen`,nav_screens:`Screenshots`,nav_install:`Installation`,nav_ecosystem:`Ökosystem`,
+hero_sub:`Die volle Kraft von <strong>Internet Download Manager</strong> unter Linux: Browser-Erfassung, Video-Engine, Torrent, Live-DVR und Systemdoktor — <strong>in einem einzigen leichten Kontrollpanel</strong>. Downloads laufen über die echte IDM-Engine mit maximaler Geschwindigkeit.`,
+cta_download:`⬇️ IDM-LINUX-1.0.0 herunterladen`,cta_screens:`📸 Screenshots ansehen`,
+chip_ver:`<b>v1.0.0</b> Version`,chip_pkg:`📦 <b>4</b> Paketarten`,chip_lang:`🌍 <b>20</b> Sprachen`,chip_doc:`🩺 <b>6-Schritte</b>-Auto-Doktor`,chip_video:`🎬 <b>HLS/4K</b>-Video-Engine`,chip_torrent:`🧲 <b>DHT</b>-Torrent`,
+slogan:`<b>Diese Seite;</b> stellt das gesamte IDM LINUX-Erlebnis mit allen Funktionen auf einer einzigen Bühne dar.`,
+f_kicker:`Funktionen`,f_title:`Ein Panel, zehn Fähigkeiten`,
+f_desc:`IDM LINUX vereint die echte IDM-Engine unter Wine mit einem leichten Python-Panel auf der Linux-Seite. Alle Schichten sprechen über dieselbe lokale Brücke: <code style="color:#7dd3fc">127.0.0.1:17802</code>.`,
+f1t:`Browser-Integration`,f1d:`Erweiterung für alle Chromium- und Firefox-basierten Browser; fängt Download-Anfragen automatisch ab und übergibt sie an IDM. Du klickst, IDM LINUX erledigt den Rest.`,
+f2t:`Video-Engine (HLS/4K)`,f2d:`yt-dlp-/streamlink-Engine-Kette; die passendste Engine wird pro Website automatisch gewählt, Streams inklusive 4K und HLS gehen direkt an IDM.`,
+f3t:`Eingebettete Torrent-Engine`,f3d:`Magnet- und .torrent-Unterstützung mit trackerloser Peer-Suche über DHT. Im Bestätigungsdialog kannst du den Inhalt oder nur die .torrent-Datei laden.`,
+f4t:`Live-Stream / DVR`,f4d:`Eine DVR-Schicht zum Aufnehmen von Live-Streams; starten, stoppen, verwalten — alles aus der Oberfläche.`,
+f5t:`File-Hoster`,f5d:`Gast-Sitzung und Direktlink-Auflösung für beliebte Hoster; Dateien kommen nie beschädigt an, der Download wird über IDM abgeschlossen.`,
+f6t:`Systemdoktor`,f6d:`Automatische Diagnose und Reparatur in 6 Schritten: Brücke, Video-Engine und Browser-Verbindungen werden mit einem Klick repariert. Live-Logs laufen im selben Fenster.`,
+f7t:`--no-sandbox Grundsatzlösung`,f7d:`Benötigte Umgebungen werden dynamisch erkannt; der Parameter wird bei Installation und Browserstart automatisch ergänzt — Blockaden gibt es nicht.`,
+f8t:`20 Sprachen, Türkisch als Standard`,f8d:`Die Oberfläche arbeitet in 20 Sprachen und synchronisiert sich automatisch mit der IDM-Sprache — inklusive RTL-Unterstützung für Rechts-nach-links-Sprachen.`,
+f9t:`Abbrechen = voller Stopp`,f9d:`Beim Abbrechen eines Downloads läuft im Hintergrund keine Engine weiter; keine Ressourcen, keine halben Dateien.`,
+s_kicker:`Screenshots`,s_title:`Bilder aus dem Panel`,s_desc:`Modernes dunkles Slate-Design mit Neon-Cyan/Emerald-Palette — keine Belastung für den Desktop, alles im Blick.`,
+s1:`Übersicht &amp; Live-Kontrollpanel — Brückenstatus, Schnelllink, Schnellaktionen und Wiedergabeliste`,
+s2:`Installations- &amp; Update-Assistent — Wine + offizielles IDM automatisch`,
+s3:`Browser &amp; Erweiterungen — Chromium/Firefox native messaging`,
+s4:`Systemdoktor &amp; Live-Logs — daemon.log-Strom`,
+s5:`Andere Projekte — das BELGESELSEMO-App-Ökosystem`,
+s6:`Danken &amp; unterstützen — Community und moralische Unterstützung`,
+s7:`Erfassungs- &amp; Wine-Einstellungen — Ports, Ordner, Sprache`,
+i_kicker:`Installation`,i_title:`Paket wählen, ein Befehl`,
+i_desc:`Alle Pakete tragen dieselbe Version <strong>IDM-LINUX-1.0.0</strong> und werden über <a href="https://github.com/vesvese55x/IDM-LINUX/releases/latest" target="_blank" rel="noreferrer">GitHub Releases</a> verteilt.`,
+p1t:`📦 Ohne Installation starten`,p1d:`Herunterladen, ausführbar machen, doppelklicken. Hinterlässt keine Spuren im System.`,
+p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`Installiert auch problemlos mit gdebi und ähnlichen GUI-deb-Installern.`,
+p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`Ein noarch-Paket für RPM-basierte Distributionen.`,
+p4t:`🏔️ Arch / Manjaro`,p4d:`Direkte Installation mit pacman; kein makepkg nötig.`,
+btn_copy:`KOPIEREN`,btn_copied:`KOPIERT ✓`,
+note1:`🧰 Der Setup-Assistent lädt und installiert bei Bedarf <b>Wine</b>, das <b>offizielle IDM</b>, Browser-Erweiterungen und <b>yt-dlp / ffmpeg / aria2</b> automatisch.`,
+note2:`🧩 Voraussetzungen: Linux (x86_64 empfohlen) und <b>Python 3.8+</b>; für die GUI wird ein X11/Wayland-Desktop empfohlen.`,
+e_kicker:`Ökosystem`,e_title:`Das mobile BELGESELSEMO-Ökosystem`,e_desc:`Die BELGESELSEMO-Welt beschränkt sich nicht auf den Desktop: Auf Android führen die Dokumentarfilm-, Quiz-, TV-Guide-, Notapotheken- und Nutuk-Apps dasselbe Ökosystem weiter.`,
+m1s:`HD-Dokus &amp; Tools-Portal`,m2s:`Quizspiel`,m3n:`TV-GUIDE (EPG)`,m3s:`Programmübersicht`,m4n:`NOTAPOTHEKE 7/24`,m4s:`TR &amp; Nordzypern`,m5s:`Gesprochen &amp; mit Audio`,m6s:`Demnächst…`,
+foot_tag:`Die volle Kraft von Internet Download Manager — unter Linux, voll funktionsfähig, leicht und stabil.`,foot_releases:`Versionen`},
+fr:{name:`Français`,en:`French`,rtl:false,
+title:`🚀 IDM LINUX (BELGESELSEMO) — Toutes les fonctionnalités sur une seule scène`,
+meta:`IDM LINUX apporte toute la puissance d'Internet Download Manager à Linux : capture navigateur, moteur vidéo, torrent, DVR en direct et docteur système dans un seul panneau léger.`,
+nav_features:`Fonctionnalités`,nav_screens:`Écrans`,nav_install:`Installation`,nav_ecosystem:`Écosystème`,
+hero_sub:`Toute la puissance d'<strong>Internet Download Manager</strong> sous Linux : capture navigateur, moteur vidéo, torrent, DVR des flux en direct et docteur système — <strong>dans un seul panneau de contrôle léger</strong>. Les téléchargements s'exécutent à vitesse maximale via le véritable moteur IDM.`,
+cta_download:`⬇️ Télécharger IDM-LINUX-1.0.0`,cta_screens:`📸 Parcourir les écrans`,
+chip_ver:`<b>v1.0.0</b> version`,chip_pkg:`📦 <b>4</b> types de paquets`,chip_lang:`🌍 <b>20</b> langues`,chip_doc:`🩺 docteur auto en <b>6 étapes</b>`,chip_video:`🎬 moteur vidéo <b>HLS/4K</b>`,chip_torrent:`🧲 torrent <b>DHT</b>`,
+slogan:`<b>Cette page ;</b> présente toute l'expérience IDM LINUX, avec toutes ses fonctionnalités, sur une seule scène.`,
+f_kicker:`Fonctionnalités`,f_title:`Un panneau, dix capacités`,
+f_desc:`IDM LINUX associe le véritable moteur IDM tournant sous Wine à un panneau Python léger côté Linux. Chaque couche communique par la même passerelle locale : <code style="color:#7dd3fc">127.0.0.1:17802</code>.`,
+f1t:`Intégration navigateur`,f1d:`Une extension pour tous les navigateurs à base Chromium et Firefox ; elle capture automatiquement les demandes de téléchargement et les transmet à IDM. Vous cliquez, IDM LINUX fait le reste.`,
+f2t:`Moteur vidéo (HLS/4K)`,f2d:`Chaîne de moteurs yt-dlp / streamlink ; le moteur le plus adapté au site est choisi automatiquement, et les flux — 4K et HLS inclus — sont passés directement à IDM.`,
+f3t:`Moteur torrent intégré`,f3d:`Prise en charge des magnet et .torrent avec découverte de pairs sans tracker via DHT. Depuis la fenêtre de confirmation, téléchargez le contenu ou simplement le fichier .torrent.`,
+f4t:`Flux en direct / DVR`,f4d:`Une couche DVR qui enregistre les flux en direct ; démarrer, arrêter, gérer — tout depuis l'interface.`,
+f5t:`Hébergeurs de fichiers`,f5d:`Session invité et résolution de liens directs pour les hébergeurs populaires ; les fichiers n'arrivent jamais corrompus, le téléchargement se termine via IDM.`,
+f6t:`Docteur système`,f6d:`Diagnostic et réparation automatiques en 6 étapes : passerelle, moteur vidéo et connexions navigateur réparés en un clic. Les journaux en direct défilent sur le même écran.`,
+f7t:`Solution radicale --no-sandbox`,f7d:`Les environnements qui l'exigent sont détectés dynamiquement ; le paramètre est ajouté automatiquement à l'installation et au lancement du navigateur — aucun blocage.`,
+f8t:`20 langues, turc par défaut`,f8d:`L'interface fonctionne en 20 langues et se synchronise automatiquement avec la langue d'IDM — prise en charge RTL incluse pour les langues de droite à gauche.`,
+f9t:`Annuler = arrêt total`,f9d:`Lorsque vous annulez un téléchargement, aucun moteur ne continue en arrière-plan ; aucune ressource consommée, aucun fichier laissé à moitié.`,
+s_kicker:`Écrans`,s_title:`Des images du panneau`,s_desc:`Thème sombre Slate moderne et palette Néon Cyan/Émeraude — aucun ralentissement du bureau, tout est sous les yeux.`,
+s1:`Aperçu &amp; Panneau de contrôle en direct — état de la passerelle, lien rapide, actions rapides et liste de lecture`,
+s2:`Assistant d'installation &amp; de mise à jour — Wine + IDM officiel, automatiquement`,
+s3:`Navigateurs &amp; Extensions — native messaging Chromium/Firefox`,
+s4:`Docteur système &amp; Journaux en direct — flux daemon.log`,
+s5:`Autres projets — l'écosystème d'applications BELGESELSEMO`,
+s6:`Remercier &amp; Soutenir — communauté et soutien moral`,
+s7:`Paramètres de capture &amp; Wine — ports, dossiers, langue`,
+i_kicker:`Installation`,i_title:`Choisissez le paquet, une commande`,
+i_desc:`Tous les paquets portent la même version <strong>IDM-LINUX-1.0.0</strong> et sont distribués via <a href="https://github.com/vesvese55x/IDM-LINUX/releases/latest" target="_blank" rel="noreferrer">GitHub Releases</a>.`,
+p1t:`📦 Exécuter sans installer`,p1d:`Téléchargez, rendez exécutable, double-cliquez. Ne laisse aucune trace sur le système.`,
+p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`S'installe aussi sans problème avec gdebi et les installateurs deb graphiques similaires.`,
+p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`Un paquet noarch pour les distributions à base RPM.`,
+p4t:`🏔️ Arch / Manjaro`,p4d:`Installation directe avec pacman ; makepkg n'est pas nécessaire.`,
+btn_copy:`COPIER`,btn_copied:`COPIÉ ✓`,
+note1:`🧰 L'assistant d'installation télécharge et installe automatiquement, si nécessaire, <b>Wine</b>, l'<b>IDM officiel</b>, les extensions navigateur et les outils <b>yt-dlp / ffmpeg / aria2</b>.`,
+note2:`🧩 Prérequis : Linux (x86_64 recommandé) et <b>Python 3.8+</b> ; un bureau X11/Wayland est recommandé pour l'interface.`,
+e_kicker:`Écosystème`,e_title:`L'écosystème mobile BELGESELSEMO`,e_desc:`L'univers BELGESELSEMO ne se limite pas au bureau : sur Android, les applications documentaires, quiz, guide TV, pharmacies de garde et Nutuk font vivre le même écosystème.`,
+m1s:`Portail documentaires HD &amp; outils`,m2s:`Jeu de quiz`,m3n:`GUIDE TV (EPG)`,m3s:`Visionneuse de grille de programmes`,m4n:`PHARMACIE DE GARDE 7/24`,m4s:`TR &amp; Chypre du Nord`,m5s:`Parlé &amp; audio`,m6s:`Bientôt…`,
+foot_tag:`Toute la puissance d'Internet Download Manager — sur Linux, pleinement fonctionnel, léger et stable.`,foot_releases:`Versions`},
+ru:{name:`Русский`,en:`Russian`,rtl:false,
+title:`🚀 IDM LINUX (BELGESELSEMO) — Все возможности на одной сцене`,
+meta:`IDM LINUX переносит всю мощь Internet Download Manager на Linux: захват из браузера, видеодвижок, торрент, DVR прямых эфиров и системный доктор в одной лёгкой панели.`,
+nav_features:`Возможности`,nav_screens:`Экраны`,nav_install:`Установка`,nav_ecosystem:`Экосистема`,
+hero_sub:`Вся мощь <strong>Internet Download Manager</strong> в Linux: захват загрузок из браузера, видеодвижок, торрент, DVR прямых трансляций и системный доктор — <strong>в одной лёгкой панели управления</strong>. Загрузки идут на максимальной скорости через настоящий движок IDM.`,
+cta_download:`⬇️ Скачать IDM-LINUX-1.0.0`,cta_screens:`📸 Посмотреть экраны`,
+chip_ver:`<b>v1.0.0</b> версия`,chip_pkg:`📦 <b>4</b> типа пакетов`,chip_lang:`🌍 <b>20</b> языков`,chip_doc:`🩺 авто-доктор из <b>6 шагов</b>`,chip_video:`🎬 видеодвижок <b>HLS/4K</b>`,chip_torrent:`🧲 торрент <b>DHT</b>`,
+slogan:`<b>Эта страница;</b> представляет весь опыт IDM LINUX со всеми его функциями на одной сцене.`,
+f_kicker:`Возможности`,f_title:`Одна панель — десять способностей`,
+f_desc:`IDM LINUX соединяет настоящий движок IDM под Wine с лёгкой Python-панелью на стороне Linux. Все уровни общаются через один локальный мост: <code style="color:#7dd3fc">127.0.0.1:17802</code>.`,
+f1t:`Интеграция с браузерами`,f1d:`Расширение для всех браузеров на базе Chromium и Firefox; автоматически перехватывает запросы на загрузку и передаёт их в IDM. Вы кликаете — остальное делает IDM LINUX.`,
+f2t:`Видеодвижок (HLS/4K)`,f2d:`Цепочка движков yt-dlp / streamlink; для каждого сайта автоматически выбирается самый подходящий, потоки — включая 4K и HLS — передаются прямо в IDM.`,
+f3t:`Встроенный торрент-движок`,f3d:`Поддержка magnet и .torrent с поиском пиров без трекеров через DHT. В окне подтверждения можно скачать содержимое или только .torrent-файл.`,
+f4t:`Прямой эфир / DVR`,f4d:`Слой DVR для записи прямых трансляций; запуск, остановка, управление — всё из интерфейса.`,
+f5t:`Файлообменники`,f5d:`Гостевые сессии и разрешение прямых ссылок для популярных хостингов; файлы не приходят повреждёнными, загрузка завершается через IDM.`,
+f6t:`Системный доктор`,f6d:`Автоматическая диагностика и ремонт за 6 шагов: мост, видеодвижок и подключения браузеров чинятся одним щелчком. Живые логи текут на том же экране.`,
+f7t:`Радикальное решение --no-sandbox`,f7d:`Требующие этого окружения определяются динамически; параметр автоматически добавляется при установке и запуске браузера — никаких препятствий.`,
+f8t:`20 языков, турецкий по умолчанию`,f8d:`Интерфейс работает на 20 языках и автоматически синхронизируется с языком IDM — включая поддержку RTL для языков с письмом справа налево.`,
+f9t:`Отмена = полная остановка`,f9d:`При отмене загрузки ни один движок не продолжает работу в фоне; ресурсы не расходуются, файл не остаётся недокачанным.`,
+s_kicker:`Экраны`,s_title:`Кадры из панели`,s_desc:`Современная тёмная тема Slate и палитра неонового циана/изумруда — без нагрузки на рабочий стол, всё на виду.`,
+s1:`Обзор и живая панель управления — состояние моста, быстрая ссылка, быстрые действия и плейлист`,
+s2:`Мастер установки и обновления — Wine + официальный IDM автоматически`,
+s3:`Браузеры и расширения — native messaging Chromium/Firefox`,
+s4:`Системный доктор и живые логи — поток daemon.log`,
+s5:`Другие проекты — экосистема приложений BELGESELSEMO`,
+s6:`Поблагодарить и поддержать — сообщество и моральная поддержка`,
+s7:`Настройки захвата и Wine — порты, папки, язык`,
+i_kicker:`Установка`,i_title:`Выбери пакет — одна команда`,
+i_desc:`Все пакеты несут одну и ту же версию <strong>IDM-LINUX-1.0.0</strong> и распространяются через <a href="https://github.com/vesvese55x/IDM-LINUX/releases/latest" target="_blank" rel="noreferrer">GitHub Releases</a>.`,
+p1t:`📦 Запуск без установки`,p1d:`Скачайте, сделайте исполняемым, дважды щёлкните. Не оставляет следов в системе.`,
+p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`Также без проблем ставится через gdebi и подобные графические deb-установщики.`,
+p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`Пакет noarch для дистрибутивов на базе RPM.`,
+p4t:`🏔️ Arch / Manjaro`,p4d:`Прямая установка через pacman; makepkg не требуется.`,
+btn_copy:`КОПИРОВАТЬ`,btn_copied:`СКОПИРОВАНО ✓`,
+note1:`🧰 Мастер установки при необходимости автоматически скачивает и ставит <b>Wine</b>, <b>официальный IDM</b>, браузерные расширения и инструменты <b>yt-dlp / ffmpeg / aria2</b>.`,
+note2:`🧩 Требования: Linux (рекомендуется x86_64) и <b>Python 3.8+</b>; для GUI рекомендуется рабочий стол X11/Wayland.`,
+e_kicker:`Экосистема`,e_title:`Мобильная экосистема BELGESELSEMO`,e_desc:`Мир BELGESELSEMO не ограничен настольным ПК: на Android те же экосистему поддерживают приложения документалок, викторин, телегида, дежурных аптек и «Nutuk».`,
+m1s:`Портал HD-документалок и инструментов`,m2s:`Викторина`,m3n:`ТЕЛЕГИД (EPG)`,m3s:`Просмотр телепрограммы`,m4n:`ДЕЖУРНЫЕ АПТЕКИ 7/24`,m4s:`Турция и Сев. Кипр`,m5s:`Текст и аудио`,m6s:`Скоро…`,
+foot_tag:`Вся мощь Internet Download Manager — на Linux, полностью функционально, легко и стабильно.`,foot_releases:`Версии`},
+zh:{name:`简体中文`,en:`Chinese`,rtl:false,
+title:`🚀 IDM LINUX (BELGESELSEMO) — 所有功能尽在一屏`,
+meta:`IDM LINUX 将 Internet Download Manager 的全部实力带到 Linux：浏览器捕获、视频引擎、种子、直播 DVR 和系统医生，尽在一个轻量面板中。`,
+nav_features:`功能`,nav_screens:`界面`,nav_install:`安装`,nav_ecosystem:`生态`,
+hero_sub:`<strong>Internet Download Manager</strong> 的全部实力登陆 Linux：浏览器捕获、视频引擎、种子、直播 DVR 和系统医生 — <strong>尽在一个轻量控制面板</strong>。下载通过真正的 IDM 引擎全速进行。`,
+cta_download:`⬇️ 下载 IDM-LINUX-1.0.0`,cta_screens:`📸 浏览界面截图`,
+chip_ver:`<b>v1.0.0</b> 版本`,chip_pkg:`📦 <b>4</b> 种软件包`,chip_lang:`🌍 <b>20</b> 种语言`,chip_doc:`🩺 <b>6 步</b>自动医生`,chip_video:`🎬 <b>HLS/4K</b> 视频引擎`,chip_torrent:`🧲 <b>DHT</b> 种子`,
+slogan:`<b>本页面;</b> 在一个舞台上完整呈现 IDM LINUX 的全部体验与功能。`,
+f_kicker:`功能`,f_title:`一个面板，十大能力`,
+f_desc:`IDM LINUX 将运行在 Wine 上的真正 IDM 引擎与 Linux 端的轻量 Python 面板结合。各层通过同一个本地桥通信：<code style="color:#7dd3fc">127.0.0.1:17802</code>。`,
+f1t:`浏览器集成`,f1d:`适用于所有基于 Chromium 和 Firefox 的浏览器；自动捕获下载请求并转交给 IDM。你只需点击，剩下的交给 IDM LINUX。`,
+f2t:`视频引擎 (HLS/4K)`,f2d:`yt-dlp / streamlink 引擎链；自动为每个网站选择最合适的引擎，包括 4K 和 HLS 在内的流媒体直接交给 IDM。`,
+f3t:`内置种子引擎`,f3d:`支持 magnet 和 .torrent，通过 DHT 实现无 tracker 的节点发现。在确认窗口中可以选择下载内容或仅下载 .torrent 文件。`,
+f4t:`直播 / DVR`,f4d:`可录制直播流的 DVR 层；启动、停止、管理 — 全部在界面内完成。`,
+f5t:`文件托管站`,f5d:`为热门托管站提供访客会话与直链解析；文件绝不损坏，下载通过 IDM 完成。`,
+f6t:`系统医生`,f6d:`6 步自动诊断与修复：桥接、视频引擎、浏览器连接一键修复。实时日志同屏滚动。`,
+f7t:`--no-sandbox 根治方案`,f7d:`动态检测需要该参数的环境；安装和浏览器启动时自动附加参数，永无阻碍。`,
+f8t:`20 种语言，默认土耳其语`,f8d:`界面支持 20 种语言，并与 IDM 语言自动同步 — 包括从右到左语言的 RTL 支持。`,
+f9t:`取消 = 完全停止`,f9d:`取消下载后，后台没有任何引擎继续运行；不占用资源，也不会留下半截文件。`,
+s_kicker:`界面`,s_title:`面板掠影`,s_desc:`现代深色 Slate 主题搭配霓虹青/翡翠配色 — 桌面零负担，一切尽收眼底。`,
+s1:`总览与实时控制面板 — 桥接状态、快速链接、快捷操作和播放列表`,
+s2:`安装与更新向导 — 自动完成 Wine + 官方 IDM`,
+s3:`浏览器与扩展 — Chromium/Firefox 原生消息`,
+s4:`系统医生与实时日志 — daemon.log 流`,
+s5:`其他项目 — BELGESELSEMO 应用生态`,
+s6:`感谢与支持 — 社区与精神支持`,
+s7:`捕获与 Wine 设置 — 端口、目录、语言`,
+i_kicker:`安装`,i_title:`选好软件包，一条命令`,
+i_desc:`所有软件包都采用相同的 <strong>IDM-LINUX-1.0.0</strong> 版本，并通过 <a href="https://github.com/vesvese55x/IDM-LINUX/releases/latest" target="_blank" rel="noreferrer">GitHub Releases</a> 分发。`,
+p1t:`📦 免安装直接运行`,p1d:`下载、赋予执行权限、双击即可。不在系统留下痕迹。`,
+p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`也可通过 gdebi 等图形化 deb 安装器顺畅安装。`,
+p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`面向 RPM 系发行版的 noarch 软件包。`,
+p4t:`🏔️ Arch / Manjaro`,p4d:`使用 pacman 直接安装；无需 makepkg。`,
+btn_copy:`复制`,btn_copied:`已复制 ✓`,
+note1:`🧰 安装向导会按需自动下载并安装 <b>Wine</b>、<b>官方 IDM</b>、浏览器扩展以及 <b>yt-dlp / ffmpeg / aria2</b> 工具。`,
+note2:`🧩 系统要求：Linux（推荐 x86_64）和 <b>Python 3.8+</b>；图形界面建议使用 X11/Wayland 桌面。`,
+e_kicker:`生态`,e_title:`移动端 BELGESELSEMO 生态`,e_desc:`BELGESELSEMO 的世界不止于桌面：Android 端的纪录片、问答、电视指南、值班药房和 Nutuk 应用延续同一生态。`,
+m1s:`高清纪录片与工具门户`,m2s:`知识问答`,m3n:`电视指南 (EPG)`,m3s:`节目单查看器`,m4n:`值班药房 7/24`,m4s:`土耳其与北塞浦路斯`,m5s:`文字与语音`,m6s:`即将推出…`,
+foot_tag:`Internet Download Manager 的全部实力 — 在 Linux 上，功能完整、轻量而稳定。`,foot_releases:`版本`},
+ja:{name:`日本語`,en:`Japanese`,rtl:false,
+title:`🚀 IDM LINUX (BELGESELSEMO) — 全機能をひとつのステージに`,
+meta:`IDM LINUX は Internet Download Manager の全機能を Linux へ：ブラウザ捕捉、動画エンジン、トレント、ライブ DVR、システムドクターを一つの軽量パネルに。`,
+nav_features:`機能`,nav_screens:`画面`,nav_install:`インストール`,nav_ecosystem:`エコシステム`,
+hero_sub:`<strong>Internet Download Manager</strong> の全能力が Linux に：ブラウザ捕捉、動画エンジン、トレント、ライブ配信 DVR、システムドクター — <strong>ひとつの軽量コントロールパネルに</strong>。ダウンロードは本物の IDM エンジンで最大速度。`,
+cta_download:`⬇️ IDM-LINUX-1.0.0 をダウンロード`,cta_screens:`📸 画面を見る`,
+chip_ver:`<b>v1.0.0</b> バージョン`,chip_pkg:`📦 <b>4</b> 種のパッケージ`,chip_lang:`🌍 <b>20</b> 言語`,chip_doc:`🩺 <b>6 段階</b>自動ドクター`,chip_video:`🎬 <b>HLS/4K</b> 動画エンジン`,chip_torrent:`🧲 <b>DHT</b> トレント`,
+slogan:`<b>このページは;</b> IDM LINUX の体験を全機能とともにひとつのステージで紹介します。`,
+f_kicker:`機能`,f_title:`ひとつのパネル、十の能力`,
+f_desc:`IDM LINUX は Wine 上で動く本物の IDM エンジンと、Linux 側の軽量 Python パネルを結び付けます。すべての層が同じローカルブリッジで通信：<code style="color:#7dd3fc">127.0.0.1:17802</code>。`,
+f1t:`ブラウザ統合`,f1d:`Chromium 系・Firefox 系すべてのブラウザに対応する拡張機能。ダウンロード要求を自動で捕捉し IDM へ引き渡します。クリックするだけで、あとは IDM LINUX にお任せ。`,
+f2t:`動画エンジン (HLS/4K)`,f2d:`yt-dlp / streamlink エンジンチェーン。サイトごとに最適なエンジンを自動選択し、4K・HLS を含むストリームをそのまま IDM へ渡します。`,
+f3t:`内蔵トレントエンジン`,f3d:`magnet と .torrent に対応し、DHT でトラッカー不要のピア探索。確認ダイアログから本体データのみ、または .torrent ファイルだけのダウンロードも可能。`,
+f4t:`ライブ配信 / DVR`,f4d:`ライブストリームを録画できる DVR レイヤー。開始・停止・管理 — すべて UI から。`,
+f5t:`ファイルホスティング`,f5d:`主要ホスティングサイト向けにゲストセッションと直リンク解析。ファイルが壊れることはなく、ダウンロードは IDM で完結します。`,
+f6t:`システムドクター`,f6d:`6 ステップの自動診断・修復：ブリッジ、動画エンジン、ブラウザ接続をワンクリックで修復。ライブログも同じ画面に流れます。`,
+f7t:`--no-sandbox 抜本解決`,f7d:`必要な環境を動的に検出し、インストール時やブラウザ起動時にパラメータを自動付与。つまずく要素はありません。`,
+f8t:`20 言語対応（既定はトルコ語）`,f8d:`UI は 20 言語で動作し、IDM の言語と自動同期。右から左に読む言語向けの RTL 対応も含みます。`,
+f9t:`キャンセル = 完全停止`,f9d:`ダウンロードをキャンセルすると、バックグラウンドで動き続けるエンジンは一切ありません。リソースを食わず、ファイルも途中のまま残りません。`,
+s_kicker:`画面`,s_title:`パネルのワンシーン`,s_desc:`モダンなダーク Slate テーマとネオンシァン/エメラルドの配色 — デスクトップに負担をかけず、すべてを見渡せます。`,
+s1:`概要 & ライブコントロールパネル — ブリッジ状態、クイックリンク、クイック操作、プレイリスト`,
+s2:`インストール & アップデートウィザード — Wine + 正規 IDM を自動で`,
+s3:`ブラウザ & 拡張機能 — Chromium/Firefox native messaging`,
+s4:`システムドクター & ライブログ — daemon.log のストリーム`,
+s5:`その他のプロジェクト — BELGESELSEMO アプリエコシステム`,
+s6:`ありがとう & 応援 — コミュニティと心のサポート`,
+s7:`捕捉 & Wine 設定 — ポート、フォルダ、言語`,
+i_kicker:`インストール`,i_title:`パッケージを選び、コマンド一つ`,
+i_desc:`すべてのパッケージが同じ <strong>IDM-LINUX-1.0.0</strong> バージョンを搭載し、<a href="https://github.com/vesvese55x/IDM-LINUX/releases/latest" target="_blank" rel="noreferrer">GitHub Releases</a> から配布されます。`,
+p1t:`📦 インストールせず実行`,p1d:`ダウンロードして実行権を付け、ダブルクリック。システムに痕跡を残しません。`,
+p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`gdebi など GUI の deb インストーラでも問題なくインストールできます。`,
+p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`RPM 系ディストロ向けの noarch パッケージ。`,
+p4t:`🏔️ Arch / Manjaro`,p4d:`pacman で直接インストール。makepkg は不要です。`,
+btn_copy:`コピー`,btn_copied:`コピー済み ✓`,
+note1:`🧰 セットアップウィザードは必要に応じて <b>Wine</b>、<b>正規 IDM</b>、ブラウザ拡張、<b>yt-dlp / ffmpeg / aria2</b> を自動でダウンロード・インストールします。`,
+note2:`🧩 要件：Linux（x86_64 推奨）と <b>Python 3.8+</b>。GUI には X11/Wayland デスクトップを推奨します。`,
+e_kicker:`エコシステム`,e_title:`モバイル BELGESELSEMO エコシステム`,e_desc:`BELGESELSEMO の世界はデスクトップにとどまりません。Android ではドキュメンタリー、クイズ、TV ガイド、当番薬局、Nutuk アプリが同じエコシステムを支えます。`,
+m1s:`HD ドキュメンタリー & ツールポータル`,m2s:`クイズゲーム`,m3n:`TV ガイド (EPG)`,m3s:`番組表ビューア`,m4n:`当番薬局 7/24`,m4s:`トルコ & 北キプロス`,m5s:`音読 & 音声`,m6s:`近日公開…`,
+foot_tag:`Internet Download Manager の全能力を — Linux で、完全機能・軽量・安定。`,foot_releases:`リリース`},
+hi:{name:`हिन्दी`,en:`Hindi`,rtl:false,
+title:`🚀 IDM LINUX (BELGESELSEMO) — सभी फ़ीचर एक ही मंच पर`,
+meta:`IDM LINUX Internet Download Manager की पूरी ताक़त Linux पर लाता है: ब्राउज़र कैप्चर, वीडियो इंजन, टॉरेंट, लाइव DVR और सिस्टम डॉक्टर — एक हल्के पैनल में।`,
+nav_features:`फ़ीचर`,nav_screens:`स्क्रीन`,nav_install:`इंस्टॉल`,nav_ecosystem:`इकोसिस्टम`,
+hero_sub:`<strong>Internet Download Manager</strong> की पूरी ताक़त Linux पर: ब्राउज़र कैप्चर, वीडियो इंजन, टॉरेंट, लाइव स्ट्रीम DVR और सिस्टम डॉक्टर — <strong>एक ही हल्के कंट्रोल पैनल में</strong>। डाउनलोड असली IDM इंजन से अधिकतम गति पर चलते हैं।`,
+cta_download:`⬇️ IDM-LINUX-1.0.0 डाउनलोड करें`,cta_screens:`📸 स्क्रीन देखें`,
+chip_ver:`<b>v1.0.0</b> संस्करण`,chip_pkg:`📦 <b>4</b> पैकेज प्रकार`,chip_lang:`🌍 <b>20</b> भाषाएँ`,chip_doc:`🩺 <b>6 चरणों</b> वाला ऑटो डॉक्टर`,chip_video:`🎬 <b>HLS/4K</b> वीडियो इंजन`,chip_torrent:`🧲 <b>DHT</b> टॉरेंट`,
+slogan:`<b>यह पृष्ठ;</b> IDM LINUX के पूरे अनुभव को सभी फ़ीचरों के साथ एक ही मंच पर प्रस्तुत करता है।`,
+f_kicker:`फ़ीचर`,f_title:`एक पैनल, दस क्षमताएँ`,
+f_desc:`IDM LINUX Wine पर चलने वाले असली IDM इंजन को Linux पक्ष के हल्के Python पैनल से जोड़ता है। हर परत एक ही लोकल ब्रिज से बात करती है: <code style="color:#7dd3fc">127.0.0.1:17802</code>।`,
+f1t:`ब्राउज़र एकीकरण`,f1d:`सभी Chromium- और Firefox-आधारित ब्राउज़रों के लिए एक्सटेंशन; डाउनलोड अनुरोधों को अपने आप पकड़ता और IDM को सौंपता है। आप क्लिक करें, बाकी IDM LINUX करेगा।`,
+f2t:`वीडियो इंजन (HLS/4K)`,f2d:`yt-dlp / streamlink इंजन श्रृंखला; हर साइट के लिए सबसे उपयुक्त इंजन अपने आप चुना जाता है और 4K व HLS स्ट्रीम सीधे IDM को भेजी जाती हैं।`,
+f3t:`अंतर्निहित टॉरेंट इंजन`,f3d:`magnet और .torrent समर्थन, DHT से बिना-ट्रैकर पीयर खोज। पुष्टि विंडो से आप सामग्री या केवल .torrent फ़ाइल डाउनलोड कर सकते हैं।`,
+f4t:`लाइव स्ट्रीम / DVR`,f4d:`लाइव स्ट्रीम रिकॉर्ड करने वाली DVR परत; शुरू करें, रोकें, प्रबंधित करें — सब UI से।`,
+f5t:`फ़ाइल होस्टिंग साइटें`,f5d:`लोकप्रिय होस्टिंग साइटों के लिए गेस्ट सेशन और डायरेक्ट-लिंक रिज़ॉल्यूशन; फ़ाइल कभी खराब नहीं उतरती, डाउनलोड IDM से पूरा होता है।`,
+f6t:`सिस्टम डॉक्टर`,f6d:`6 चरणों का स्वचालित निदान और मरम्मत: ब्रिज, वीडियो इंजन और ब्राउज़र कनेक्शन एक क्लिक में ठीक। लाइव लॉग उसी स्क्रीन पर बहते हैं।`,
+f7t:`--no-sandbox का पक्का हल`,f7d:`जिन वातावरणों में ज़रूरी है वे अपने आप पहचाने जाते हैं; इंस्टॉल और ब्राउज़र लॉन्च पर फ़्लैग अपने आप जुड़ता है — कोई रुकावट नहीं।`,
+f8t:`20 भाषाएँ, डिफ़ॉल्ट तुर्की`,f8d:`इंटरफ़ेस 20 भाषाओं में चलता है और IDM की भाषा से अपने आप सिंक होता है — दाएँ-से-बाएँ भाषाओं के लिए RTL समर्थन सहित।`,
+f9t:`रद्द = पूरी रोक`,f9d:`डाउनलोड रद्द करते ही पीछे कोई इंजन नहीं चलता; संसाधन ख़र्च नहीं होता, फ़ाइल अधूरी नहीं छूटती।`,
+s_kicker:`स्क्रीन`,s_title:`पैनल के दृश्य`,s_desc:`आधुनिक गहरा Slate थीम और नीऑन सियान/एमरल्ड रंग-योजना — डेस्कटॉप पर बोझ नहीं, सब कुछ साफ़ दिखाई देता है।`,
+s1:`ओवरव्यू और लाइव कंट्रोल पैनल — ब्रिज स्थिति, क्विक लिंक, क्विक एक्शन और प्लेलिस्ट`,
+s2:`इंस्टॉल और अपडेट विज़ार्ड — Wine + आधिकारिक IDM अपने आप`,
+s3:`ब्राउज़र और एक्सटेंशन — Chromium/Firefox native messaging`,
+s4:`सिस्टम डॉक्टर और लाइव लॉग — daemon.log स्ट्रीम`,
+s5:`अन्य प्रोजेक्ट — BELGESELSEMO ऐप इकोसिस्टम`,
+s6:`धन्यवाद और सहयोग — समुदाय और मानसिक सहयोग`,
+s7:`कैप्चर और Wine सेटिंग्स — पोर्ट, फ़ोल्डर, भाषा`,
+i_kicker:`इंस्टॉल`,i_title:`पैकेज चुनें, एक कमांड`,
+i_desc:`सभी पैकेज एक ही <strong>IDM-LINUX-1.0.0</strong> संस्करण लाते हैं और <a href="https://github.com/vesvese55x/IDM-LINUX/releases/latest" target="_blank" rel="noreferrer">GitHub Releases</a> से वितरित होते हैं।`,
+p1t:`📦 बिना इंस्टॉल चलाएँ`,p1d:`डाउनलोड करें, चलाने योग्य बनाएँ, डबल-क्लिक करें। सिस्टम पर कोई निशान नहीं।`,
+p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`gdebi जैसे GUI deb इंस्टॉलर से भी आसानी से इंस्टॉल होता है।`,
+p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`RPM-आधारित वितरणों के लिए noarch पैकेज।`,
+p4t:`🏔️ Arch / Manjaro`,p4d:`pacman से सीधा इंस्टॉल; makepkg की ज़रूरत नहीं।`,
+btn_copy:`कॉपी`,btn_copied:`कॉपी हुआ ✓`,
+note1:`🧰 इंस्टॉल विज़ार्ड ज़रूरत पर <b>Wine</b>, <b>आधिकारिक IDM</b>, ब्राउज़र एक्सटेंशन और <b>yt-dlp / ffmpeg / aria2</b> औज़ार अपने आप डाउनलोड-इंस्टॉल करता है।`,
+note2:`🧩 आवश्यकताएँ: Linux (x86_64 अनुशंसित) और <b>Python 3.8+</b>; GUI के लिए X11/Wayland डेस्कटॉप अनुशंसित।`,
+e_kicker:`इकोसिस्टम`,e_title:`मोबाइल BELGESELSEMO इकोसिस्टम`,e_desc:`BELGESELSEMO की दुनिया डेस्कटॉप तक सीमित नहीं: Android पर डॉक्यूमेंट्री, ट्रिविया, TV गाइड, ड्यूटी फ़ार्मेसी और Nutuk ऐप्स वही इकोसिस्टम निभाते हैं।`,
+m1s:`HD डॉक्यूमेंट्री और टूल्स पोर्टल`,m2s:`क्विज़ गेम`,m3n:`TV गाइड (EPG)`,m3s:`प्रसारण सूची दर्शक`,m4n:`ड्यूटी फ़ार्मेसी 7/24`,m4s:`तुर्की और उत्तरी साइप्रस`,m5s:`वाचित और ऑडियो`,m6s:`जल्द आ रहा है…`,
+foot_tag:`Internet Download Manager की पूरी ताक़त — Linux पर, पूर्ण कार्यशील, हल्का और स्थिर।`,foot_releases:`रिलीज़`},
+ar:{name:`العربية`,en:`Arabic`,rtl:true,
+title:`🚀 IDM LINUX (BELGESELSEMO) — كل المزايا على مسرح واحد`,
+meta:`يجلب IDM LINUX كامل قوة Internet Download Manager إلى لينكس: التقاط المتصفح، ومحرك الفيديو، والتورنت، وتسجيل البث المباشر، وطبيب النظام — في لوحة واحدة خفيفة.`,
+nav_features:`المزايا`,nav_screens:`الشاشات`,nav_install:`التثبيت`,nav_ecosystem:`المنظومة`,
+hero_sub:`كامل قوة <strong>Internet Download Manager</strong> على لينكس: التقاط من المتصفح، محرك فيديو، تورنت، تسجيل البث المباشر وطبيب النظام — <strong>في لوحة تحكم واحدة خفيفة</strong>. تُنجز التنزيلات بأقصى سرعة عبر محرك IDM الحقيقي.`,
+cta_download:`⬇️ تنزيل IDM-LINUX-1.0.0`,cta_screens:`📸 تجوّل بين الشاشات`,
+chip_ver:`<b>v1.0.0</b> إصدار`,chip_pkg:`📦 <b>4</b> أنواع حزم`,chip_lang:`🌍 <b>20</b> لغة`,chip_doc:`🩺 طبيب آلي من <b>6 خطوات</b>`,chip_video:`🎬 محرك فيديو <b>HLS/4K</b>`,chip_torrent:`🧲 تورنت <b>DHT</b>`,
+slogan:`<b>هذه الصفحة؛</b> تعرض تجربة IDM LINUX كاملة بجميع مزاياها ووظائفها على مسرح واحد.`,
+f_kicker:`المزايا`,f_title:`لوحة واحدة، عشر قدرات`,
+f_desc:`يجمع IDM LINUX محرك IDM الحقيقي العامل عبر Wine مع لوحة Python خفيفة في جهة لينكس. تتحدث كل طبقة عبر الجسر المحلي نفسه: <code style="color:#7dd3fc">127.0.0.1:17802</code>.`,
+f1t:`تكامل المتصفح`,f1d:`إضافة لجميع المتصفحات المبنية على Chromium وFirefox؛ تلتقط طلبات التنزيل تلقائياً وتحيلها إلى IDM. أنت تنقر، وIDM LINUX يتولى البقية.`,
+f2t:`محرك الفيديو (HLS/4K)`,f2d:`سلسلة محركات yt-dlp / streamlink؛ يُختار المحرك الأنسب لكل موقع تلقائياً، وتُمرَّر البثوث — بما فيها 4K وHLS — مباشرة إلى IDM.`,
+f3t:`محرك تورنت مدمج`,f3d:`دعم magnet و.torrent مع اكتشاف الأقران بدون متتبع عبر DHT. من نافذة التأكيد يمكنك تنزيل المحتوى أو ملف .torrent فقط.`,
+f4t:`البث المباشر / DVR`,f4d:`طبقة DVR لتسجيل البثوث المباشرة؛ ابدأ، أوقف، أدِر — كل ذلك من الواجهة.`,
+f5t:`مواقع استضافة الملفات`,f5d:`جلسة زائر وحل الروابط المباشرة لمواقع الاستضافة الشهيرة؛ لا يصل ملف تالفاً أبداً، ويكتمل التنزيل عبر IDM.`,
+f6t:`طبيب النظام`,f6d:`تشخيص وإصلاح آلي من 6 خطوات: الجسر ومحرك الفيديو واتصالات المتصفح تُصلَح بنقرة واحدة. وتتدفق السجلات الحية على الشاشة نفسها.`,
+f7t:`الحل الجذري --no-sandbox`,f7d:`تُكتشف البيئات التي تتطلبه تلقائياً؛ وتُضاف المعلمة تلقائياً عند التثبيت وإطلاق المتصفح — لا عقبات أبداً.`,
+f8t:`20 لغة، التركية افتراضياً`,f8d:`تعمل الواجهة بـ20 لغة وتتزامن تلقائياً مع لغة IDM — بما في ذلك دعم RTL للغات المكتوبة من اليمين إلى اليسار.`,
+f9t:`الإلغاء = توقف تام`,f9d:`عند إلغاء تنزيل لا يواصل أي محرك العمل في الخلفية؛ لا استهلاك للموارد ولا ملفات نصف مكتملة.`,
+s_kicker:`الشاشات`,s_title:`لقطات من اللوحة`,s_desc:`سمة Slate داكنة عصرية ولوحة ألوان سماوي نيون/زمردي — لا إرهاق لسطح المكتب، وكل شيء أمام عينيك.`,
+s1:`نظرة عامة ولوحة تحكم حية — حالة الجسر، رابط سريع، إجراءات سريعة وقائمة التشغيل`,
+s2:`معالج التثبيت والتحديث — Wine + IDM الرسمي تلقائياً`,
+s3:`المتصفحات والإضافات — native messaging لـChromium/Firefox`,
+s4:`طبيب النظام والسجلات الحية — تدفق daemon.log`,
+s5:`مشاريع أخرى — منظومة تطبيقات BELGESELSEMO`,
+s6:`اشكرنا وادعمنا — المجتمع والدعم المعنوي`,
+s7:`إعدادات الالتقاط وWine — المنافذ والمجلدات واللغة`,
+i_kicker:`التثبيت`,i_title:`اختر الحزمة، أمر واحد`,
+i_desc:`تحمل جميع الحزم الإصدار نفسه <strong>IDM-LINUX-1.0.0</strong> وتُوزَّع عبر <a href="https://github.com/vesvese55x/IDM-LINUX/releases/latest" target="_blank" rel="noreferrer">GitHub Releases</a>.`,
+p1t:`📦 شغّل بلا تثبيت`,p1d:`نزّل، اجعله قابلاً للتنفيذ، انقر نقراً مزدوجاً. لا يترك أثراً في النظام.`,
+p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`يُثبَّت أيضاً بسلاسة عبر gdebi ومثبتات deb الرسومية المشابهة.`,
+p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`حزمة noarch للتوزيعات المبنية على RPM.`,
+p4t:`🏔️ Arch / Manjaro`,p4d:`تثبيت مباشر عبر pacman؛ لا حاجة إلى makepkg.`,
+btn_copy:`نسخ`,btn_copied:`تم النسخ ✓`,
+note1:`🧰 معالج الإعداد ينزّل ويثبّت تلقائياً عند الحاجة <b>Wine</b> و<b>IDM الرسمي</b> وإضافات المتصفح وأدوات <b>yt-dlp / ffmpeg / aria2</b>.`,
+note2:`🧩 المتطلبات: Linux (يُنصح بـx86_64) و<b>Python 3.8+</b>؛ ويُنصح بسطح مكتب X11/Wayland للواجهة.`,
+e_kicker:`المنظومة`,e_title:`منظومة BELGESELSEMO للجوال`,e_desc:`عالم BELGESELSEMO لا يقتصر على سطح المكتب: على أندرويد تُواصل تطبيقات الوثائقيات والأسئلة ودليل التلفزيون والصيدليات المناوبة و«Nutuk» دعم المنظومة نفسها.`,
+m1s:`بوابة الوثائقيات HD والأدوات`,m2s:`لغة مسابقات`,m3n:`دليل القنوات (EPG)`,m3s:`عارض جدول البث`,m4n:`الصيدليات المناوبة 7/24`,m4s:`تركيا وشمال قبرص`,m5s:`مقروء ومسموع`,m6s:`قريباً…`,
+foot_tag:`كامل قوة Internet Download Manager — على لينكس، كامل الوظائف، خفيف وثابت.`,foot_releases:`الإصدارات`},
+nl:{name:`Nederlands`,en:`Dutch`,rtl:false,
+title:`🚀 IDM LINUX (BELGESELSEMO) — Alle functies op één podium`,
+meta:`IDM LINUX brengt de volledige kracht van Internet Download Manager naar Linux: browsercapture, video-engine, torrent, live-DVR en systeemdokter in één licht bedieningspaneel.`,
+nav_features:`Functies`,nav_screens:`Schermen`,nav_install:`Installatie`,nav_ecosystem:`Ecosysteem`,
+hero_sub:`De volledige kracht van <strong>Internet Download Manager</strong> op Linux: browsercapture, video-engine, torrent, live-stream DVR en systeemdokter — <strong>in één licht controlepaneel</strong>. Downloads draaien op maximale snelheid via de echte IDM-engine.`,
+cta_download:`⬇️ IDM-LINUX-1.0.0 downloaden`,cta_screens:`📸 Schermen bekijken`,
+chip_ver:`<b>v1.0.0</b> versie`,chip_pkg:`📦 <b>4</b> pakkettypen`,chip_lang:`🌍 <b>20</b> talen`,chip_doc:`🩺 auto-dokter in <b>6 stappen</b>`,chip_video:`🎬 <b>HLS/4K</b>-video-engine`,chip_torrent:`🧲 <b>DHT</b>-torrent`,
+slogan:`<b>Deze pagina;</b> presenteert de volledige IDM LINUX-ervaring, met alle functies, op één podium.`,
+f_kicker:`Functies`,f_title:`Eén paneel, tien capaciteiten`,
+f_desc:`IDM LINUX combineert de echte IDM-engine onder Wine met een licht Python-paneel aan de Linux-kant. Elke laag praat via dezelfde lokale brug: <code style="color:#7dd3fc">127.0.0.1:17802</code>.`,
+f1t:`Browserintegratie`,f1d:`Een extensie voor alle op Chromium en Firefox gebaseerde browsers; vangt downloadverzoeken automatisch op en geeft ze door aan IDM. Jij klikt, IDM LINUX doet de rest.`,
+f2t:`Video-engine (HLS/4K)`,f2d:`yt-dlp-/streamlink-motorketen; de meest geschikte engine wordt per site automatisch gekozen en streams — inclusief 4K en HLS — gaan rechtstreeks naar IDM.`,
+f3t:`Ingebouwde torrent-engine`,f3d:`Magnet- en .torrent-ondersteuning met trackerloze peer-ontdekking via DHT. In het bevestigingsvenster download je de inhoud of alleen het .torrent-bestand.`,
+f4t:`Live stream / DVR`,f4d:`Een DVR-laag die live streams opneemt; starten, stoppen, beheren — allemaal vanuit de UI.`,
+f5t:`Bestandshosters`,f5d:`Gastsessie en directe-linkresolutie voor populaire hosters; bestanden komen nooit beschadigd binnen, de download wordt via IDM voltooid.`,
+f6t:`Systeemdokter`,f6d:`Automatische diagnose en reparatie in 6 stappen: brug, video-engine en browserverbindingen met één klik hersteld. Live logboeken stromen op hetzelfde scherm.`,
+f7t:`--no-sandbox radicale oplossing`,f7d:`Omgevingen die het vereisen worden dynamisch gedetecteerd; de parameter wordt automatisch toegevoegd bij installatie en browserstart — geen belemmering ooit.`,
+f8t:`20 talen, Turks als standaard`,f8d:`De interface werkt in 20 talen en synchroniseert automatisch met de IDM-taal — inclusief RTL-ondersteuning voor rechts-naar-links talen.`,
+f9t:`Annuleren = volledige stop`,f9d:`Als je een download annuleert, blijft er geen engine op de achtergrond draaien; geen resourceverbruik, geen half afgesloten bestand.`,
+s_kicker:`Schermen`,s_title:`Beelden uit het paneel`,s_desc:`Modern donker Slate-thema met een Neon Cyaan/Emerald-palet — geen belasting voor de desktop, alles in het zicht.`,
+s1:`Overzicht &amp; Live bedieningspaneel — brugstatus, snelkoppeling, snelle acties en afspeellijst`,
+s2:`Installatie- &amp; updateassistent — Wine + officiële IDM automatisch`,
+s3:`Browsers &amp; extensies — Chromium/Firefox native messaging`,
+s4:`Systeemdokter &amp; live logboeken — daemon.log-stroom`,
+s5:`Andere projecten — het BELGESELSEMO-app-ecosysteem`,
+s6:`Bedanken &amp; steunen — gemeenschap en morele steun`,
+s7:`Capture- &amp; Wine-instellingen — poorten, mappen, taal`,
+i_kicker:`Installatie`,i_title:`Kies je pakket, één opdracht`,
+i_desc:`Alle pakketten dragen dezelfde versie <strong>IDM-LINUX-1.0.0</strong> en worden via <a href="https://github.com/vesvese55x/IDM-LINUX/releases/latest" target="_blank" rel="noreferrer">GitHub Releases</a> gedistribueerd.`,
+p1t:`📦 Uitvoeren zonder installatie`,p1d:`Downloaden, uitvoerbaar maken, dubbelklikken. Laat geen spoor na op het systeem.`,
+p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`Installeert ook moeiteloos via gdebi en vergelijkbare grafische deb-installateurs.`,
+p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`Een noarch-pakket voor op RPM gebaseerde distributies.`,
+p4t:`🏔️ Arch / Manjaro`,p4d:`Directe installatie met pacman; makepkg is niet nodig.`,
+btn_copy:`KOPIËREN`,btn_copied:`GEKOPIEERD ✓`,
+note1:`🧰 De installatiewizard downloadt en installeert automatisch <b>Wine</b>, de <b>officiële IDM</b>, browserextensies en de tools <b>yt-dlp / ffmpeg / aria2</b> wanneer nodig.`,
+note2:`🧩 Vereisten: Linux (x86_64 aanbevolen) en <b>Python 3.8+</b>; voor de GUI wordt een X11/Wayland-bureaublad aanbevolen.`,
+e_kicker:`Ecosysteem`,e_title:`Het mobiele BELGESELSEMO-ecosysteem`,e_desc:`De BELGESELSEMO-wereld blijft niet tot de desktop beperkt: op Android houden de documentaire-, quiz-, tv-gids-, dienstdoende-apotheek- en Nutuk-apps hetzelfde ecosysteem in stand.`,
+m1s:`HD-documentaires &amp; toolsportaal`,m2s:`Quizspel`,m3n:`TV-GIDS (EPG)`,m3s:`Uitzendschema-weergave`,m4n:`DIENSTDOENDE APOTHEEK 7/24`,m4s:`TR &amp; Noord-Cyprus`,m5s:`Gesproken &amp; audio`,m6s:`Binnenkort…`,
+foot_tag:`De volledige kracht van Internet Download Manager — op Linux, volledig functioneel, licht en stabiel.`,foot_releases:`Versies`},
+fa:{name:`فارسی`,en:`Persian`,rtl:true,
+title:`🚀 IDM LINUX (BELGESELSEMO) — همه امکانات در یک صحنه`,
+meta:`IDM LINUX تمام قدرت Internet Download Manager را به لینوکس می‌آورد: گرفتن از مرورگر، موتور ویدیو، تورنت، DVR پخش زنده و دکتر سیستم — در یک پنل سبک.`,
+nav_features:`امکانات`,nav_screens:`تصاویر`,nav_install:`نصب`,nav_ecosystem:`اکوسیستم`,
+hero_sub:`تمام قدرت <strong>Internet Download Manager</strong> روی لینوکس: گرفتن دانلود از مرورگر، موتور ویدیو، تورنت، DVR پخش زنده و دکتر سیستم — <strong>در یک پنل کنترل سبک و واحد</strong>. دانلودها با سرعت بیشینه روی موتور واقعی IDM انجام می‌شود.`,
+cta_download:`⬇️ دانلود IDM-LINUX-1.0.0`,cta_screens:`📸 گشت‌وگذار در تصاویر`,
+chip_ver:`<b>v1.0.0</b> نسخه`,chip_pkg:`📦 <b>۴</b> نوع بسته`,chip_lang:`🌍 <b>۲۰</b> زبان`,chip_doc:`🩺 دکتر خودکار <b>۶ مرحله‌ای</b>`,chip_video:`🎬 موتور ویدیو <b>HLS/4K</b>`,chip_torrent:`🧲 تورنت <b>DHT</b>`,
+slogan:`<b>این صفحه؛</b> کل تجربه IDM LINUX را با همه امکانات و قابلیت‌ها در یک صحنه معرفی می‌کند.`,
+f_kicker:`امکانات`,f_title:`یک پنل، ده قابلیت`,
+f_desc:`IDM LINUX موتور واقعی IDM را که روی Wine اجرا می‌شود با یک پنل سبک پایتون در سمت لینوکس پیوند می‌زند. هر لایه از همان پل محلی حرف می‌زند: <code style="color:#7dd3fc">127.0.0.1:17802</code>.`,
+f1t:`یکپارچگی با مرورگر`,f1d:`افزونه‌ای برای همه مرورگرهای مبتنی بر Chromium و Firefox؛ درخواست‌های دانلود را خودکار می‌گیرد و به IDM می‌سپارد. شما کلیک کنید، بقیه‌اش با IDM LINUX.`,
+f2t:`موتور ویدیو (HLS/4K)`,f2d:`زنجیره موتورهای yt-dlp / streamlink؛ مناسب‌ترین موتور برای هر سایت خودکار انتخاب می‌شود و جریان‌ها — شامل 4K و HLS — مستقیم به IDM سپرده می‌شوند.`,
+f3t:`موتور تورنت داخلی`,f3d:`پشتیبانی از magnet و .torrent با کشف همتا بدون ترکر از طریق DHT. در پنجره تأیید می‌توانید محتوا یا فقط فایل .torrent را دانلود کنید.`,
+f4t:`پخش زنده / DVR`,f4d:`لایه DVR برای ضبط پخش‌های زنده؛ شروع، توقف، مدیریت — همه از رابط کاربری.`,
+f5t:`هاست‌های فایل`,f5d:`نشست مهمان و حل لینک مستقیم برای سایت‌های هاست معروف؛ فایل هیچ‌وقت خراب نمی‌رسد و دانلود با IDM کامل می‌شود.`,
+f6t:`دکتر سیستم`,f6d:`تشخیص و ترمیم خودکار در ۶ مرحله: پل، موتور ویدیو و اتصال مرورگرها با یک کلیک تعمیر می‌شوند. لاگ‌های زنده هم در همان صفحه جریان دارند.`,
+f7t:`راه‌حل ریشه‌ای --no-sandbox`,f7d:`محیط‌های نیازمند آن به‌صورت پویا شناسایی می‌شوند؛ پارامتر هنگام نصب و اجرای مرورگر خودکار افزوده می‌شود — هیچ مانعی پیش نمی‌آید.`,
+f8t:`۲۰ زبان، پیش‌فرض ترکی`,f8d:`رابط کاربری با ۲۰ زبان کار می‌کند و با زبان IDM همگام‌سازی خودکار می‌شود — شامل پشتیبانی RTL برای زبان‌های راست‌به‌چپ.`,
+f9t:`لغو = توقف کامل`,f9d:`وقتی دانلودی را لغو می‌کنید، هیچ موتوری در پس‌زمینه ادامه نمی‌دهد؛ نه منبعی مصرف می‌شود و نه فایلی نیمه‌کاره می‌ماند.`,
+s_kicker:`تصاویر`,s_title:`تصاویری از پنل`,s_desc:`تم تیره مدرن Slate با پالت نئونی آبی‌فیروزه‌ای/زمردی — بدون فشار به دسکتاپ، همه‌چیز جلوی چشم.`,
+s1:`نمای کلی و پنل کنترل زنده — وضعیت پل، لینک سریع، اقدامات سریع و فهرست پخش`,
+s2:`ویزارد نصب و به‌روزرسانی — Wine + IDM رسمی به‌صورت خودکار`,
+s3:`مرورگرها و افزونه‌ها — native messaging Chromium/Firefox`,
+s4:`دکتر سیستم و لاگ زنده — جریان daemon.log`,
+s5:`پروژه‌های دیگر — اکوسیستم اپ BELGESELSEMO`,
+s6:`قدردانی و حمایت — جامعه و حمایت معنوی`,
+s7:`تنظیمات گرفتن و Wine — پورت‌ها، پوشه‌ها، زبان`,
+i_kicker:`نصب`,i_title:`بسته را انتخاب کن، یک فرمان`,
+i_desc:`همه بسته‌ها نسخه یکسان <strong>IDM-LINUX-1.0.0</strong> را دارند و از طریق <a href="https://github.com/vesvese55x/IDM-LINUX/releases/latest" target="_blank" rel="noreferrer">GitHub Releases</a> توزیع می‌شوند.`,
+p1t:`📦 اجرا بدون نصب`,p1d:`دانلود کن، اجرایی کن، دابل‌کلیک کن. هیچ ردی در سیستم نمی‌گذارد.`,
+p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`با gdebi و نصاب‌های گرافیکی مشابه deb هم بی‌دردسر نصب می‌شود.`,
+p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`بسته noarch برای توزیع‌های مبتنی بر RPM.`,
+p4t:`🏔️ Arch / Manjaro`,p4d:`نصب مستقیم با pacman؛ نیازی به makepkg نیست.`,
+btn_copy:`کپی`,btn_copied:`کپی شد ✓`,
+note1:`🧰 ویزارد نصب در صورت نیاز <b>Wine</b>، <b>IDM رسمی</b>، افزونه مرورگرها و ابزارهای <b>yt-dlp / ffmpeg / aria2</b> را خودکار دانلود و نصب می‌کند.`,
+note2:`🧩 پیش‌نیازها: لینوکس (x86_64 پیشنهاد می‌شود) و <b>Python 3.8+</b>؛ برای رابط گرافیکی دسکتاپ X11/Wayland پیشنهاد می‌شود.`,
+e_kicker:`اکوسیستم`,e_title:`اکوسیستم موبایل BELGESELSEMO`,e_desc:`دنیای BELGESELSEMO فقط به دسکتاپ محدود نیست: در اندروید اپ‌های مستند، تریویا، راهنمای تلویزیون، داروخانه‌های شبانه‌روزی و «Nutuk» همین اکوسیستم را ادامه می‌دهند.`,
+m1s:`پورتال مستند HD و ابزارها`,m2s:`بازی پرسش‌وپاسخ`,m3n:`راهنمای تلویزیون (EPG)`,m3s:`نمایشگر جدول پخش`,m4n:`داروخانه شبانه‌روزی 7/24`,m4s:`ترکیه و قبرس شمالی`,m5s:`گفتاری و صوتی`,m6s:`به‌زودی…`,
+foot_tag:`تمام قدرت Internet Download Manager — روی لینوکس، کاملاً کاربردی، سبک و پایدار.`,foot_releases:`انتشارها`},
+el:{name:`Ελληνικά`,en:`Greek`,rtl:false,
+title:`🚀 IDM LINUX (BELGESELSEMO) — Όλες οι λειτουργίες σε μία σκηνή`,
+meta:`Το IDM LINUX φέρνει όλη τη δύναμη του Internet Download Manager στο Linux: σύλληψη από browser, μηχανή βίντεο, torrent, DVR ζωντανών ροών και γιατρός συστήματος σε ένα ελαφρύ πάνελ.`,
+nav_features:`Λειτουργίες`,nav_screens:`Οθόνες`,nav_install:`Εγκατάσταση`,nav_ecosystem:`Οικοσύστημα`,
+hero_sub:`Όλη η δύναμη του <strong>Internet Download Manager</strong> στο Linux: σύλληψη από browser, μηχανή βίντεο, torrent, DVR ζωντανών ροών και γιατρός συστήματος — <strong>σε ένα ελαφρύ πάνελ ελέγχου</strong>. Οι λήψεις τρέχουν με μέγιστη ταχύτητα μέσω της αληθινής μηχανής IDM.`,
+cta_download:`⬇️ Λήψη του IDM-LINUX-1.0.0`,cta_screens:`📸 Περιήγηση στις οθόνες`,
+chip_ver:`<b>v1.0.0</b> έκδοση`,chip_pkg:`📦 <b>4</b> τύποι πακέτων`,chip_lang:`🌍 <b>20</b> γλώσσες`,chip_doc:`🩺 αυτόματος γιατρός <b>6 βημάτων</b>`,chip_video:`🎬 μηχανή βίντεο <b>HLS/4K</b>`,chip_torrent:`🧲 torrent <b>DHT</b>`,
+slogan:`<b>Αυτή η σελίδα;</b> παρουσιάζει όλη την εμπειρία του IDM LINUX, με όλες τις λειτουργίες του, σε μία σκηνή.`,
+f_kicker:`Λειτουργίες`,f_title:`Ένα πάνελ, δέκα ικανότητες`,
+f_desc:`Το IDM LINUX ενώνει την αληθινή μηχανή IDM που τρέχει σε Wine με ένα ελαφρύ πάνελ Python στην πλευρά του Linux. Κάθε στρώμα μιλά μέσω της ίδιας τοπικής γέφυρας: <code style="color:#7dd3fc">127.0.0.1:17802</code>.`,
+f1t:`Ενσωμάτωση browser`,f1d:`Επέκταση για όλους τους browsers βάσει Chromium και Firefox· καταγράφει αυτόματα τα αιτήματα λήψης και τα παραδίδει στο IDM. Εσείς κάνετε κλικ, το IDM LINUX κάνει τα υπόλοιπα.`,
+f2t:`Μηχανή βίντεο (HLS/4K)`,f2d:`Αλυσίδα μηχανών yt-dlp / streamlink· επιλέγεται αυτόματα η καταλληλότερη μηχανή ανά ιστότοπο και οι ροές — συμπεριλαμβανομένων 4K και HLS — περνούν απευθείας στο IDM.`,
+f3t:`Ενσωματωμένη μηχανή torrent`,f3d:`Υποστήριξη magnet και .torrent με αναζήτηση peers χωρίς tracker μέσω DHT. Από το παράθυρο επιβεβαίωσης μπορείτε να κατεβάσετε το περιεχόμενο ή μόνο το αρχείο .torrent.`,
+f4t:`Ζωντανή ροή / DVR`,f4d:`Ένα στρώμα DVR που εγγράφει ζωντανές ροές· έναρξη, διακοπή, διαχείριση — όλα από το UI.`,
+f5t:`Hosters αρχείων`,f5d:`Συνεδρία επισκέπτη και ανάλυση άμεσων συνδέσμων για δημοφιλείς ιστότοπους φιλοξενίας· τα αρχεία δεν φτάνουν ποτέ κατεστραμμένα, η λήψη ολοκληρώνεται μέσω IDM.`,
+f6t:`Γιατρός συστήματος`,f6d:`Αυτόματη διάγνωση και επιδιόρθωση 6 βημάτων: γέφυρα, μηχανή βίντεο και συνδέσεις browsers επιδιορθώνονται με ένα κλικ. Ζωντανά logs ρέουν στην ίδια οθόνη.`,
+f7t:`Ριζική λύση --no-sandbox`,f7d:`Τα περιβάλλοντα που το απαιτούν εντοπίζονται δυναμικά· η παράμετρος προστίθεται αυτόματα στην εγκατάσταση και την εκκίνηση browser — κανένα εμπόδιο.`,
+f8t:`20 γλώσσες, προεπιλογή τα τουρκικά`,f8d:`Το UI λειτουργεί σε 20 γλώσσες και συγχρονίζεται αυτόματα με τη γλώσσα του IDM — συμπεριλαμβανομένης της υποστήριξης RTL για γλώσσες δεξιά-προς-αριστερά.`,
+f9t:`Ακύρωση = πλήρης στάση`,f9d:`Όταν ακυρώνετε μια λήψη, καμία μηχανή δεν συνεχίζει στο παρασκήνιο· δεν καταναλώνονται πόροι και κανένα αρχείο δεν μένει μισοτελειωμένο.`,
+s_kicker:`Οθόνες`,s_title:`Καρέ από το πάνελ`,s_desc:`Μοντέρνο σκούρο θέμα Slate και παλέτα Neon Cyan/Emerald — χωρίς βάρος στην επιφάνεια εργασίας, όλα φανερά.`,
+s1:`Επισκόπηση &amp; Ζωντανό πάνελ ελέγχου — κατάσταση γέφυρας, γρήγορος σύνδεσμος, γρήγορες ενέργειες και λίστα αναπαραγωγής`,
+s2:`Οδηγός εγκατάστασης &amp; ενημέρωσης — Wine + επίσημο IDM αυτόματα`,
+s3:`Browsers &amp; Επεκτάσεις — native messaging Chromium/Firefox`,
+s4:`Γιατρός συστήματος &amp; Ζωντανά logs — ροή daemon.log`,
+s5:`Άλλα έργα — το οικοσύστημα εφαρμογών BELGESELSEMO`,
+s6:`Ευχαριστήστε &amp; Υποστηρίξτε — κοινότητα και ηθική υποστήριξη`,
+s7:`Ρυθμίσεις σύλληψης &amp; Wine — θύρες, φάκελοι, γλώσσα`,
+i_kicker:`Εγκατάσταση`,i_title:`Διάλεξε πακέτο, μία εντολή`,
+i_desc:`Όλα τα πακέτα φέρουν την ίδια έκδοση <strong>IDM-LINUX-1.0.0</strong> και διανέμονται μέσω <a href="https://github.com/vesvese55x/IDM-LINUX/releases/latest" target="_blank" rel="noreferrer">GitHub Releases</a>.`,
+p1t:`📦 Εκτέλεση χωρίς εγκατάσταση`,p1d:`Κατεβάστε, κάντε το εκτελέσιμο, διπλό κλικ. Δεν αφήνει ίχνος στο σύστημα.`,
+p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`Εγκαθίσταται επίσης ομαλά με gdebi και παρόμοια GUI εργαλεία deb.`,
+p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`Πακέτο noarch για διανομές βάσει RPM.`,
+p4t:`🏔️ Arch / Manjaro`,p4d:`Άμεση εγκατάσταση με pacman· δεν απαιτείται makepkg.`,
+btn_copy:`ΑΝΤΙΓΡΑΦΗ`,btn_copied:`ΑΝΤΙΓΡΑΦΗΚΕ ✓`,
+note1:`🧰 Ο οδηγός εγκατάστασης κατεβάζει και εγκαθιστά αυτόματα, όταν χρειάζεται, το <b>Wine</b>, το <b>επίσημο IDM</b>, τις επεκτάσεις browsers και τα εργαλεία <b>yt-dlp / ffmpeg / aria2</b>.`,
+note2:`🧩 Απαιτήσεις: Linux (συνιστάται x86_64) και <b>Python 3.8+</b>· για το GUI συνιστάται επιφάνεια εργασίας X11/Wayland.`,
+e_kicker:`Οικοσύστημα`,e_title:`Το οικοσύστημα BELGESELSEMO για κινητά`,e_desc:`Ο κόσμος του BELGESELSEMO δεν περιορίζεται στην επιφάνεια εργασίας: στο Android οι εφαρμογές ντοκιμαντέρ, trivia, τηλεοπτικού οδηγού, εφημερευουσών φαρμακείων και Nutuk συντηρούν το ίδιο οικοσύστημα.`,
+m1s:`Πύλη ντοκιμαντέρ HD &amp; εργαλείων`,m2s:`Παιχνίδι trivia`,m3n:`ΤΗΛΕΟΠΤΙΚΟΣ ΟΔΗΓΟΣ (EPG)`,m3s:`Προβολή προγράμματος`,m4n:`ΕΦΗΜΕΡΕΥΟΥΣΑ ΦΑΡΜΑΚΕΙΑ 7/24`,m4s:`Τουρκία &amp; Β. Κύπρος`,m5s:`Προφορικό &amp; ήχος`,m6s:`Σύντομα…`,
+foot_tag:`Όλη η δύναμη του Internet Download Manager — στο Linux, πλήρως λειτουργικό, ελαφρύ και σταθερό.`,foot_releases:`Εκδόσεις`},
+pt:{name:`Português`,en:`Portuguese`,rtl:false,
+title:`🚀 IDM LINUX (BELGESELSEMO) — Todos os recursos num só palco`,
+meta:`O IDM LINUX traz todo o poder do Internet Download Manager para o Linux: captura do navegador, motor de vídeo, torrent, DVR ao vivo e doutor do sistema num único painel leve.`,
+nav_features:`Recursos`,nav_screens:`Ecrãs`,nav_install:`Instalação`,nav_ecosystem:`Ecossistema`,
+hero_sub:`Todo o poder do <strong>Internet Download Manager</strong> no Linux: captura do navegador, motor de vídeo, torrent, DVR de streams ao vivo e doutor do sistema — <strong>num único painel de controlo leve</strong>. As transferências correm à velocidade máxima pelo verdadeiro motor do IDM.`,
+cta_download:`⬇️ Descarregar IDM-LINUX-1.0.0`,cta_screens:`📸 Explorar os ecrãs`,
+chip_ver:`<b>v1.0.0</b> versão`,chip_pkg:`📦 <b>4</b> tipos de pacotes`,chip_lang:`🌍 <b>20</b> idiomas`,chip_doc:`🩺 doutor auto de <b>6 passos</b>`,chip_video:`🎬 motor de vídeo <b>HLS/4K</b>`,chip_torrent:`🧲 torrent <b>DHT</b>`,
+slogan:`<b>Esta página;</b> apresenta toda a experiência IDM LINUX, com todos os seus recursos, num só palco.`,
+f_kicker:`Recursos`,f_title:`Um painel, dez capacidades`,
+f_desc:`O IDM LINUX une o verdadeiro motor IDM a correr no Wine a um painel Python leve do lado Linux. Cada camada fala pela mesma ponte local: <code style="color:#7dd3fc">127.0.0.1:17802</code>.`,
+f1t:`Integração com navegadores`,f1d:`Extensão para todos os navegadores baseados em Chromium e Firefox; captura automaticamente os pedidos de transferência e entrega-os ao IDM. Você clica, o IDM LINUX trata do resto.`,
+f2t:`Motor de vídeo (HLS/4K)`,f2d:`Cadeia de motores yt-dlp / streamlink; o motor mais adequado é escolhido automaticamente por site e as streams — incluindo 4K e HLS — passam diretamente para o IDM.`,
+f3t:`Motor torrent incorporado`,f3d:`Suporte a magnet e .torrent com descoberta de peers sem tracker via DHT. Na janela de confirmação pode transferir o conteúdo ou apenas o ficheiro .torrent.`,
+f4t:`Stream ao vivo / DVR`,f4d:`Camada DVR que grava streams ao vivo; iniciar, parar, gerir — tudo a partir da interface.`,
+f5t:`Servidores de ficheiros`,f5d:`Sessão de convidado e resolução de links diretos para os alojamentos populares; os ficheiros nunca chegam corrompidos, a transferência conclui-se pelo IDM.`,
+f6t:`Doutor do sistema`,f6d:`Diagnóstico e reparação automática em 6 passos: ponte, motor de vídeo e ligações dos navegadores reparam-se com um clique. Os registos ao vivo correm no mesmo ecrã.`,
+f7t:`Solução radical --no-sandbox`,f7d:`Os ambientes que o exigem são detetados dinamicamente; o parâmetro é adicionado automaticamente na instalação e no arranque do navegador — nunca há bloqueios.`,
+f8t:`20 idiomas, turco por omissão`,f8d:`A interface funciona em 20 idiomas e sincroniza-se automaticamente com o idioma do IDM — incluindo suporte RTL para idiomas da direita para a esquerda.`,
+f9t:`Cancelar = paragem total`,f9d:`Ao cancelar uma transferência, nenhum motor continua em segundo plano; sem gastar recursos, sem ficheiros a meio.`,
+s_kicker:`Ecrãs`,s_title:`Imagens do painel`,s_desc:`Tema escuro Slate moderno e paleta Neon Ciano/Esmeralda — sem esforço para o desktop, tudo à vista.`,
+s1:`Visão geral &amp; Painel de controlo ao vivo — estado da ponte, ligação rápida, ações rápidas e lista de reprodução`,
+s2:`Assistente de instalação &amp; atualização — Wine + IDM oficial automaticamente`,
+s3:`Navegadores &amp; Extensões — native messaging Chromium/Firefox`,
+s4:`Doutor do sistema &amp; Registos ao vivo — fluxo do daemon.log`,
+s5:`Outros projetos — o ecossistema de apps BELGESELSEMO`,
+s6:`Agradecer &amp; Apoiar — comunidade e apoio moral`,
+s7:`Definições de captura &amp; Wine — portas, pastas, idioma`,
+i_kicker:`Instalação`,i_title:`Escolha o pacote, um comando`,
+i_desc:`Todos os pacotes trazem a mesma versão <strong>IDM-LINUX-1.0.0</strong> e são distribuídos via <a href="https://github.com/vesvese55x/IDM-LINUX/releases/latest" target="_blank" rel="noreferrer">GitHub Releases</a>.`,
+p1t:`📦 Executar sem instalar`,p1d:`Descarregue, torne executável, duplo clique. Não deixa vestígios no sistema.`,
+p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`Também instala sem problemas com gdebi e instaladores deb gráficos semelhantes.`,
+p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`Um pacote noarch para distribuições baseadas em RPM.`,
+p4t:`🏔️ Arch / Manjaro`,p4d:`Instalação direta com pacman; não precisa de makepkg.`,
+btn_copy:`COPIAR`,btn_copied:`COPIADO ✓`,
+note1:`🧰 O assistente de configuração descarrega e instala automaticamente, quando necessário, o <b>Wine</b>, o <b>IDM oficial</b>, as extensões de navegador e as ferramentas <b>yt-dlp / ffmpeg / aria2</b>.`,
+note2:`🧩 Requisitos: Linux (x86_64 recomendado) e <b>Python 3.8+</b>; para a GUI recomenda-se um ambiente de trabalho X11/Wayland.`,
+e_kicker:`Ecossistema`,e_title:`Ecossistema móvel BELGESELSEMO`,e_desc:`O mundo BELGESELSEMO não se fica pelo desktop: no Android, as apps de documentários, trivia, guia TV, farmácias de serviço e Nutuk mantêm o mesmo ecossistema.`,
+m1s:`Portal de documentários HD &amp; ferramentas`,m2s:`Jogo de trivia`,m3n:`GUIA TV (EPG)`,m3s:`Visualizador de grelha de programas`,m4n:`FARMÁCIAS DE SERVIÇO 7/24`,m4s:`TR &amp; Chipre do Norte`,m5s:`Falado &amp; áudio`,m6s:`Em breve…`,
+foot_tag:`Todo o poder do Internet Download Manager — no Linux, totalmente funcional, leve e estável.`,foot_releases:`Versões`},
+vi:{name:`Tiếng Việt`,en:`Vietnamese`,rtl:false,
+title:`🚀 IDM LINUX (BELGESELSEMO) — Mọi tính năng trên một sân khấu`,
+meta:`IDM LINUX đưa toàn bộ sức mạnh của Internet Download Manager lên Linux: bắt từ trình duyệt, công cụ video, torrent, DVR phát trực tiếp và bác sĩ hệ thống trong một bảng điều khiển nhẹ.`,
+nav_features:`Tính năng`,nav_screens:`Màn hình`,nav_install:`Cài đặt`,nav_ecosystem:`Hệ sinh thái`,
+hero_sub:`Toàn bộ sức mạnh của <strong>Internet Download Manager</strong> trên Linux: bắt tải từ trình duyệt, công cụ video, torrent, DVR phát trực tiếp và bác sĩ hệ thống — <strong>trong một bảng điều khiển nhẹ duy nhất</strong>. Tải về chạy ở tốc độ tối đa qua chính engine IDM.`,
+cta_download:`⬇️ Tải IDM-LINUX-1.0.0`,cta_screens:`📸 Dạo quanh các màn hình`,
+chip_ver:`<b>v1.0.0</b> phiên bản`,chip_pkg:`📦 <b>4</b> loại gói`,chip_lang:`🌍 <b>20</b> ngôn ngữ`,chip_doc:`🩺 bác sĩ tự động <b>6 bước</b>`,chip_video:`🎬 công cụ video <b>HLS/4K</b>`,chip_torrent:`🧲 torrent <b>DHT</b>`,
+slogan:`<b>Trang này;</b> giới thiệu trọn vẹn trải nghiệm IDM LINUX cùng mọi tính năng trên một sân khấu.`,
+f_kicker:`Tính năng`,f_title:`Một bảng, mười khả năng`,
+f_desc:`IDM LINUX ghép engine IDM thật chạy trên Wine với một bảng Python nhẹ phía Linux. Mọi tầng nói chuyện qua cùng một cầu nối cục bộ: <code style="color:#7dd3fc">127.0.0.1:17802</code>.`,
+f1t:`Tích hợp trình duyệt`,f1d:`Tiện ích cho mọi trình duyệt dựa trên Chromium và Firefox; tự động bắt các yêu cầu tải về và chuyển cho IDM. Bạn chỉ cần bấm, IDM LINUX lo phần còn lại.`,
+f2t:`Công cụ video (HLS/4K)`,f2d:`Chuỗi engine yt-dlp / streamlink; engine phù hợp nhất được tự động chọn theo từng trang, các stream — kể cả 4K và HLS — được chuyển thẳng vào IDM.`,
+f3t:`Engine torrent tích hợp`,f3d:`Hỗ trợ magnet và .torrent với tìm peer không tracker qua DHT. Từ hộp thoại xác nhận bạn có thể tải nội dung hoặc chỉ tải tệp .torrent.`,
+f4t:`Phát trực tiếp / DVR`,f4d:`Tầng DVR ghi lại các phát trực tiếp; bắt đầu, dừng, quản lý — tất cả ngay trên giao diện.`,
+f5t:`Nhà lưu trữ tệp`,f5d:`Phiên khách và phân giải link trực tiếp cho các trang lưu trữ phổ biến; tệp không bao giờ hỏng, tải về hoàn tất qua IDM.`,
+f6t:`Bác sĩ hệ thống`,f6d:`Chẩn đoán và sửa chữa tự động 6 bước: cầu nối, công cụ video và kết nối trình duyệt được sửa chỉ với một cú bấm. Log trực tiếp cũng chạy trên cùng màn hình.`,
+f7t:`Giải pháp gốc rễ --no-sandbox`,f7d:`Các môi trường cần nó được phát hiện động; tham số tự động được thêm khi cài đặt và mở trình duyệt — không bao giờ vướng víu.`,
+f8t:`20 ngôn ngữ, mặc định tiếng Thổ`,f8d:`Giao diện chạy với 20 ngôn ngữ và tự đồng bộ với ngôn ngữ của IDM — gồm cả hỗ trợ RTL cho các ngôn ngữ viết từ phải sang trái.`,
+f9t:`Hủy = dừng hẳn`,f9d:`Khi bạn hủy một lượt tải, không engine nào chạy tiếp trong nền; không tốn tài nguyên, không để lại tệp dở dang.`,
+s_kicker:`Màn hình`,s_title:`Những khung hình từ bảng điều khiển`,s_desc:`Giao diện tối Slate hiện đại cùng bảng màu Neon Cyan/Emerald — không nặng máy, mọi thứ hiện rõ trước mắt.`,
+s1:`Tổng quan &amp; Bảng điều khiển trực tiếp — trạng thái cầu nối, link nhanh, thao tác nhanh và danh sách phát`,
+s2:`Trình cài đặt &amp; cập nhật — Wine + IDM chính thức tự động`,
+s3:`Trình duyệt &amp; Tiện ích — native messaging Chromium/Firefox`,
+s4:`Bác sĩ hệ thống &amp; Log trực tiếp — dòng daemon.log`,
+s5:`Các dự án khác — hệ sinh thái ứng dụng BELGESELSEMO`,
+s6:`Cảm ơn &amp; Ủng hộ — cộng đồng và tinh thần ủng hộ`,
+s7:`Cài đặt bắt tải &amp; Wine — cổng, thư mục, ngôn ngữ`,
+i_kicker:`Cài đặt`,i_title:`Chọn gói, một dòng lệnh`,
+i_desc:`Mọi gói đều mang cùng phiên bản <strong>IDM-LINUX-1.0.0</strong> và được phân phối qua <a href="https://github.com/vesvese55x/IDM-LINUX/releases/latest" target="_blank" rel="noreferrer">GitHub Releases</a>.`,
+p1t:`📦 Chạy không cần cài`,p1d:`Tải về, đánh dấu thực thi, nhấp đúp. Không để lại dấu vết trên hệ thống.`,
+p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`Cũng cài mượt mà bằng gdebi và các trình cài deb đồ họa tương tự.`,
+p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`Gói noarch cho các bản phân phối dựa trên RPM.`,
+p4t:`🏔️ Arch / Manjaro`,p4d:`Cài trực tiếp bằng pacman; không cần makepkg.`,
+btn_copy:`SAO CHÉP`,btn_copied:`ĐÃ SAO CHÉP ✓`,
+note1:`🧰 Trình cài đặt tự tải và cài khi cần: <b>Wine</b>, <b>IDM chính thức</b>, tiện ích trình duyệt và các công cụ <b>yt-dlp / ffmpeg / aria2</b>.`,
+note2:`🧩 Yêu cầu: Linux (khuyến nghị x86_64) và <b>Python 3.8+</b>; với GUI nên dùng desktop X11/Wayland.`,
+e_kicker:`Hệ sinh thái`,e_title:`Hệ sinh thái di động BELGESELSEMO`,e_desc:`Thế giới BELGESELSEMO không dừng ở desktop: trên Android, các ứng dụng phim tài liệu, trivia, lịch phát sóng, nhà thuốc trực và Nutuk cùng duy trì hệ sinh thái này.`,
+m1s:`Cổng phim tài liệu HD &amp; công cụ`,m2s:`Trò chơi đố vui`,m3n:`LỊCH PHÁT SÓNG (EPG)`,m3s:`Trình xem lịch truyền hình`,m4n:`NHÀ THUỐC TRỰC 7/24`,m4s:`TR &amp; Bắc Síp`,m5s:`Đọc &amp; nghe`,m6s:`Sắp ra mắt…`,
+foot_tag:`Toàn bộ sức mạnh của Internet Download Manager — trên Linux, đầy đủ tính năng, nhẹ và ổn định.`,foot_releases:`Bản phát hành`},
+az:{name:`Azərbaycanca`,en:`Azerbaijani`,rtl:false,
+title:`🚀 IDM LINUX (BELGESELSEMO) — Bütün imkanlar bir səhnədə`,
+meta:`IDM LINUX Internet Download Manager-in bütün gücünü Linux-a gətirir: brauzer yaxalanması, video mühərriki, torrent, canlı DVR və sistem həkimi — bir yüngül paneldə.`,
+nav_features:`İmkanlar`,nav_screens:`Ekranlar`,nav_install:`Quraşdırma`,nav_ecosystem:`Ekosistem`,
+hero_sub:`<strong>Internet Download Manager</strong>-ın bütün gücü Linux-da: brauzer yaxalanması, video mühərriki, torrent, canlı yayım DVR və sistem həkimi — <strong>tək bir yüngül idarəetmə panelində</strong>. Yükləmələr əsl IDM mühərriki ilə maksimum sürətlə gedir.`,
+cta_download:`⬇️ IDM-LINUX-1.0.0 yüklə`,cta_screens:`📸 Ekranlara bax`,
+chip_ver:`<b>v1.0.0</b> versiya`,chip_pkg:`📦 <b>4</b> paket növü`,chip_lang:`🌍 <b>20</b> dil`,chip_doc:`🩺 <b>6 addımlı</b> avtomatik həkim`,chip_video:`🎬 <b>HLS/4K</b> video mühərriki`,chip_torrent:`🧲 <b>DHT</b> torrent`,
+slogan:`<b>Bu səhifə;</b> IDM LINUX təcrübəsini bütün imkanları ilə bir səhnədə təqdim edir.`,
+f_kicker:`İmkanlar`,f_title:`Bir panel, on bacarıq`,
+f_desc:`IDM LINUX Wine üzərində işləyən əsl IDM mühərrikini Linux tərəfdəki yüngül Python paneli ilə birləşdirir. Hər qat eyni yerli körpü ilə danışır: <code style="color:#7dd3fc">127.0.0.1:17802</code>.`,
+f1t:`Brauzer inteqrasiyası`,f1d:`Chromium və Firefox əsaslı bütün brauzerlər üçün əlavə; yükləmə sorğularını avtomatik yaxalayır və IDM-ə ötürür. Siz klikləyin, qalanını IDM LINUX görər.`,
+f2t:`Video mühərriki (HLS/4K)`,f2d:`yt-dlp / streamlink mühərrik zənciri; hər sayt üçün ən uyğun mühərrik avtomatik seçilir, 4K və HLS daxil olmaqla axınlar birbaşa IDM-ə ötürülür.`,
+f3t:`Daxili torrent mühərriki`,f3d:`Magnet və .torrent dəstəyi, DHT ilə trekersiz kəşf. Təsdiq pəncərəsindən məzmunu ya da yalnız .torrent faylını yükləyə bilərsiniz.`,
+f4t:`Canlı yayım / DVR`,f4d:`Canlı axınlardan yazı alan DVR qatı; başlat, dayandır, idarə et — hamısı interfeysdən.`,
+f5t:`Fayl hostinqi`,f5d:`Populyar hostinq saytları üçün qonaq sessiyası və birbaşa link həlli; fayl heç vaxt xarab gəlmir, yükləmə IDM ilə tamamlanır.`,
+f6t:`Sistem həkimi`,f6d:`6 addımlı avtomatik diaqnostika və təmir: körpü, video mühərriki və brauzer bağlantıları bir kliklə düzəlir. Canlı jurnallar ekranda axır.`,
+f7t:`--no-sandbox köklü həll`,f7d:`Tələb edən mühitlər dinamik aşkarlanır; parametr quraşdırma və brauzer açılışında avtomatik əlavə olunur — heç bir mane yoxdur.`,
+f8t:`20 dil, standart türkcə`,f8d:`İnterfeys 20 dildə işləyir və IDM dili ilə avtomatik sinxronlaşır — sağdan sola dillər üçün RTL dəstəyi də daxildir.`,
+f9t:`Ləğv = tam dayanma`,f9d:`Yükləməni ləğv edəndə arxada heç bir mühərrik işləmir; resurs yemir, fayl yarım qalmır.`,
+s_kicker:`Ekranlar`,s_title:`Paneldən kadrlar`,s_desc:`Müasir tünd Slate teması və Neon Cyan/Üzəngi palitrası — masaüstü yorulmur, hər şey göz önündə.`,
+s1:`Ümumi baxış &amp; Canlı idarəetmə paneli — körpü vəziyyəti, sürətli link, sürətli əməliyyatlar və pleylist`,
+s2:`Quraşdırma &amp; Yeniləmə sehri — Wine + rəsmi IDM avtomatik`,
+s3:`Brauzerlər &amp; Əlavələr — Chromium/Firefox native messaging`,
+s4:`Sistem həkimi &amp; Canlı jurnallar — daemon.log axını`,
+s5:`Digər layihələr — BELGESELSEMO tətbiq ekosistemi`,
+s6:`Təşəkkür &amp; Dəstək — icma və mənəvi dəstək`,
+s7:`Yaxalama &amp; Wine ayarları — portlar, qovluqlar, dil`,
+i_kicker:`Quraşdırma`,i_title:`Paketi seç, bir əmr`,
+i_desc:`Bütün paketlər eyni <strong>IDM-LINUX-1.0.0</strong> versiyasını daşıyır və <a href="https://github.com/vesvese55x/IDM-LINUX/releases/latest" target="_blank" rel="noreferrer">GitHub Releases</a> üzərindən paylanır.`,
+p1t:`📦 Quraşdırmadan işə sal`,p1d:`Yüklə, icra ediləbilən et, iki dəfə kliklə. Sistemdə iz qoymur.`,
+p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`gdebi və bənzər qrafik deb quraşdırıcılarla da problemsiz quraşır.`,
+p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`RPM əsaslı distrolar üçün noarch paket.`,
+p4t:`🏔️ Arch / Manjaro`,p4d:`pacman ilə birbaşa quraşdırma; makepkg lazım deyil.`,
+btn_copy:`KÖÇÜR`,btn_copied:`KÖÇÜRÜLDÜ ✓`,
+note1:`🧰 Quraşdırma sehri lazım olduqda <b>Wine</b>, <b>rəsmi IDM</b>, brauzer əlavələri və <b>yt-dlp / ffmpeg / aria2</b> alətlərini avtomatik yükləyib quraşdırır.`,
+note2:`🧩 Tələblər: Linux (x86_64 tövsiyə olunur) və <b>Python 3.8+</b>; GUI üçün X11/Wayland masaüstü tövsiyə olunur.`,
+e_kicker:`Ekosistem`,e_title:`Mobil BELGESELSEMO ekosistemi`,e_desc:`BELGESELSEMO dünyası masaüstü ilə məhdud deyil: Android-də sənədli film, trivia, TV bələdçisi, növbəti aptek və Nutuk tətbiqləri eyni ekosistemi davam etdirir.`,
+m1s:`HD Sənədli &amp; Alətlər Portalı`,m2s:`Bilik yarışması`,m3n:`TV BƏLƏDÇİSİ (EPG)`,m3s:`Yayım cədvəli görüntüləyici`,m4n:`NÖVBƏTİ APTEK 7/24`,m4s:`TR &amp; KKTC`,m5s:`Sözlü &amp; səsli`,m6s:`Tezliklə…`,
+foot_tag:`Internet Download Manager-ın bütün gücü — Linux-da, tam funksional, yüngül və sabit.`,foot_releases:`Versiyalar`},
+ky:{name:`Кыргызча`,en:`Kyrgyz`,rtl:false,
+title:`🚀 IDM LINUX (BELGESELSEMO) — Бардык мүмкүнчүлүктөр бир сахнада`,
+meta:`IDM LINUX Internet Download Managerдин толук күчүн Linuxка алып келет: браузерден кармоо, видео кыймылдаткычы, торрент, түз берүү DVR жана системдик доктор — бир жеңил панелде.`,
+nav_features:`Мүмкүнчүлүктөр`,nav_screens:`Экрандар`,nav_install:`Орнотуу`,nav_ecosystem:`Экосистема`,
+hero_sub:`<strong>Internet Download Manager</strong>дин толук күчү Linuxта: браузерден кармоо, видео кыймылдаткычы, торрент, түз берүү DVR жана системдик доктор — <strong>бир гана жеңил башкаруу панелинде</strong>. Жүктөөлөр чыныгы IDM кыймылдаткычы аркылуу эң жогорку ылдамдыкта жүрөт.`,
+cta_download:`⬇️ IDM-LINUX-1.0.0 жүктөө`,cta_screens:`📸 Экрандарды көрүү`,
+chip_ver:`<b>v1.0.0</b> версия`,chip_pkg:`📦 <b>4</b> пакет түрү`,chip_lang:`🌍 <b>20</b> тил`,chip_doc:`🩺 <b>6 кадамдуу</b> авто-доктор`,chip_video:`🎬 <b>HLS/4K</b> видео кыймылдаткычы`,chip_torrent:`🧲 <b>DHT</b> торрент`,
+slogan:`<b>Бул бет;</b> IDM LINUX тажрыйбасын бардык мүмкүнчүлүктөрү менен бир гана сахнада көрсөтөт.`,
+f_kicker:`Мүмкүнчүлүктөр`,f_title:`Бир панель, он жөндөм`,
+f_desc:`IDM LINUX Wineда иштеген чыныгы IDM кыймылдаткычын Linux тараптагы жеңил Python панели менен бириктирет. Ар катмар ошол эле жергиликтүү көпүрө аркылуу сүйлөйт: <code style="color:#7dd3fc">127.0.0.1:17802</code>.`,
+f1t:`Браузер интеграциясы`,f1d:`Chromium жана Firefox базасындагы бардык браузерлерге арналган кеңейтүү; жүктөө сурамдарын автоматтык кармап, IDMге өткөрөт. Сиз басыңыз, калганын IDM LINUX кылат.`,
+f2t:`Видео кыймылдаткычы (HLS/4K)`,f2d:`yt-dlp / streamlink кыймылдаткычтарынын чынжыры; ар сайтка эң ылайыктуусу автоматтык тандалып, 4K жана HLS агымдар кошо IDMге өткөрүлөт.`,
+f3t:`Курулма торрент кыймылдаткычы`,f3d:`Magnet жана .torrent колдоо, DHT аркылуу трекерсиз peer издөө. Тастыктоо терезесинен мазмунду да, жөн гана .torrent файлын да жүктөй аласыз.`,
+f4t:`Түз берүү / DVR`,f4d:`Түз агымдарды жазып алуучу DVR катмары; баштоо, токтотуу, башкаруу — бардыгы интерфейстен.`,
+f5t:`Файл хостингтер`,f5d:`Таанымал хостинг сайттар үчүн конок сессиясы жана түз шилтеме чечими; файл эч качан бузулуп келбейт, жүктөө IDM аркылуу аяктайт.`,
+f6t:`Системдик доктор`,f6d:`6 кадамдуу автоматтык диагностика жана оңдоо: көпүрө, видео кыймылдаткычы жана браузер байланыштары бир баскычта оңолот. Жандуу логдор ошол эле экрандан агат.`,
+f7t:`--no-sandbox тамырынан чечим`,f7d:`Талап кылган чөйрөлөр динамикалык аныкталат; параметр орнотууда жана браузер ачылышында автоматтык кошулат — эч кедергисиз.`,
+f8t:`20 тил, демейки түркчө`,f8d:`Интерфейс 20 тилде иштейт жана IDM тили менен автоматтык шайкештешет — оңдон солго тилдер үчүн RTL колдоо дагы бар.`,
+f9t:`Жокко чыгаруу = толук токтоо`,f9d:`Жүктөөнү жокко чыгарьсаңыз, фондо эч бир кыймылдаткыч иштебейт; ресурс жебейт, файл жарым калбайт.`,
+s_kicker:`Экрандар`,s_title:`Панелден көрүнүштөр`,s_desc:`Заманбап кара Slate тема жана Неон Cyan/Жашыл палитра — иш столуна жүк жок, бардыгы көз алдында.`,
+s1:`Жалпы көз караш &amp; Жандуу башкаруу панели — көпүрө абалы, тез шилтеме, тез аракеттер жана оюн тизмеси`,
+s2:`Орнотуу &amp; Жаңыртуу чебери — Wine + расмий IDM автоматтык`,
+s3:`Браузерлер &amp; Кеңейтүүлөр — Chromium/Firefox native messaging`,
+s4:`Системдик доктор &amp; Жандуу логдор — daemon.log агымы`,
+s5:`Башка долбоорлор — BELGESELSEMO тиркеме экосистемасы`,
+s6:`Рахмат &amp; Колдоо — жамаат жана руханий колдоо`,
+s7:`Кармоо &amp; Wine жөндөөлөрү — порттор, папкалар, тил`,
+i_kicker:`Орнотуу`,i_title:`Пакетти тандоо, бир буйрук`,
+i_desc:`Бардык пакеттер ошол эле <strong>IDM-LINUX-1.0.0</strong> версиясын алып жүрөт жана <a href="https://github.com/vesvese55x/IDM-LINUX/releases/latest" target="_blank" rel="noreferrer">GitHub Releases</a> аркылуу таратылат.`,
+p1t:`📦 Орнотпой иштетүү`,p1d:`Жүктөп алыңыз, аткарылма кылыңыз, эки жолу басыңыз. Системага из калтырбайт.`,
+p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`gdebi жана ушул сыяктуу GUI deb орноткучтар менен да оңой орнотулат.`,
+p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`RPM негизиндегилер үчүн noarch пакет.`,
+p4t:`🏔️ Arch / Manjaro`,p4d:`pacman менен түз орнотуу; makepkg керек эмес.`,
+btn_copy:`КӨЧҮРҮҮ`,btn_copied:`КӨЧҮРҮЛДҮ ✓`,
+note1:`🧰 Орнотуу чебери керек болгондо <b>Wine</b>, <b>расмий IDM</b>, браузер кеңейтүүлөрү жана <b>yt-dlp / ffmpeg / aria2</b> куралдарын автоматтык жүктөп орнотот.`,
+note2:`🧩 Талаптар: Linux (x86_64 сунушталат) жана <b>Python 3.8+</b>; GUI үчүн X11/Wayland жумушчу столу сунушталат.`,
+e_kicker:`Экосистема`,e_title:`Мобилдик BELGESELSEMO экосистемасы`,e_desc:`BELGESELSEMO дүйнөсү иш столу менен чектелбейт: Android тарапта документалдык, trivia, ТВ гайд, кезектеги дарыкана жана Nutuk тиркемелери ошол эле экосистеманы улантат.`,
+m1s:`HD Документалдар &amp; Куралдар порталы`,m2s:`Билим викторинасы`,m3n:`ТВ ГАЙД (EPG)`,m3s:`Көрсөтүү тизмесин көрүүчү`,m4n:`КЕЗЕКТЕГИ ДАРЫКАНА 7/24`,m4s:`TR &amp; Түндүк Кипр`,m5s:`Сөз жана үн`,m6s:`Жакында…`,
+foot_tag:`Internet Download Managerдин толук күчү — Linuxта, толук иштөөчү, жеңил жана туруктуу.`,foot_releases:`Версиялар`},
+it:{name:`Italiano`,en:`Italian`,rtl:false,
+title:`🚀 IDM LINUX (BELGESELSEMO) — Tutte le funzionalità in un'unica scena`,
+meta:`IDM LINUX porta su Linux tutta la potenza di Internet Download Manager: cattura dal browser, motore video, torrent, DVR live e dottore di sistema in un unico pannello leggero.`,
+nav_features:`Funzioni`,nav_screens:`Schermate`,nav_install:`Installazione`,nav_ecosystem:`Ecosistema`,
+hero_sub:`Tutta la potenza di <strong>Internet Download Manager</strong> su Linux: cattura dal browser, motore video, torrent, DVR delle dirette e dottore di sistema — <strong>in un unico pannello di controllo leggero</strong>. I download girano alla massima velocità attraverso il vero motore IDM.`,
+cta_download:`⬇️ Scarica IDM-LINUX-1.0.0`,cta_screens:`📸 Esplora le schermate`,
+chip_ver:`<b>v1.0.0</b> versione`,chip_pkg:`📦 <b>4</b> tipi di pacchetto`,chip_lang:`🌍 <b>20</b> lingue`,chip_doc:`🩺 dottore auto in <b>6 passi</b>`,chip_video:`🎬 motore video <b>HLS/4K</b>`,chip_torrent:`🧲 torrent <b>DHT</b>`,
+slogan:`<b>Questa pagina;</b> racconta l'intera esperienza IDM LINUX, con tutte le sue funzionalità, in un'unica scena.`,
+f_kicker:`Funzioni`,f_title:`Un pannello, dieci capacità`,
+f_desc:`IDM LINUX unisce il vero motore IDM eseguito su Wine a un pannello Python leggero lato Linux. Ogni livello parla attraverso lo stesso ponte locale: <code style="color:#7dd3fc">127.0.0.1:17802</code>.`,
+f1t:`Integrazione browser`,f1d:`Un'estensione per tutti i browser basati su Chromium e Firefox; cattura automaticamente le richieste di download e le consegna a IDM. Tu clicchi, al resto pensa IDM LINUX.`,
+f2t:`Motore video (HLS/4K)`,f2d:`Catena di motori yt-dlp / streamlink; per ogni sito viene scelto automaticamente il motore più adatto e gli stream — 4K e HLS inclusi — passano direttamente a IDM.`,
+f3t:`Motore torrent integrato`,f3d:`Supporto magnet e .torrent con ricerca peer senza tracker via DHT. Dalla finestra di conferma puoi scaricare il contenuto o solo il file .torrent.`,
+f4t:`Dirette / DVR`,f4d:`Un livello DVR che registra le dirette; avvia, ferma, gestisci — tutto dall'interfaccia.`,
+f5t:`File hosting`,f5d:`Sessione ospite e risoluzione di link diretti per i principali siti di hosting; i file non arrivano mai corrotti, il download si completa tramite IDM.`,
+f6t:`Dottore di sistema`,f6d:`Diagnosi e riparazione automatica in 6 passi: ponte, motore video e connessioni browser si sistemano con un clic. I log live scorrono sulla stessa schermata.`,
+f7t:`Soluzione radicale --no-sandbox`,f7d:`Gli ambienti che lo richiedono vengono rilevati dinamicamente; il parametro viene aggiunto automaticamente in installazione e avvio del browser — mai intoppi.`,
+f8t:`20 lingue, turco predefinito`,f8d:`L'interfaccia funziona in 20 lingue e si sincronizza automaticamente con la lingua di IDM — incluso il supporto RTL per le lingue da destra a sinistra.`,
+f9t:`Annulla = fermo totale`,f9d:`Quando annulli un download nessun motore continua in background; nessun consumo di risorse, nessun file lasciato a metà.`,
+s_kicker:`Schermate`,s_title:`Fotogrammi dal pannello`,s_desc:`Tema scuro Slate moderno e palette Neon Cyan/Smeraldo — nessuno sforzo per il desktop, tutto in vista.`,
+s1:`Panoramica &amp; Pannello di controllo live — stato del ponte, link rapido, azioni rapide e playlist`,
+s2:`Procedura di installazione &amp; aggiornamento — Wine + IDM ufficiale in automatico`,
+s3:`Browser &amp; Estensioni — native messaging Chromium/Firefox`,
+s4:`Dottore di sistema &amp; Log live — flusso daemon.log`,
+s5:`Altri progetti — l'ecosistema di app BELGESELSEMO`,
+s6:`Ringrazia &amp; Sostieni — comunità e supporto morale`,
+s7:`Impostazioni cattura &amp; Wine — porte, cartelle, lingua`,
+i_kicker:`Installazione`,i_title:`Scegli il pacchetto, un comando`,
+i_desc:`Tutti i pacchetti portano la stessa versione <strong>IDM-LINUX-1.0.0</strong> e sono distribuiti via <a href="https://github.com/vesvese55x/IDM-LINUX/releases/latest" target="_blank" rel="noreferrer">GitHub Releases</a>.`,
+p1t:`📦 Esegui senza installare`,p1d:`Scarica, rendi eseguibile, doppio clic. Non lascia tracce sul sistema.`,
+p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`Si installa senza problemi anche con gdebi e simili installer deb grafici.`,
+p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`Un pacchetto noarch per le distribuzioni basate su RPM.`,
+p4t:`🏔️ Arch / Manjaro`,p4d:`Installazione diretta con pacman; makepkg non serve.`,
+btn_copy:`COPIA`,btn_copied:`COPIATO ✓`,
+note1:`🧰 La procedura di installazione scarica e installa automaticamente, se necessario, <b>Wine</b>, l'<b>IDM ufficiale</b>, le estensioni browser e gli strumenti <b>yt-dlp / ffmpeg / aria2</b>.`,
+note2:`🧩 Requisiti: Linux (consigliato x86_64) e <b>Python 3.8+</b>; per la GUI si consiglia un desktop X11/Wayland.`,
+e_kicker:`Ecosistema`,e_title:`L'ecosistema mobile BELGESELSEMO`,e_desc:`Il mondo BELGESELSEMO non si ferma al desktop: su Android le app di documentari, trivia, guida TV, farmacie di turno e Nutuk portano avanti lo stesso ecosistema.`,
+m1s:`Portale documentari HD &amp; strumenti`,m2s:`Gioco a quiz`,m3n:`GUIDA TV (EPG)`,m3s:`Visualizzatore palinsesto`,m4n:`FARMACIE DI TURNO 7/24`,m4s:`TR &amp; Cipro del Nord`,m5s:`Detto &amp; audio`,m6s:`In arrivo…`,
+foot_tag:`Tutta la potenza di Internet Download Manager — su Linux, pienamente funzionale, leggero e stabile.`,foot_releases:`Versioni`},
+id:{name:`Bahasa Indonesia`,en:`Indonesian`,rtl:false,
+title:`🚀 IDM LINUX (BELGESELSEMO) — Semua Fitur dalam Satu Panggung`,
+meta:`IDM LINUX membawa seluruh kekuatan Internet Download Manager ke Linux: tangkapan browser, mesin video, torrent, DVR siaran langsung, dan dokter sistem dalam satu panel ringan.`,
+nav_features:`Fitur`,nav_screens:`Layar`,nav_install:`Instalasi`,nav_ecosystem:`Ekosistem`,
+hero_sub:`Seluruh kekuatan <strong>Internet Download Manager</strong> di Linux: tangkapan browser, mesin video, torrent, DVR siaran langsung, dan dokter sistem — <strong>dalam satu panel kendali ringan</strong>. Unduhan berjalan dengan kecepatan maksimum lewat mesin IDM asli.`,
+cta_download:`⬇️ Unduh IDM-LINUX-1.0.0`,cta_screens:`📸 Jelajahi Layar`,
+chip_ver:`<b>v1.0.0</b> versi`,chip_pkg:`📦 <b>4</b> jenis paket`,chip_lang:`🌍 <b>20</b> bahasa`,chip_doc:`🩺 dokter otomatis <b>6 langkah</b>`,chip_video:`🎬 mesin video <b>HLS/4K</b>`,chip_torrent:`🧲 torrent <b>DHT</b>`,
+slogan:`<b>Halaman ini;</b> menyajikan seluruh pengalaman IDM LINUX beserta semua fiturnya dalam satu panggung.`,
+f_kicker:`Fitur`,f_title:`Satu panel, sepuluh kemampuan`,
+f_desc:`IDM LINUX memadukan mesin IDM asli yang berjalan di Wine dengan panel Python ringan di sisi Linux. Setiap lapisan berbicara lewat jembatan lokal yang sama: <code style="color:#7dd3fc">127.0.0.1:17802</code>.`,
+f1t:`Integrasi Peramban`,f1d:`Ekstensi untuk semua browser berbasis Chromium dan Firefox; menangkap permintaan unduhan secara otomatis lalu menyerahkannya ke IDM. Anda klik, IDM LINUX yang menyelesaikan sisanya.`,
+f2t:`Mesin Video (HLS/4K)`,f2d:`Rantai mesin yt-dlp / streamlink; mesin paling sesuai dipilih otomatis per situs, termasuk stream 4K dan HLS langsung diserahkan ke IDM.`,
+f3t:`Mesin Torrent Terpasang`,f3d:`Dukungan magnet dan .torrent dengan penemuan peer tanpa tracker via DHT. Dari dialog konfirmasi Anda dapat mengunduh konten atau hanya berkas .torrent.`,
+f4t:`Siaran Langsung / DVR`,f4d:`Lapisan DVR yang merekam siaran langsung; mulai, hentikan, kelola — semuanya dari antarmuka.`,
+f5t:`Layanan File Hosting`,f5d:`Sesi tamu dan resolusi tautan langsung untuk situs hosting populer; berkas tidak pernah rusak saat terunduh, unduhan tuntas lewat IDM.`,
+f6t:`Dokter Sistem`,f6d:`Diagnosis dan perbaikan otomatis 6 langkah: jembatan, mesin video, dan koneksi browser diperbaiki sekali klik. Log langsung mengalir di layar yang sama.`,
+f7t:`Solusi Tuntas --no-sandbox`,f7d:`Lingkungan yang membutuhkannya terdeteksi dinamis; parameter ditambahkan otomatis saat instalasi dan peluncuran browser — tanpa hambatan.`,
+f8t:`20 Bahasa, Bawaan Turki`,f8d:`Antarmuka bekerja dalam 20 bahasa dan tersinkron otomatis dengan bahasa IDM — termasuk dukungan RTL untuk bahasa kanan-ke-kiri.`,
+f9t:`Batal = Berhenti Total`,f9d:`Saat Anda membatalkan unduhan, tak ada mesin yang tetap berjalan di latar belakang; sumber daya tak terpakai, berkas tidak ditinggalkan setengah jadi.`,
+s_kicker:`Layar`,s_title:`Potret dari panel`,s_desc:`Tema gelap Slate modern dengan palet Neon Cyan/Emerald — tanpa beban desktop, semuanya terlihat jelas.`,
+s1:`Ikhtisar &amp; Panel Kendali Langsung — status jembatan, tautan cepat, aksi cepat, dan daftar putar`,
+s2:`Wisata Instalasi &amp; Pembaruan — Wine + IDM resmi otomatis`,
+s3:`Peramban &amp; Ekstensi — native messaging Chromium/Firefox`,
+s4:`Dokter Sistem &amp; Log Langsung — aliran daemon.log`,
+s5:`Proyek Lainnya — ekosistem aplikasi BELGESELSEMO`,
+s6:`Ucapan Terima Kasih &amp; Dukungan — komunitas dan dukungan moral`,
+s7:`Pengaturan Tangkap &amp; Wine — port, folder, bahasa`,
+i_kicker:`Instalasi`,i_title:`Pilih paket, satu perintah`,
+i_desc:`Semua paket membawa versi yang sama <strong>IDM-LINUX-1.0.0</strong> dan didistribusikan lewat <a href="https://github.com/vesvese55x/IDM-LINUX/releases/latest" target="_blank" rel="noreferrer">GitHub Releases</a>.`,
+p1t:`📦 Jalankan tanpa instalasi`,p1d:`Unduh, jadikan dapat dieksekusi, klik dua kali. Tanpa meninggalkan jejak di sistem.`,
+p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`Juga terpasang mulus dengan gdebi dan penginstal deb GUI serupa.`,
+p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`Paket noarch untuk distribusi berbasis RPM.`,
+p4t:`🏔️ Arch / Manjaro`,p4d:`Instalasi langsung dengan pacman; makepkg tidak diperlukan.`,
+btn_copy:`SALIN`,btn_copied:`TERSALIN ✓`,
+note1:`🧰 Wisata penginstal otomatis mengunduh dan memasang <b>Wine</b>, <b>IDM resmi</b>, ekstensi browser, serta perkakas <b>yt-dlp / ffmpeg / aria2</b> bila diperlukan.`,
+note2:`🧩 Persyaratan: Linux (x86_64 disarankan) dan <b>Python 3.8+</b>; untuk GUI disarankan desktop X11/Wayland.`,
+e_kicker:`Ekosistem`,e_title:`Ekosistem seluler BELGESELSEMO`,e_desc:`Dunia BELGESELSEMO tidak berhenti di desktop: di Android, aplikasi dokumenter, trivia, panduan TV, apotek jaga, dan Nutuk menjaga ekosistem yang sama.`,
+m1s:`Portal Dokumenter HD &amp; Perkakas`,m2s:`Kuis pengetahuan`,m3n:`PANDUAN TV (EPG)`,m3s:`Penampil jadwal siaran`,m4n:`APOTEK JAGA 7/24`,m4s:`TR &amp; Siprus Utara`,m5s:`Tertulis &amp; audio`,m6s:`Segera…`,
+foot_tag:`Seluruh kekuatan Internet Download Manager — di Linux, fungsional penuh, ringan, dan stabil.`,foot_releases:`Rilis`},
+ka:{name:`ქართული`,en:`Georgian`,rtl:false,
+title:`🚀 IDM LINUX (BELGESELSEMO) — ყველა შესაძლებლობა ერთ სცენაზე`,
+meta:`IDM LINUX Internet Download Manager-ის სრულ ძალას ლინუქსზე მოაქვს: ბრაუზერიდან დაჭერა, ვიდეო ძრავა, ტორენტი, პირდაპირი ეთერის DVR და სისტემის ექიმი — ერთ მსუბუქ პანელში.`,
+nav_features:`შესაძლებლობები`,nav_screens:`ეკრანები`,nav_install:`დაყენება`,nav_ecosystem:`ეკოსისტემა`,
+hero_sub:`<strong>Internet Download Manager</strong>-ის სრული ძალა ლინუქსზე: ბრაუზერიდან დაჭერა, ვიდეო ძრავა, ტორენტი, პირდაპირი ეთერის DVR და სისტემის ექიმი — <strong>ერთ მსუბუქ მართვის პანელში</strong>. ჩამოტვირთვები ნამდვილ IDM ძრავით მაქსიმალური სიჩქარით მიდის.`,
+cta_download:`⬇️ IDM-LINUX-1.0.0-ის ჩამოტვირთვა`,cta_screens:`📸 ეკრანების დათვალიერება`,
+chip_ver:`<b>v1.0.0</b> ვერსია`,chip_pkg:`📦 <b>4</b> პაკეტის ტიპი`,chip_lang:`🌍 <b>20</b> ენა`,chip_doc:`🩺 <b>6 ნაბიჯიანი</b> ავტომატური ექიმი`,chip_video:`🎬 <b>HLS/4K</b> ვიდეო ძრავა`,chip_torrent:`🧲 <b>DHT</b> ტორენტი`,
+slogan:`<b>ეს გვერდი;</b> IDM LINUX-ის სრულ გამოცდილებას ყველა შესაძლებლობით ერთ სცენაზე წარმოადგენს.`,
+f_kicker:`შესაძლებლობები`,f_title:`ერთი პანელი, ათი უნარი`,
+f_desc:`IDM LINUX Wine-ზე მომუშავე ნამდვილ IDM ძრავას ლინუქსის მხარეს მსუბუქ Python პანელთან აწყობს. ყოველი შრე ერთსა და იმავე ლოკალურ ხიდზე საუბრობს: <code style="color:#7dd3fc">127.0.0.1:17802</code>.`,
+f1t:`ბრაუზერთა ინტეგრაცია`,f1d:`გაფართოება Chromium- და Firefox-ზე დაფუძნებული ყველა ბრაუზერისთვის; ჩამოტვირთვის მოთხოვნებს ავტომატურად იჭერს და IDM-ს გადასცემს. თქვენ დააჭირეთ, დანარჩენს IDM LINUX გააკეთებს.`,
+f2t:`ვიდეო ძრავა (HLS/4K)`,f2d:`yt-dlp / streamlink ძრავათა ჯაჭვი; თითოეული საიტისთვის ყველაზე შესაფერისი ძრავა ავტომატურად შეირჩევა, 4K და HLS ნაკადებიც იქვე IDM-ში გადადის.`,
+f3t:`ჩაშენებული ტორენტ ძრავა`,f3d:`magnet და .torrent მხარდაჭერა, DHT-ით ტრეკერგარეშე peer-ძებნა. დადასტურების ფანჯრიდან შეგიძლიათ შიგთავსი ან მხოლოდ .torrent ფაილი ჩამოტვირთოთ.`,
+f4t:`პირდაპირი ეთერი / DVR`,f4d:`DVR ფენა, რომელიც პირდაპირ ნაკადებს ჩაწერს; დაწყება, გაჩერება, მართვა — ყველაფერი ინტერფეისიდან.`,
+f5t:`ფაილჰოსტინგები`,f5d:`სტუმრის სესია და პირდაპირი ბმულის ამოცნობა პოპულარული ჰოსტინგებისთვის; ფაილი არასდროს ჩამოდის დაზიანებული, ჩამოტვირთვა IDM-ით სრულდება.`,
+f6t:`სისტემის ექიმი`,f6d:`6 ნაბიჯიანი ავტომატური დიაგნოსტიკა და შეკეთება: ხიდი, ვიდეო ძრავა და ბრაუზერთა კავშირები ერთი დაწკაპუნებით გასწორდება. ცოცხალი ლოგები იმავე ეკრანზე მიედინება.`,
+f7t:`--no-sandbox კარდინალური გამოსავალი`,f7d:`საჭირო გარემოებები დინამიურად ამოიცნობა; პარამეტრი დაყენებისა და ბრაუზერის გაშვებისას ავტომატურად ემატება — ვერანაირი ბარიერი არ არის.`,
+f8t:`20 ენა, ნაგულისხმევი თურქული`,f8d:`ინტერფეისი 20 ენაზე მუშაობს და IDM-ის ენასთან ავტომატურად სინქრონდება — მარჯვნიდან-მარცხნივ ენებისთვის RTL მხარდაჭერაც ჩათვლით.`,
+f9t:`გაუქმება = სრული გაჩერება`,f9d:`ჩამოტვირთვის გაუქმებისას ფონზე ვერავითარი ძრავა არ გრძელდება; რესურსს არ ჭამს, ფაილი არასოდეს ნახევრად არ რჩება.`,
+s_kicker:`ეკრანები`,s_title:`კადრები პანელიდან`,s_desc:`თანამედროვე მუქი Slate თემა და ნეონის Cyan/ზურმუხტის პალიტრა — დესკტოპს არ აიძულებს, ყველაფერი თვალწინაა.`,
+s1:`მიმოხილვა &amp; ცოცხალი მართვის პანელი — ხიდის მდგომარეობა, სწრაფი ბმული, სწრაფი ქმედებები და დაკვრის სია`,
+s2:`დაყენების &amp; განახლების თავი — Wine + ოფიციალური IDM ავტომატურად`,
+s3:`ბრაუზერები &amp; გაფართოებები — Chromium/Firefox native messaging`,
+s4:`სისტემის ექიმი &amp; ცოცხალი ლოგები — daemon.log ნაკადი`,
+s5:`სხვა პროექტები — BELGESELSEMO აპლიკაციათა ეკოსისტემა`,
+s6:`მადლობა &amp; მხარდაჭერა — საზოგადოება და მორალური მხარდაჭერა`,
+s7:`დაჭერის &amp; Wine პარამეტრები — პორტები, საქაღალდეები, ენა`,
+i_kicker:`დაყენება`,i_title:`აირჩიე პაკეტი, ერთი ბრძანება`,
+i_desc:`ყველა პაკეტი ერთსა და იმავე <strong>IDM-LINUX-1.0.0</strong> ვერსიას ატარებს და <a href="https://github.com/vesvese55x/IDM-LINUX/releases/latest" target="_blank" rel="noreferrer">GitHub Releases</a>-ით ვრცელდება.`,
+p1t:`📦 გაშვება დაყენების გარეშე`,p1d:`ჩამოტვირთე, გახადე გაშვებადი, ორმაგი დაწკაპუნება. სისტემაში კვალს არ ტოვებს.`,
+p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`gdebi-თი და მსგავსი გრაფიკული deb-დამყენებლითაც უპრობლემოდ დაყენდება.`,
+p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`noarch პაკეტი RPM-ზე დაფუძნებული დისტრიბუტივებისთვის.`,
+p4t:`🏔️ Arch / Manjaro`,p4d:`პირდაპირი დაყენება pacman-ით; makepkg არ სჭირდება.`,
+btn_copy:`კოპირება`,btn_copied:`დაკოპირდა ✓`,
+note1:`🧰 დაყენების თავი საჭიროებისამებრ ავტომატურად ჩამოტვირთავს და დააყენებს <b>Wine</b>-ს, <b>ოფიციალურ IDM</b>-ს, ბრაუზერის გაფართოებებს და <b>yt-dlp / ffmpeg / aria2</b> ხელსაწყოებს.`,
+note2:`🧩 მოთხოვნები: Linux (რეკომენდირებულია x86_64) და <b>Python 3.8+</b>; GUI-სთვის რეკომენდირებულია X11/Wayland დესკტოპი.`,
+e_kicker:`ეკოსისტემა`,e_title:`მობილური BELGESELSEMO ეკოსისტემა`,e_desc:`BELGESELSEMO-ს სამყარო დესკტოპით არ შემოიფარგლება: Android-ზე დოკუმენტური ფილმების, trivia-ს, ტელეგიდის, მორიგე აფთიაქების და Nutuk-ის აპლიკაციები იმავე ეკოსისტემას აგრძელებენ.`,
+m1s:`HD დოკუმენტური &amp; ხელსაწყოების პორტალი`,m2s:`ვიქტორინა`,m3n:`ტელეგიდი (EPG)`,m3s:`მაუწყებლობის განრიგის ნახვა`,m4n:`მორიგე აფთიაქები 7/24`,m4s:`თურქეთი &amp; ჩრდილოეთი კვიპროსი`,m5s:`წაკითხული &amp; ხმოვანი`,m6s:`მალე…`,
+foot_tag:`Internet Download Manager-ის სრული ძალა — ლინუქსზე, სრულფასოვანი, მსუბუქი და სტაბილური.`,foot_releases:`ვერსიები`},
+ro:{name:`Română`,en:`Romanian`,rtl:false,
+title:`🚀 IDM LINUX (BELGESELSEMO) — Toate funcțiile pe o singură scenă`,
+meta:`IDM LINUX aduce toată puterea Internet Download Manager pe Linux: captură din browser, motor video, torrent, DVR live și doctor de sistem într-un singur panou ușor.`,
+nav_features:`Funcții`,nav_screens:`Ecrane`,nav_install:`Instalare`,nav_ecosystem:`Ecosistem`,
+hero_sub:`Toată puterea <strong>Internet Download Manager</strong> pe Linux: captură din browser, motor video, torrent, DVR pentru transmisiuni live și doctor de sistem — <strong>într-un singur panou de control ușor</strong>. Descărcările rulează la viteză maximă prin motorul IDM real.`,
+cta_download:`⬇️ Descarcă IDM-LINUX-1.0.0`,cta_screens:`📸 Explorează ecranele`,
+chip_ver:`<b>v1.0.0</b> versiune`,chip_pkg:`📦 <b>4</b> tipuri de pachete`,chip_lang:`🌍 <b>20</b> limbi`,chip_doc:`🩺 doctor auto în <b>6 pași</b>`,chip_video:`🎬 motor video <b>HLS/4K</b>`,chip_torrent:`🧲 torrent <b>DHT</b>`,
+slogan:`<b>Această pagină;</b> prezintă întreaga experiență IDM LINUX, cu toate funcțiile ei, pe o singură scenă.`,
+f_kicker:`Funcții`,f_title:`Un panou, zece capacități`,
+f_desc:`IDM LINUX îmbină motorul IDM real rulat pe Wine cu un panou Python ușor pe partea de Linux. Fiecare strat vorbește prin aceeași punte locală: <code style="color:#7dd3fc">127.0.0.1:17802</code>.`,
+f1t:`Integrare cu browserele`,f1d:`O extensie pentru toate browserele bazate pe Chromium și Firefox; captează automat cererile de descărcare și le transmite IDM. Tu dai clic, IDM LINUX face restul.`,
+f2t:`Motor video (HLS/4K)`,f2d:`Lanțul de motoare yt-dlp / streamlink; motorul cel mai potrivit se alege automat pentru fiecare site, iar fluxurile — inclusiv 4K și HLS — ajung direct în IDM.`,
+f3t:`Motor torrent încorporat`,f3d:`Suport magnet și .torrent, cu descoperire de peers fără tracker prin DHT. Din fereastra de confirmare poți descărca conținutul sau doar fișierul .torrent.`,
+f4t:`Transmisiune live / DVR`,f4d:`Un strat DVR care înregistrează fluxuri live; pornește, oprește, gestionează — totul din interfață.`,
+f5t:`Găzduitori de fișiere`,f5d:`Sesiune invitat și rezolvare de legături directe pentru site-urile de hosting populare; fișierele nu sosesc niciodată corupte, descărcarea se finalizează prin IDM.`,
+f6t:`Doctor de sistem`,f6d:`Diagnostic și reparare automată în 6 pași: puntea, motorul video și conexiunile browserelor se repară cu un clic. Jurnalele live curg pe același ecran.`,
+f7t:`Soluția radicală --no-sandbox`,f7d:`Mediile care o cer sunt detectate dinamic; parametrul se adaugă automat la instalare și la deschiderea browserului — zero blocaje.`,
+f8t:`20 limbi, implicit turca`,f8d:`Interfața funcționează în 20 de limbi și se sincronizează automat cu limba IDM — inclusiv suport RTL pentru limbile scrise de la dreapta la stânga.`,
+f9t:`Anulare = oprire completă`,f9d:`Când anulezi o descărcare, niciun motor nu continuă în fundal; nu consumă resurse și nu lasă fișier pe jumătate.`,
+s_kicker:`Ecrane`,s_title:`Imagini din panou`,s_desc:`Temă întunecată Slate modernă și paletă Neon Cyan/Smarald — fără efort pe desktop, totul la vedere.`,
+s1:`Privire de ansamblu &amp; Panou de control live — starea punții, link rapid, acțiuni rapide și lista de redare`,
+s2:`Asistent de instalare &amp; actualizare — Wine + IDM oficial automat`,
+s3:`Browsere &amp; Extensii — native messaging Chromium/Firefox`,
+s4:`Doctor de sistem &amp; Jurnale live — fluxul daemon.log`,
+s5:`Alte proiecte — ecosistemul de aplicații BELGESELSEMO`,
+s6:`Mulțumește &amp; Susține — comunitate și sprijin moral`,
+s7:`Setări de captură &amp; Wine — porturi, dosare, limbă`,
+i_kicker:`Instalare`,i_title:`Alege pachetul, o singură comandă`,
+i_desc:`Toate pachetele poartă aceeași versiune <strong>IDM-LINUX-1.0.0</strong> și se distribuie prin <a href="https://github.com/vesvese55x/IDM-LINUX/releases/latest" target="_blank" rel="noreferrer">GitHub Releases</a>.`,
+p1t:`📦 Rulează fără instalare`,p1d:`Descarcă, fă-l executabil, dublu clic. Nu lasă urme în sistem.`,
+p2t:`🐧 Debian / Ubuntu / Mint`,p2d:`Se instalează fără probleme și cu gdebi sau alte instalatoare deb grafice.`,
+p3t:`🎩 Fedora / openSUSE / RHEL`,p3d:`Un pachet noarch pentru distribuțiile bazate pe RPM.`,
+p4t:`🏔️ Arch / Manjaro`,p4d:`Instalare directă cu pacman; makepkg nu e necesar.`,
+btn_copy:`COPIAZĂ`,btn_copied:`COPIAT ✓`,
+note1:`🧰 Asistentul de instalare descarcă și instalează automat, la nevoie, <b>Wine</b>, <b>IDM oficial</b>, extensiile de browser și uneltele <b>yt-dlp / ffmpeg / aria2</b>.`,
+note2:`🧩 Cerințe: Linux (se recomandă x86_64) și <b>Python 3.8+</b>; pentru GUI se recomandă un desktop X11/Wayland.`,
+e_kicker:`Ecosistem`,e_title:`Ecosistemul mobil BELGESELSEMO`,e_desc:`Lumea BELGESELSEMO nu se limitează la desktop: pe Android, aplicațiile de documentare, trivia, ghid TV, farmacii de gardă și Nutuk continuă același ecosistem.`,
+m1s:`Portal de documentare HD &amp; unelte`,m2s:`Joc de trivia`,m3n:`GHID TV (EPG)`,m3s:`Vizualizator grilă de programe`,m4n:`FARMACII DE GARDĂ 7/24`,m4s:`TR &amp; Cipru de Nord`,m5s:`Vorbit &amp; audio`,m6s:`În curând…`,
+foot_tag:`Toată puterea Internet Download Manager — pe Linux, pe deplin funcțional, ușor și stabil.`,foot_releases:`Versiuni`}
+};
+
+/* ---------- Dil motoru ---------- */
+const LANG_FLAG=RAW_BASE+'src/idm_linux/assets/';
+let CURRENT='tr';
+
+function setLang(code){
+  const L=I18N[code]||I18N.tr;
+  CURRENT=(I18N[code])?code:'tr';
+  document.documentElement.lang=CURRENT;
+  document.documentElement.dir=L.rtl?'rtl':'ltr';
+  document.title=L.title;
+  const md=document.querySelector('meta[name="description"]');
+  if(md)md.setAttribute('content',L.meta);
+  document.querySelectorAll('[data-i18n]').forEach((el)=>{
+    const v=L[el.getAttribute('data-i18n')];
+    if(v!=null)el.innerHTML=v;
   });
-  // kopyala butonları
-  document.querySelectorAll('.copy').forEach((b) => {
-    b.addEventListener('click', () => {
-      const code = b.parentElement.querySelector('code').innerText;
-      navigator.clipboard.writeText(code).then(() => {
-        const old = b.textContent; b.textContent = 'KOPYALANDI ✓';
-        setTimeout(() => { b.textContent = old; }, 1400);
-      });
+  const cur=document.getElementById('lang-current');
+  if(cur)cur.innerHTML='<img src="'+LANG_FLAG+'flag_'+CURRENT+'.png" alt=""><span>'+L.name+'</span>';
+  try{localStorage.setItem('idm_promo_lang',CURRENT);}catch(e){}
+  const menu=document.getElementById('lang-menu');
+  if(menu){
+    menu.classList.remove('open');
+    menu.querySelectorAll('[data-lang]').forEach((b)=>b.classList.toggle('active',b.getAttribute('data-lang')===CURRENT));
+  }
+}
+
+/* Menüyü kur — 20 dil, GUI'nin LANGUAGE_LIST sırasıyla */
+(function buildMenu(){
+  const menu=document.getElementById('lang-menu');
+  if(!menu)return;
+  const ORDER=['tr','en','de','fr','ru','zh','ja','hi','ar','nl','fa','el','pt','vi','az','ky','it','id','ka','ro'];
+  ORDER.forEach((code)=>{
+    const L=I18N[code];if(!L)return;
+    const b=document.createElement('button');
+    b.type='button';b.className='lang-item';b.setAttribute('data-lang',code);b.setAttribute('role','menuitem');b.title=L.name+' · '+L.en;
+    b.innerHTML='<img src="'+LANG_FLAG+'flag_'+code+'.png" alt="" loading="lazy"><span class="ln">'+L.name+'</span><span class="le">'+L.en+'</span>';
+    b.addEventListener('click',()=>setLang(code));
+    menu.appendChild(b);
+  });
+})();
+
+/* Tarayıcı/sistem dilini otomatik algıla */
+(function detect(){
+  let saved=null;
+  try{saved=localStorage.getItem('idm_promo_lang');}catch(e){}
+  if(saved&&I18N[saved]){setLang(saved);return;}
+  const cands=(navigator.languages&&navigator.languages.length)?navigator.languages:[navigator.language||'tr'];
+  for(let i=0;i<cands.length;i++){
+    const b=String(cands[i]||'').toLowerCase().split('-')[0];
+    if(I18N[b]){setLang(b);return;}
+  }
+  setLang('tr'); /* GUI varsayılanı: Türkçe */
+})();
+
+/* Dil menüsü aç/kapat */
+const langBtn=document.getElementById('lang-btn');
+const langMenu=document.getElementById('lang-menu');
+if(langBtn&&langMenu){
+  langBtn.addEventListener('click',(e)=>{
+    e.stopPropagation();
+    langMenu.classList.toggle('open');
+  });
+  document.addEventListener('click',(e)=>{
+    if(!langMenu.contains(e.target)&&!langBtn.contains(e.target))langMenu.classList.remove('open');
+  });
+  document.addEventListener('keydown',(e)=>{if(e.key==='Escape')langMenu.classList.remove('open');});
+}
+
+/* yumuşak reveal */
+const io=new IntersectionObserver((es)=>{
+  es.forEach((e)=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
+},{threshold:.12});
+document.querySelectorAll('.rv').forEach((el,i)=>{
+  el.style.transitionDelay=(i%4)*60+'ms';
+  io.observe(el);
+});
+
+/* kopyala butonları */
+document.querySelectorAll('.copy').forEach((b)=>{
+  b.addEventListener('click',()=>{
+    const code=b.parentElement.querySelector('code').innerText;
+    navigator.clipboard.writeText(code).then(()=>{
+      const old=b.textContent;
+      b.textContent=(I18N[CURRENT]||I18N.tr).btn_copied;
+      setTimeout(()=>{b.textContent=old;},1400);
     });
   });
+});
 </script>
 </body>
 </html>
