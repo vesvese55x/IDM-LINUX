@@ -81,6 +81,10 @@
 
 ## Platform paketleri ve kurulum komutları
 
+⚡ <strong>Tek satırda otomatik kurulum</strong> — betik dağıtımınızı algılar (Debian/Ubuntu/Mint, Fedora/openSUSE/RHEL, Arch/Manjaro/Cachy OS ve türevleri; tanımayan sistemlerde AppImage), GitHub Releases'teki <em>en güncel</em> paketi indirip kurar:
+
+<p align="center"><code>curl -fsSL https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/belgeselsemo-idm-linux-installer | sh</code></p>
+
 <table>
   <tr>
     <td><strong>Paket</strong></td>
@@ -108,7 +112,7 @@
   </tr>
   <tr>
     <td>🏔️ <strong>zst</strong></td>
-    <td>Arch / Manjaro ve türevleri</td>
+    <td>Arch / Manjaro / Cachy OS ve türevleri</td>
     <td><code>sudo pacman -U idm-linux-1.0.0-1-any.pkg.tar.zst</code></td>
     <td align="center"><a href="https://github.com/vesvese55x/IDM-LINUX/releases/latest/download/idm-linux-1.0.0-1-any.pkg.tar.zst" target="_blank" rel="noreferrer"><img src="https://img.shields.io/badge/%C4%B0ND%C4%B0R-10b981?style=for-the-badge&amp;logo=github&amp;logoColor=white" alt="İNDİR — zst"></a></td>
   </tr>
@@ -221,12 +225,16 @@
 
 <h2>Platform packages and install commands</h2>
 
+⚡ <strong>One-line auto install</strong> — the script detects your distribution (Debian/Ubuntu/Mint, Fedora/openSUSE/RHEL, Arch/Manjaro/Cachy OS and derivatives; AppImage on unknown systems), downloads the <em>latest</em> package from GitHub Releases and installs it:
+
+<p align="center"><code>curl -fsSL https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/belgeselsemo-idm-linux-installer | sh</code></p>
+
 <table>
   <tr><td><strong>Package</strong></td><td><strong>For whom?</strong></td><td><strong>Install / run command</strong></td></tr>
   <tr><td>📦 <strong>AppImage</strong></td><td>No installation; download, make executable, double-click</td><td><code>chmod +x IDM-LINUX-1.0.0-x86_64.AppImage &amp;&amp; ./IDM-LINUX-1.0.0-x86_64.AppImage</code></td></tr>
   <tr><td>🐧 <strong>deb</strong></td><td>Debian / Ubuntu / Mint and derivatives; also works with gdebi-style GUI installers</td><td><code>sudo apt install ./idm-linux_1.0.0_all.deb</code></td></tr>
   <tr><td>🎩 <strong>rpm</strong></td><td>Fedora / openSUSE / RHEL derivatives</td><td><code>sudo dnf install ./idm-linux-1.0.0-1.noarch.rpm</code></td></tr>
-  <tr><td>🏔️ <strong>zst</strong></td><td>Arch / Manjaro and derivatives</td><td><code>sudo pacman -U idm-linux-1.0.0-1-any.pkg.tar.zst</code></td></tr>
+  <tr><td>🏔️ <strong>zst</strong></td><td>Arch / Manjaro / Cachy OS and derivatives</td><td><code>sudo pacman -U idm-linux-1.0.0-1-any.pkg.tar.zst</code></td></tr>
 </table>
 
 🌟 All packages carry the same <strong>IDM-LINUX-1.0.0</strong> release and are downloaded from [GitHub Releases](https://github.com/vesvese55x/IDM-LINUX/releases/tag/v1.0.0).  
@@ -274,12 +282,16 @@
 
 <h2>Plattformpakete und Installationsbefehle</h2>
 
+⚡ <strong>Auto-Installation in einer Zeile</strong> — das Skript erkennt Ihre Distribution (Debian/Ubuntu/Mint, Fedora/openSUSE/RHEL, Arch/Manjaro/Cachy OS und Derivate; AppImage auf unbekannten Systemen), lädt das <em>neueste</em> Paket aus GitHub Releases und installiert es:
+
+<p align="center"><code>curl -fsSL https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/belgeselsemo-idm-linux-installer | sh</code></p>
+
 <table>
   <tr><td><strong>Paket</strong></td><td><strong>Für wen?</strong></td><td><strong>Installations-/Startbefehl</strong></td></tr>
   <tr><td>📦 <strong>AppImage</strong></td><td>Ohne Installation; herunterladen, ausführbar machen, doppelklicken</td><td><code>chmod +x IDM-LINUX-1.0.0-x86_64.AppImage &amp;&amp; ./IDM-LINUX-1.0.0-x86_64.AppImage</code></td></tr>
   <tr><td>🐧 <strong>deb</strong></td><td>Debian / Ubuntu / Mint und Derivate; auch mit GUI-Installern wie gdebi kompatibel</td><td><code>sudo apt install ./idm-linux_1.0.0_all.deb</code></td></tr>
   <tr><td>🎩 <strong>rpm</strong></td><td>Fedora / openSUSE / RHEL-Derivate</td><td><code>sudo dnf install ./idm-linux-1.0.0-1.noarch.rpm</code></td></tr>
-  <tr><td>🏔️ <strong>zst</strong></td><td>Arch / Manjaro und Derivate</td><td><code>sudo pacman -U idm-linux-1.0.0-1-any.pkg.tar.zst</code></td></tr>
+  <tr><td>🏔️ <strong>zst</strong></td><td>Arch / Manjaro / Cachy OS und Derivate</td><td><code>sudo pacman -U idm-linux-1.0.0-1-any.pkg.tar.zst</code></td></tr>
 </table>
 
 🌟 Alle Pakete tragen dieselbe <strong>IDM-LINUX-1.0.0</strong>-Version und werden von [GitHub Releases](https://github.com/vesvese55x/IDM-LINUX/releases/tag/v1.0.0) geladen.  
@@ -323,12 +335,16 @@
 
 <h2>Пакеты платформ и команды установки</h2>
 
+⚡ <strong>Установка в одну строку</strong> — скрипт определит ваш дистрибутив (Debian/Ubuntu/Mint, Fedora/openSUSE/RHEL, Arch/Manjaro/Cachy OS и производные; AppImage на неизвестных системах), скачает <em>самый свежий</em> пакет с GitHub Releases и установит его:
+
+<p align="center"><code>curl -fsSL https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/belgeselsemo-idm-linux-installer | sh</code></p>
+
 <table>
   <tr><td><strong>Пакет</strong></td><td><strong>Для кого?</strong></td><td><strong>Команда установки / запуска</strong></td></tr>
   <tr><td>📦 <strong>AppImage</strong></td><td>Без установки; скачайте, сделайте исполняемым, двойной клик</td><td><code>chmod +x IDM-LINUX-1.0.0-x86_64.AppImage &amp;&amp; ./IDM-LINUX-1.0.0-x86_64.AppImage</code></td></tr>
   <tr><td>🐧 <strong>deb</strong></td><td>Debian / Ubuntu / Mint и производные; совместим и с GUI-установщиками вроде gdebi</td><td><code>sudo apt install ./idm-linux_1.0.0_all.deb</code></td></tr>
   <tr><td>🎩 <strong>rpm</strong></td><td>Fedora / openSUSE / RHEL-производные</td><td><code>sudo dnf install ./idm-linux-1.0.0-1.noarch.rpm</code></td></tr>
-  <tr><td>🏔️ <strong>zst</strong></td><td>Arch / Manjaro и производные</td><td><code>sudo pacman -U idm-linux-1.0.0-1-any.pkg.tar.zst</code></td></tr>
+  <tr><td>🏔️ <strong>zst</strong></td><td>Arch / Manjaro / Cachy OS и производные</td><td><code>sudo pacman -U idm-linux-1.0.0-1-any.pkg.tar.zst</code></td></tr>
 </table>
 
 🌟 Все пакеты несут одну и ту же версию <strong>IDM-LINUX-1.0.0</strong> и скачиваются со страницы [GitHub Releases](https://github.com/vesvese55x/IDM-LINUX/releases/tag/v1.0.0).  
@@ -372,12 +388,16 @@
 
 <h2>प्लेटफ़ॉर्म पैकेज और इंस्टॉल कमांड</h2>
 
+⚡ <strong>एक पंक्ति में ऑटो इंस्टॉल</strong> — स्क्रिप्ट आपका डिस्ट्रिब्यूशन पहचानती है (Debian/Ubuntu/Mint, Fedora/openSUSE/RHEL, Arch/Manjaro/Cachy OS और व्युत्पन्न; अज्ञात सिस्टम पर AppImage), GitHub Releases से <em>नवीनतम</em> पैकेज डाउनलोड करके इंस्टॉल करती है:
+
+<p align="center"><code>curl -fsSL https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/belgeselsemo-idm-linux-installer | sh</code></p>
+
 <table>
   <tr><td><strong>पैकेज</strong></td><td><strong>किसके लिए?</strong></td><td><strong>इंस्टॉल / रन कमांड</strong></td></tr>
   <tr><td>📦 <strong>AppImage</strong></td><td>इंस्टॉल की ज़रूरत नहीं; डाउनलोड करें, executable बनाएं, डबल क्लिक करें</td><td><code>chmod +x IDM-LINUX-1.0.0-x86_64.AppImage &amp;&amp; ./IDM-LINUX-1.0.0-x86_64.AppImage</code></td></tr>
   <tr><td>🐧 <strong>deb</strong></td><td>Debian / Ubuntu / Mint और व्युत्पन्न; gdebi जैसे GUI इंस्टॉलर के साथ भी संगत</td><td><code>sudo apt install ./idm-linux_1.0.0_all.deb</code></td></tr>
   <tr><td>🎩 <strong>rpm</strong></td><td>Fedora / openSUSE / RHEL व्युत्पन्न</td><td><code>sudo dnf install ./idm-linux-1.0.0-1.noarch.rpm</code></td></tr>
-  <tr><td>🏔️ <strong>zst</strong></td><td>Arch / Manjaro और व्युत्पन्न</td><td><code>sudo pacman -U idm-linux-1.0.0-1-any.pkg.tar.zst</code></td></tr>
+  <tr><td>🏔️ <strong>zst</strong></td><td>Arch / Manjaro / Cachy OS और व्युत्पन्न</td><td><code>sudo pacman -U idm-linux-1.0.0-1-any.pkg.tar.zst</code></td></tr>
 </table>
 
 🌟 सभी पैकेज एक ही <strong>IDM-LINUX-1.0.0</strong> रिलीज़ ले जाते हैं और [GitHub Releases](https://github.com/vesvese55x/IDM-LINUX/releases/tag/v1.0.0) पेज से डाउनलोड होते हैं।  
