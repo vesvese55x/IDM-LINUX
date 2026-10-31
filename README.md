@@ -17,22 +17,13 @@
 </p>
 
 <p align="center">
-  <a href="https://rawgit.loltek.net/https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/promo/promo.html" target="_blank" rel="noreferrer"><img src="https://img.shields.io/badge/%F0%9F%8E%AC_TANITIM_SUNUMU-G%C3%96R%C3%9CNT%C3%9CLE-0ea5e9?style=for-the-badge" alt="Tanıtım Sunumu — Görüntüle"></a>
-  <a href="https://htmlpreview.github.io/?https://github.com/vesvese55x/IDM-LINUX/blob/main/promo/promo.html" target="_blank" rel="noreferrer"><img src="https://img.shields.io/badge/%F0%9F%9B%9F_YEDEK_L%C4%B0NK-YEDEK_A%C3%87-475569?style=for-the-badge" alt="Tanıtım Yedek Link — Yedek Aç"></a>
-  <br>
-  <a href="https://belgeselsemo.com.tr" target="_blank" rel="noreferrer"><img src="https://img.shields.io/badge/%F0%9F%8C%90_BELGESELSEMO.COM.TR-Z%C4%B0YARET_ET-10b981?style=for-the-badge" alt="belgeselsemo.com.tr — Ziyaret Et"></a>
-  <a href="https://github.com/vesvese55x/IDM-LINUX" target="_blank" rel="noreferrer"><img src="https://img.shields.io/badge/GITHUB-REPO_A%C3%87-24292f?style=for-the-badge&amp;logo=github&amp;logoColor=white" alt="GitHub — Repo Aç"></a>
-</p>
-
-<p align="center">
-  <img src="https://github.com/vesvese55x/IDM-LINUX/actions/workflows/build.yml/badge.svg" alt="Derleme &amp; Test durumu">
-  <img src="https://img.shields.io/badge/Python-3.8%2B-3776AB?logo=python&amp;logoColor=white&amp;style=flat-square" alt="Python 3.8+">
-  <img src="https://img.shields.io/badge/Test_S%C3%BCiti-208_test-brightgreen?style=flat-square" alt="208 Python paket testi">
-  <img src="https://img.shields.io/github/downloads/vesvese55x/IDM-LINUX/total?label=%C4%B0ndirmeler&amp;logo=github&amp;logoColor=white&amp;color=10b981&amp;style=flat-square" alt="İndirmeler — toplam indirme sayacı">
-  <img src="https://img.shields.io/badge/Platform-Linux_x86__64-f97316?style=flat-square" alt="Platform: Linux x86_64">
-  <img src="https://img.shields.io/badge/Backend-Wine_%2B_IDM_Engine-3b82f6?style=flat-square" alt="Backend: Wine + IDM Engine">
-  <img src="https://img.shields.io/badge/Paketler-AppImage_%C2%B7_deb_%C2%B7_rpm_%C2%B7_zst-00AEEF?style=flat-square" alt="Paketler">
-  <img src="https://img.shields.io/badge/S%C3%BCr%C3%BCm-IDM--LINUX--1.0.0-8b5cf6?style=flat-square" alt="Sürüm IDM-LINUX-1.0.0">
+  <a href="https://rawgit.loltek.net/https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/promo/promo.html" target="_blank" rel="noreferrer"><strong>TANITIM SUNUMU</strong></a>
+  ·
+  <a href="https://htmlpreview.github.io/?https://github.com/vesvese55x/IDM-LINUX/blob/main/promo/promo.html" target="_blank" rel="noreferrer"><strong>TANITIM YEDEK LİNK</strong></a>
+  ·
+  <a href="https://belgeselsemo.com.tr" target="_blank" rel="noreferrer"><strong>BELGESELSEMO.COM.TR</strong></a>
+  ·
+  <a href="https://github.com/vesvese55x/IDM-LINUX" target="_blank" rel="noreferrer"><strong>GITHUB</strong></a>
 </p>
 
 ## IDM deneyimi Linux'ta
@@ -117,6 +108,17 @@
     <td><code>sudo pacman -U idm-linux-1.0.0-1-any.pkg.tar.zst</code></td>
   </tr>
 </table>
+
+<p align="center">
+  <img src="https://github.com/vesvese55x/IDM-LINUX/actions/workflows/build.yml/badge.svg" alt="Derleme &amp; Test durumu">
+  <img src="https://img.shields.io/badge/Python-3.8%2B-3776AB?logo=python&amp;logoColor=white&amp;style=flat-square" alt="Python 3.8+">
+  <img src="https://img.shields.io/badge/Test_S%C3%BCiti-208_test-brightgreen?style=flat-square" alt="208 Python paket testi">
+  <img src="https://img.shields.io/github/downloads/vesvese55x/IDM-LINUX/total?label=%C4%B0ndirmeler&amp;logo=github&amp;logoColor=white&amp;color=10b981&amp;style=flat-square" alt="İndirmeler — toplam indirme sayacı">
+  <img src="https://img.shields.io/badge/Platform-Linux_x86__64-f97316?style=flat-square" alt="Platform: Linux x86_64">
+  <img src="https://img.shields.io/badge/Backend-Wine_%2B_IDM_Engine-3b82f6?style=flat-square" alt="Backend: Wine + IDM Engine">
+  <img src="https://img.shields.io/badge/Paketler-AppImage_%C2%B7_deb_%C2%B7_rpm_%C2%B7_zst-00AEEF?style=flat-square" alt="Paketler">
+  <img src="https://img.shields.io/badge/S%C3%BCr%C3%BCm-IDM--LINUX--1.0.0-8b5cf6?style=flat-square" alt="Sürüm IDM-LINUX-1.0.0">
+</p>
 
 🌟 Tüm paketler aynı <strong>IDM-LINUX-1.0.0</strong> sürümünü taşır ve [GitHub Releases](https://github.com/vesvese55x/IDM-LINUX/releases/tag/v1.0.0) sayfasından indirilir.  
 🧰 Kurulum sihirbazı; Wine, resmî IDM, tarayıcı eklentileri ve yt-dlp/ffmpeg/aria2 araçlarını gerektiğinde otomatik indirip kurar.  
