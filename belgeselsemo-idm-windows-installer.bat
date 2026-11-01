@@ -1,20 +1,16 @@
 @echo off
 setlocal EnableExtensions
-title BELGESELSEMO IDM SEMO - Windows Setup
-rem ---- v10: cmd penceresi gizlenir; kurulum modern GUI penceresinde gosterilir ----
-if /i "%~1"=="__hidden__" goto :hidden
-> "%TEMP%\semo_relaunch.vbs" echo CreateObject("WScript.Shell").Run "cmd /c ""%~sf0"" __hidden__", 0, False
-wscript //nologo "%TEMP%\semo_relaunch.vbs"
-exit /b 0
-
-:hidden
+title BELGESELSEMO IDM SEMO - Windows Kurulum Sihirbazi
+rem ---- v11: gizli relaunch yok; bat dogrudan calisir, ilerleme ekranda ----
+color 1F
+echo.
+echo   BELGESELSEMO IDM SEMO - Windows Kurulum Sihirbazi
+echo   =================================================
+echo.
 set "SEMO_WORK=%TEMP%\IDM_SEMO_setup"
 set "SEMO_ERR=%TEMP%\IDM_SEMO_setup_err.log"
 if exist "%SEMO_ERR%" del "%SEMO_ERR%" >nul 2>&1
->> "%SEMO_ERR%" echo [%DATE% %TIME%] kurulum basladi (gizli cmd)
-if exist "%SEMO_WORK%" rd /s /q "%SEMO_WORK%" >nul 2>&1
-mkdir "%SEMO_WORK%" >nul 2>&1
-if not exist "%SEMO_WORK%" (echo SEMO_WORK klasoru yaratilamadi>> "%SEMO_ERR%" & goto :fatal)
+>> "%SEMO_ERR%" echo [%DATE% %TIME%] kurulum basladi
 set "IS_ADMIN=0"
 net session >nul 2>&1
 if not errorlevel 1 set "IS_ADMIN=1"
@@ -24,35 +20,51 @@ if "%SEMO_INST%"=="" set "SEMO_INST=C:\IDM-SEMO"
 >> "%SEMO_ERR%" echo hedef: %SEMO_INST% (admin=%IS_ADMIN%)
 set "CSC="
 for /d %%D in ("%SystemRoot%\Microsoft.NET\Framework\v2.0.50727" "%SystemRoot%\Microsoft.NET\Framework\v3.*" "%SystemRoot%\Microsoft.NET\Framework\v4.*") do if exist "%%D\csc.exe" set "CSC=%%D\csc.exe"
-if "%CSC%"=="" (echo csc bulunamadi>> "%SEMO_ERR%" & goto :fallback)
+if "%CSC%"=="" goto :nocsc
+if exist "%SEMO_WORK%" rd /s /q "%SEMO_WORK%" >nul 2>&1
+mkdir "%SEMO_WORK%" >nul 2>&1
+if not exist "%SEMO_WORK%" goto :nowork
 call :write_decoders
 set "SEMO_MK=___SEMO"
+echo  [1/4] Kurulum kaynaklari hazirlaniyor...
 cscript //nologo "%SEMO_WORK%\semo_dec.vbs" "%~f0" "%SEMO_WORK%\setup_gui.cs" "%SEMO_MK%_SETUPSRC___" >nul 2>&1
-if not exist "%SEMO_WORK%\setup_gui.cs" (echo setup kaynaklari cikarilamadi>> "%SEMO_ERR%" & goto :fallback)
+if not exist "%SEMO_WORK%\setup_gui.cs" goto :nodesrc
 >> "%SEMO_ERR%" echo setup kaynaklari cikarildi
+echo  [2/4] Kurulum sihirbazi derleniyor (10-20 sn surebilir)...
 "%CSC%" /nologo /codepage:65001 /t:winexe /out:"%SEMO_WORK%\setup_gui.exe" /r:System.dll /r:System.Drawing.dll /r:System.Windows.Forms.dll "%SEMO_WORK%\setup_gui.cs" >"%SEMO_WORK%\setup_build.log" 2>&1
-if errorlevel 1 (
-  echo setup gui derlemesi basarisiz>> "%SEMO_ERR%"
-  type "%SEMO_WORK%\setup_build.log" >> "%SEMO_ERR%" 2>nul
-  goto :fallback
-)
->> "%SEMO_ERR%" echo setup gui derlendi, pencere aciliyor (5-20 sn)
+if errorlevel 1 goto :nobuild
+if not exist "%SEMO_WORK%\setup_gui.exe" goto :noexe
+>> "%SEMO_ERR%" echo setup gui derlendi, pencere aciliyor
+echo  [3/4] Sihirbaz aciliyor - bu pencere kendiliginden kapanacak...
+echo.
 start "" "%SEMO_WORK%\setup_gui.exe" "%~f0" "%SEMO_INST%" "%IS_ADMIN%" "%CSC%"
-exit /b 0
+ping -n 4 127.0.0.1 >nul 2>&1
+if exist "%SEMO_WORK%\setup_gui.exe" exit /b 0
+goto :noexe
 
-:fallback
->> "%SEMO_ERR%" echo sessiz kurulum (fallback) basliyor
+:nobuild
+>> "%SEMO_ERR%" echo setup gui derlemesi basarisiz; csc ciktisi:
+type "%SEMO_WORK%\setup_build.log" >> "%SEMO_ERR%" 2>nul
+color 1F
+echo  [!] Sihirbaz derlenemedi - kurulum dogrudan baslatilacak...
+ping -n 4 127.0.0.1 >nul 2>&1
+goto :silent
+
+:silent
 call :write_decoders
+echo  [3/4] Program dosyalari cikariliyor...
 cscript //nologo "%SEMO_WORK%\semo_dec.vbs" "%~f0" "%SEMO_WORK%\payload.cab" "%SEMO_MK%_PAYLOAD___" >nul 2>&1
-if not exist "%SEMO_WORK%\payload.cab" (echo payload decode edilemedi>> "%SEMO_ERR%" & goto :fatal)
+if not exist "%SEMO_WORK%\payload.cab" goto :errpay
 if exist "%SEMO_INST%\ffmpeg" move "%SEMO_INST%\ffmpeg" "%SEMO_WORK%\keep_ffmpeg" >nul 2>&1
 if exist "%SEMO_INST%" rd /s /q "%SEMO_INST%" >nul 2>&1
 mkdir "%SEMO_INST%" >nul 2>&1
-if not exist "%SEMO_INST%" (echo kurulum klasoru yaratilamadi: %SEMO_INST%>> "%SEMO_ERR%" & goto :fatal)
+if not exist "%SEMO_INST%" goto :errinst
 expand "%SEMO_WORK%\payload.cab" -F:* "%SEMO_INST%" >nul
-if errorlevel 1 (expand "%SEMO_WORK%\payload.cab" -F:* "%SEMO_INST%">> "%SEMO_ERR%" 2>nul & goto :fatal)
+if errorlevel 1 goto :errpay
+if exist "%SEMO_WORK%\keep_ffmpeg" move "%SEMO_WORK%\keep_ffmpeg" "%SEMO_INST%\ffmpeg" >nul 2>&1
 >> "%SEMO_ERR%" echo dosyalar cikarildi
 call :make_shortcuts
+echo  [4/4] Kontrol paneli derleniyor ve aciliyor...
 if "%CSC%"=="" goto :fb_start
 pushd "%SEMO_INST%"
 set "ICONOPT="
@@ -66,13 +78,54 @@ popd
 :fb_start
 if exist "%SEMO_INST%\IDM-SEMO.exe" start "" "%SEMO_INST%\IDM-SEMO.exe"
 if exist "%SEMO_INST%\IDM-SEMO.exe" exit /b 0
->> "%SEMO_ERR%" echo IDM-SEMO.exe bulunamadi, panel acilamadi
-goto :fatal
+goto :errpanel
 
-:fatal
->> "%SEMO_ERR%" echo kurulum tamamlanamadi
-> "%SEMO_WORK%\fatal.vbs" echo CreateObject("WScript.Shell").PopUp "IDM SEMO kurulumu baslatilamadi." ^& vbCrLf ^& vbCrLf ^& "Ayrintili kurulum gunlugu:" ^& vbCrLf ^& "%SEMO_ERR%", 0, "BELGESELSEMO IDM SEMO", 16
-wscript //nologo "%SEMO_WORK%\fatal.vbs" >nul 2>&1
+:nocsc
+color 4F
+echo  [X] Windows .NET Framework derleyicisi (csc.exe) bulunamadi.
+echo      "Windows ozellikleri"nden .NET Framework 3.5 / 4.8 etkin olmali.
+>> "%SEMO_ERR%" echo csc bulunamadi
+goto :errwait
+:nowork
+color 4F
+echo  [X] Gecici kurulum klasoru yaratilamadi: %SEMO_WORK%
+>> "%SEMO_ERR%" echo SEMO_WORK yaratilamadi
+goto :errwait
+:nodesrc
+color 4F
+echo  [X] Kurulum kaynaklari cikarilamadi.
+echo      Antivurus yazilimi bat dosyasini engellemis olabilir.
+>> "%SEMO_ERR%" echo setup kaynaklari decode edilemedi
+goto :errwait
+:noexe
+color 4F
+echo  [X] Kurulum sihirbazi acilamadi.
+echo      Sihirbazi dosyasi antivurus tarafindan silinmis olabilir.
+>> "%SEMO_ERR%" echo setup_gui.exe bulunamadi/engellendi
+goto :errwait
+:errpay
+color 4F
+echo  [X] Program dosyalari cikarilamadi.
+echo      Antivurus yazilimi bat dosyasini engellemis olabilir.
+>> "%SEMO_ERR%" echo payload decode/expand basarisiz
+goto :errwait
+:errinst
+color 4F
+echo  [X] Kurulum klasoru yaratilamadi: %SEMO_INST%
+>> "%SEMO_ERR%" echo kurulum klasoru yaratilamadi: %SEMO_INST%
+goto :errwait
+:errpanel
+color 4F
+echo  [X] Kontrol paneli olusturulamadi.
+goto :errwait
+:errwait
+echo.
+echo  Kurulum gunlugu: %SEMO_ERR%
+echo.
+echo  Sorun devam ederse bu gunlugun icerigini gonderin.
+echo  Simdi bu pencereyi kapatabilirsiniz.
+echo.
+pause
 exit /b 1
 
 :make_shortcuts
@@ -1325,62 +1378,65 @@ cyIpICsgIiAgICAgIDogIiArIE9zTmFtZSgpICsgIlxuIgogICAgICAgICAgICAgICAgICsgIiAg
 WypdICIgKyBUcigic2V0dXAudGFyZ2V0IikgKyAiICAgOiAiICsgSU5TVCArIChJU19BRE1JTiA/
 ICIiIDogIiAgKHVzZXIpXG4iKSArICgoSVNfQURNSU4pID8gIlxuIiA6ICIiKQogICAgICAgICAg
 ICAgICAgICsgIiAgWypdICIgKyBUcigic2V0dXAuY29tcGlsZXIiKSArICI6ICIgKyBDU0M7Cgog
-ICAgICAgIExvZygiWypdICIgKyBUcigic2V0dXAudGl0bGUiKSk7CgogICAgICAgIFRocmVhZCB0
-aCA9IG5ldyBUaHJlYWQobmV3IFRocmVhZFN0YXJ0KERvV29yaykpOwogICAgICAgIHRoLklzQmFj
-a2dyb3VuZCA9IHRydWU7CiAgICAgICAgdGguU3RhcnQoKTsKCiAgICAgICAgQXBwbGljYXRpb24u
-RW5hYmxlVmlzdWFsU3R5bGVzKCk7CiAgICAgICAgQXBwbGljYXRpb24uUnVuKEYpOwogICAgfQp9
-Cg==
+ICAgICAgIExvZygiWypdICIgKyBUcigic2V0dXAudGl0bGUiKSk7CgogICAgICAgIC8vIHYxMTog
+aXMgcGFyY2FzaSBwZW5jZXJlIEdPUlVOVFVMRU5ESUtURU4gc29ucmEgYmFzbGFzaW4gKGhhbmRs
+ZSBnYXJhbnRpc2kpCiAgICAgICAgRi5TaG93biArPSBuZXcgRXZlbnRIYW5kbGVyKGRlbGVnYXRl
+KG9iamVjdCBzMiwgRXZlbnRBcmdzIGUyKQogICAgICAgIHsKICAgICAgICAgICAgVGhyZWFkIHRo
+ID0gbmV3IFRocmVhZChuZXcgVGhyZWFkU3RhcnQoRG9Xb3JrKSk7CiAgICAgICAgICAgIHRoLklz
+QmFja2dyb3VuZCA9IHRydWU7CiAgICAgICAgICAgIHRoLlN0YXJ0KCk7CiAgICAgICAgfSk7Cgog
+ICAgICAgIEFwcGxpY2F0aW9uLkVuYWJsZVZpc3VhbFN0eWxlcygpOwogICAgICAgIEFwcGxpY2F0
+aW9uLlJ1bihGKTsKICAgIH0KfQo=
 
 ___SEMO_PAYLOAD___
-TVNDRgAAAABVcqsBAAAAACwAAAAAAAAAAwEBAGEAAAAAAAAA7AoAAP8DAQBTaAAAAAAAAAAAYV23
-pAAASURNX1NFTU9fRWQyay5jcwCwLwAAU2gAAAAAYV23pAAASURNX1NFTU9fRWQya1NyYy5jcwDl
-YgAAA5gAAAAAYV23pAAASURNX1NFTU9fRW5naW5lcy5jcwDmHAAA6PoAAAAAYV23pAAASURNX1NF
-TU9fSTE4bi5jcwBiagAAzhcBAAAAYV23pAAASURNX1NFTU9fTWFpbi5jcwBGsQAAMIIBAAAAYV23
-pAAASURNX1NFTU9fUGFnZXNBLmNzANSMAAB2MwIAAABhXbekAABJRE1fU0VNT19QYWdlc0IuY3MA
-rdgAAErAAgAAAGFdt6QAAElETV9TRU1PX1BhZ2VzQy5jcwBgTAAA95gDAAAAYV23pAAASURNX1NF
-TU9fUGFnZXNELmNzAP0tAABX5QMAAABhXbekAABJRE1fU0VNT19VaS5jcwC2BgAAVBMEAAAAYV23
-pAAAT0tVQkVOSS50eHQARSIAAAoaBAAAAGFdt6QAAGFwcF9iZWxnZXNlbHNlbW8ucG5nAMEbAABP
-PAQAAABhXbekAABhcHBfZXBnLnBuZwBeHAAAEFgEAAAAYV23pAAAYXBwX25iNzI0LnBuZwDsGwAA
-bnQEAAAAYV23pAAAYXBwX251dHVrLnBuZwA9KgAAWpAEAAAAYV23pAAAYXBwX3RyaXZpYS5wbmcA
-qMIAAJe6BAAAAGFdt6QAAGFyLnR4dAAAnEkAP30FAAAAYV23pAAAYXJpYTJjLmV4ZQDQpgAAPxlP
-AAAAYV23pAAAYXoudHh0AB4HAAAPwE8AAABhXbekAABiYWRnZV9jcm93bi5wbmcAUgkAAC3HTwAA
-AGFdt6QAAGJhZGdlX2NyeXB0by5wbmcAOQYAAH/QTwAAAGFdt6QAAGJhZGdlX2hlYXJ0LnBuZwBn
-BgAAuNZPAAAAYV23pAAAYmFkZ2VfeXQucG5nALEEAAAf3U8AAABhXbekAABidWxsZXRfZW1lcmFs
-ZC5wbmcAWAQAANDhTwAAAGFdt6QAAGJ1bGxldF9nb2xkLnBuZwAxoAAAKOZPAAAAYV23pAAAZGUu
-dHh0AIfgAABZhlAAAABhXbekAABlbC50eHQAR5kAAOBmUQAAAGFdt6QAAGVuLnR4dAAayQAAJwBS
-AAAAYV23pAAAZmEudHh0AIEDAABByVIAAABhXbekAABmbGFnX2FyLnBuZwCABAAAwsxSAAAAYV23
-pAAAZmxhZ19hei5wbmcARgIAAELRUgAAAGFdt6QAAGZsYWdfZGUucG5nALQEAACI01IAAABhXbek
-AABmbGFnX2VsLnBuZwAGCwAAPNhSAAAAYV23pAAAZmxhZ19lbi5wbmcACQQAAELjUgAAAGFdt6QA
-AGZsYWdfZmEucG5nAM4CAABL51IAAABhXbekAABmbGFnX2ZyLnBuZwAvBAAAGepSAAAAYV23pAAA
-ZmxhZ19oaS5wbmcA1QEAAEjuUgAAAGFdt6QAAGZsYWdfaWQucG5nAJ0CAAAd8FIAAABhXbekAABm
-bGFnX2l0LnBuZwDxAwAAuvJSAAAAYV23pAAAZmxhZ19qYS5wbmcA4AMAAKv2UgAAAGFdt6QAAGZs
-YWdfa2EucG5nAPcEAACL+lIAAABhXbekAABmbGFnX2t5LnBuZwDCAgAAgv9SAAAAYV23pAAAZmxh
-Z19ubC5wbmcA7AMAAEQCUwAAAGFdt6QAAGZsYWdfcHQucG5nAJgCAAAwBlMAAABhXbekAABmbGFn
-X3JvLnBuZwBdAgAAyAhTAAAAYV23pAAAZmxhZ19ydS5wbmcAnQUAACULUwAAAGFdt6QAAGZsYWdf
-dHIucG5nANQDAADCEFMAAABhXbekAABmbGFnX3ZpLnBuZwA2BAAAlhRTAAAAYV23pAAAZmxhZ196
-aC5wbmcA/KMAAMwYUwAAAGFdt6QAAGZyLnR4dACnCQEAyLxTAAAAYV23pAAAaGkudHh0AICYAABv
-xlQAAABhXbekAABpZC50eHQALq8FAO9eVQAAAGFdt6QAAGlkbV9pY29uLmljbwDiWQAAHQ5bAAAA
-YV23pAAAaWRtX2ljb25fMTI4LnBuZwBfFQAA/2dbAAAAYV23pAAAaWRtX2ljb25fNDgucG5nACCb
-AABefVsAAABhXbekAABpdC50eHQARrMAAH4YXAAAAGFdt6QAAGphLnR4dADHIAEAxMtcAAAAYV23
-pAAAa2EudHh0ALHcAACL7F0AAABhXbekAABreS50eHQArwIAADzJXgAAAGFdt6QAAG5hdl8wLnBu
-ZwD1AQAA68teAAAAYV23pAAAbmF2XzEucG5nACoDAADgzV4AAABhXbekAABuYXZfMi5wbmcA1wIA
-AArRXgAAAGFdt6QAAG5hdl8zLnBuZwDfAgAA4dNeAAAAYV23pAAAbmF2XzQucG5nANACAADA1l4A
-AABhXbekAABuYXZfNS5wbmcAQwIAAJDZXgAAAGFdt6QAAG5hdl82LnBuZwAGBAAA09teAAAAYV23
-pAAAbmF2XzcucG5nADsCAADZ314AAABhXbekAABuYXZfOC5wbmcABwMAABTiXgAAAGFdt6QAAG5h
-dl85LnBuZwChmgAAG+VeAAAAYV23pAAAbmwudHh0AKshAAC8f18AAABhXbekAABwcm9qX2JlbGdl
-c2Vsc2Vtb2ZsaXgucG5nAHgUAABnoV8AAABhXbekAABwcm9qX2Vjb25vbXkucG5nAHcYAADftV8A
-AABhXbekAABwcm9qX21hdHBheS5wbmcAaSAEAFbOXwAAAGFdt6QAAHByb2pfcmV0cm9fYmFubmVy
-LnBuZwDSMQAAv+5jAAAAYV23pAAAcHJval9yZXRyb19pY29uLnBuZwCYDwAAkSBkAAAAYV23pAAA
-cHJval95b3V0dWJlLnBuZwCOnQAAKTBkAAAAYV23pAAAcHQudHh0AIYFAAC3zWQAAABhXbekAABx
-cl9kb24ucG5nAEAGAAA902QAAABhXbekAABxcl9lcGcucG5nAH8FAAB92WQAAABhXbekAABxcl9m
-bGl4LnBuZwCKBQAA/N5kAAAAYV23pAAAcXJfZ3AucG5nAEQGAACG5GQAAABhXbekAABxcl9ncGFw
-cC5wbmcA0AMAAMrqZAAAAGFdt6QAAHFyX21hdHBheS5wbmcASQYAAJruZAAAAGFdt6QAAHFyX25i
-LnBuZwBSBgAA4/RkAAAAYV23pAAAcXJfbnV0dWsucG5nAH8FAAA1+2QAAABhXbekAABxcl9wb3Mu
-cG5nAHMFAAC0AGUAAABhXbekAABxcl9wcmVtLnBuZwBaBgAAJwZlAAAAYV23pAAAcXJfdHJpdmlh
-LnBuZwCrBAAAgQxlAAAAYV23pAAAcXJfd2ViLnBuZwCcBAAALBFlAAAAYV23pAAAcXJfeXQucG5n
-AO2gAADIFWUAAABhXbekAAByby50eHQA99oAALW2ZQAAAGFdt6QAAHJ1LnR4dAAwpgAArJFmAAAA
-YV23pAAAdHIudHh0ADSxAADcN2cAAABhXbekAAB2aS50eHQA29Z6ABDpZwAAAGFdt6QAAHlvdXR1
-YmUtZGwuZXhlAOgXHAHrv+IAAABhXbekAAB5dC1kbHAuZXhlAGGVAADT1/4BAABhXbekAAB6aC50
+TVNDRgAAAABVcqsBAAAAACwAAAAAAAAAAwEBAGEAAAAAAAAA7AoAAP8DAQBTaAAAAAAAAAAAYV0X
+pgAASURNX1NFTU9fRWQyay5jcwCwLwAAU2gAAAAAYV0XpgAASURNX1NFTU9fRWQya1NyYy5jcwDl
+YgAAA5gAAAAAYV0XpgAASURNX1NFTU9fRW5naW5lcy5jcwDmHAAA6PoAAAAAYV0XpgAASURNX1NF
+TU9fSTE4bi5jcwBiagAAzhcBAAAAYV0XpgAASURNX1NFTU9fTWFpbi5jcwBGsQAAMIIBAAAAYV0X
+pgAASURNX1NFTU9fUGFnZXNBLmNzANSMAAB2MwIAAABhXRemAABJRE1fU0VNT19QYWdlc0IuY3MA
+rdgAAErAAgAAAGFdF6YAAElETV9TRU1PX1BhZ2VzQy5jcwBgTAAA95gDAAAAYV0XpgAASURNX1NF
+TU9fUGFnZXNELmNzAP0tAABX5QMAAABhXRemAABJRE1fU0VNT19VaS5jcwC2BgAAVBMEAAAAYV0X
+pgAAT0tVQkVOSS50eHQARSIAAAoaBAAAAGFdF6YAAGFwcF9iZWxnZXNlbHNlbW8ucG5nAMEbAABP
+PAQAAABhXRemAABhcHBfZXBnLnBuZwBeHAAAEFgEAAAAYV0XpgAAYXBwX25iNzI0LnBuZwDsGwAA
+bnQEAAAAYV0XpgAAYXBwX251dHVrLnBuZwA9KgAAWpAEAAAAYV0XpgAAYXBwX3RyaXZpYS5wbmcA
+qMIAAJe6BAAAAGFdF6YAAGFyLnR4dAAAnEkAP30FAAAAYV0XpgAAYXJpYTJjLmV4ZQDQpgAAPxlP
+AAAAYV0XpgAAYXoudHh0AB4HAAAPwE8AAABhXRemAABiYWRnZV9jcm93bi5wbmcAUgkAAC3HTwAA
+AGFdF6YAAGJhZGdlX2NyeXB0by5wbmcAOQYAAH/QTwAAAGFdF6YAAGJhZGdlX2hlYXJ0LnBuZwBn
+BgAAuNZPAAAAYV0XpgAAYmFkZ2VfeXQucG5nALEEAAAf3U8AAABhXRemAABidWxsZXRfZW1lcmFs
+ZC5wbmcAWAQAANDhTwAAAGFdF6YAAGJ1bGxldF9nb2xkLnBuZwAxoAAAKOZPAAAAYV0XpgAAZGUu
+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
