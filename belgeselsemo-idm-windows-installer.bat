@@ -213,6 +213,7 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo using System.Text;
 >> "%SEMO_WORK%\setup_gui.cs" echo using System.Threading;
 >> "%SEMO_WORK%\setup_gui.cs" echo using System.Windows.Forms;
+>> "%SEMO_WORK%\setup_gui.cs" echo using System.Drawing.Drawing2D;
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo class SemSetup
 >> "%SEMO_WORK%\setup_gui.cs" echo {
@@ -976,38 +977,420 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         catch { }
 >> "%SEMO_WORK%\setup_gui.cs" echo         return h;
 >> "%SEMO_WORK%\setup_gui.cs" echo     }
+>> "%SEMO_WORK%\setup_gui.cs" echo     // ============================================================
+>> "%SEMO_WORK%\setup_gui.cs" echo     // v14 MODERN ARAYUZ — panel tasarim diliyle birebir
+>> "%SEMO_WORK%\setup_gui.cs" echo     // koyu tema + cyan aksan, ozel baslik cubugu, adim gostergesi,
+>> "%SEMO_WORK%\setup_gui.cs" echo     // yuvarlak gradient ilerleme cubugu, gizlenebilir gunluk,
+>> "%SEMO_WORK%\setup_gui.cs" echo     // otomatik kayan proje karti karuseli (kaydirma cubugu yok)
+>> "%SEMO_WORK%\setup_gui.cs" echo     // ============================================================
 >> "%SEMO_WORK%\setup_gui.cs" echo.
->> "%SEMO_WORK%\setup_gui.cs" echo     // ---------------- UI ----------------
->> "%SEMO_WORK%\setup_gui.cs" echo     static Form F;
->> "%SEMO_WORK%\setup_gui.cs" echo     static RichTextBox LOG;
->> "%SEMO_WORK%\setup_gui.cs" echo     static Label STAGE, PCT, LBL_OS, LBL_TARGET, LBL_CSC, HEADSUB, HEADTIP, PROJHEAD;
->> "%SEMO_WORK%\setup_gui.cs" echo     static Panel BARBG;
->> "%SEMO_WORK%\setup_gui.cs" echo     static Panel BAR;
->> "%SEMO_WORK%\setup_gui.cs" echo     static FlowLayoutPanel CARDS;
->> "%SEMO_WORK%\setup_gui.cs" echo     static SStrip BARC;
->> "%SEMO_WORK%\setup_gui.cs" echo     static volatile bool _failed;
+>> "%SEMO_WORK%\setup_gui.cs" echo     // ---- ekstra i18n: adim etiketleri + butonlar (20 dil, tek blok) ----
+>> "%SEMO_WORK%\setup_gui.cs" echo     static string STEPS_SRC =
+>> "%SEMO_WORK%\setup_gui.cs" echo         "tr=Hazırlık^|Çıkarma^|Derleme^|Tamam\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "en=Prepare^|Extract^|Compile^|Done\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ar=تحضير^|استخراج^|ترجمة^|تم\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "az=Hazırlıq^|Çıxarma^|Derləmə^|Hazır\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "de=Vorbereiten^|Entpacken^|Kompilieren^|Fertig\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "el=Προετοιμασία^|Εξαγωγή^|Μεταγλώττιση^|Έτοιμο\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "fa=آماده‌سازی^|استخراج^|کامپایل^|پایان\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "fr=Préparation^|Extraction^|Compilation^|Terminé\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "hi=तैयारी^|निकालना^|कंपाइल^|पूर्ण\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "id=Siapkan^|Ekstrak^|Kompilasi^|Selesai\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "it=Preparazione^|Estrazione^|Compilazione^|Fatto\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ja=準備^|展開^|コンパイル^|完了\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ka=მომზადება^|ამოღება^|კომპილაცია^|მზადაა\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ky=Даярдоо^|Чыгаруу^|Компиляция^|Бүттү\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "nl=Voorbereiden^|Uitpakken^|Compileren^|Klaar\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "pt=Preparar^|Extrair^|Compilar^|Concluído\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ro=Pregătire^|Extragere^|Compilare^|Gata\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ru=Подготовка^|Распаковка^|Компиляция^|Готово\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "vi=Chuẩn bị^|Giải nén^|Biên dịch^|Xong\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "zh=准备^|解压^|编译^|完成\n";
 >> "%SEMO_WORK%\setup_gui.cs" echo.
->> "%SEMO_WORK%\setup_gui.cs" echo     class SStrip : Control
+>> "%SEMO_WORK%\setup_gui.cs" echo     static string MISC_SRC =
+>> "%SEMO_WORK%\setup_gui.cs" echo         "tr=İptal^|Kapat^|Kurulum günlüğü^|Gizle\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "en=Cancel^|Close^|Setup log^|Hide\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ar=إلغاء^|إغلاق^|سجل التثبيت^|إخفاء\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "az=Ləğv et^|Bağla^|Quraşdırma jurnalı^|Gizlət\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "de=Abbrechen^|Schließen^|Setup-Protokoll^|Ausblenden\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "el=Ακύρωση^|Κλείσιμο^|Ημερολόγιο εγκατάστασης^|Απόκρυψη\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "fa=لغو^|بستن^|گزارش نصب^|پنهان\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "fr=Annuler^|Fermer^|Journal d'installation^|Masquer\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "hi=रद्द करें^|बंद करें^|सेटअप लॉग^|छिपाएँ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "id=Batal^|Tutup^|Log setup^|Sembunyikan\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "it=Annulla^|Chiudi^|Log di installazione^|Nascondi\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ja=キャンセル^|閉じる^|セットアップログ^|隠す\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ka=გაუქმება^|დახურვა^|დაყენების ჟურნალი^|დამალვა\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ky=Жокко чыгаруу^|Жабуу^|Орнотуу журналы^|Жашыруу\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "nl=Annuleren^|Sluiten^|Setup-logboek^|Verbergen\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "pt=Cancelar^|Fechar^|Log de instalação^|Ocultar\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ro=Anulare^|Închidere^|Jurnal de instalare^|Ascunde\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ru=Отмена^|Закрыть^|Журнал установки^|Скрыть\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "vi=Hủy^|Đóng^|Nhật ký cài đặt^|Ẩn\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "zh=取消^|关闭^|安装日志^|隐藏\n";
+>> "%SEMO_WORK%\setup_gui.cs" echo.
+>> "%SEMO_WORK%\setup_gui.cs" echo     static string[] LangRow(string src)
+>> "%SEMO_WORK%\setup_gui.cs" echo     {
+>> "%SEMO_WORK%\setup_gui.cs" echo         try
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             string[] rows = src.Split('\n');
+>> "%SEMO_WORK%\setup_gui.cs" echo             for (int i = 0; i ^< rows.Length; i++)
+>> "%SEMO_WORK%\setup_gui.cs" echo             {
+>> "%SEMO_WORK%\setup_gui.cs" echo                 int eq = rows[i].IndexOf('=');
+>> "%SEMO_WORK%\setup_gui.cs" echo                 if (eq ^< 1) continue;
+>> "%SEMO_WORK%\setup_gui.cs" echo                 if (rows[i].Substring(0, eq) == _lang)
+>> "%SEMO_WORK%\setup_gui.cs" echo                     return rows[i].Substring(eq + 1).Split('^|');
+>> "%SEMO_WORK%\setup_gui.cs" echo             }
+>> "%SEMO_WORK%\setup_gui.cs" echo         }
+>> "%SEMO_WORK%\setup_gui.cs" echo         catch { }
+>> "%SEMO_WORK%\setup_gui.cs" echo         return null;
+>> "%SEMO_WORK%\setup_gui.cs" echo     }
+>> "%SEMO_WORK%\setup_gui.cs" echo.
+>> "%SEMO_WORK%\setup_gui.cs" echo     // ---------------- modern kontroller ----------------
+>> "%SEMO_WORK%\setup_gui.cs" echo     class ModernBar : Control
 >> "%SEMO_WORK%\setup_gui.cs" echo     {
 >> "%SEMO_WORK%\setup_gui.cs" echo         int _val;
->> "%SEMO_WORK%\setup_gui.cs" echo         public SStrip()
+>> "%SEMO_WORK%\setup_gui.cs" echo         public ModernBar()
 >> "%SEMO_WORK%\setup_gui.cs" echo         {
 >> "%SEMO_WORK%\setup_gui.cs" echo             this.SetStyle(ControlStyles.AllPaintingInWmPaint ^| ControlStyles.OptimizedDoubleBuffer ^|
 >> "%SEMO_WORK%\setup_gui.cs" echo                           ControlStyles.UserPaint ^| ControlStyles.ResizeRedraw, true);
 >> "%SEMO_WORK%\setup_gui.cs" echo             this.BackColor = H("#0a1120");
 >> "%SEMO_WORK%\setup_gui.cs" echo         }
->> "%SEMO_WORK%\setup_gui.cs" echo         public void Set(int v) { _val = v; this.Invalidate(); }
+>> "%SEMO_WORK%\setup_gui.cs" echo         public void Set(int v) { _val = Math.Max(0, Math.Min(100, v)); this.Invalidate(); }
+>> "%SEMO_WORK%\setup_gui.cs" echo         protected override void OnPaint(PaintEventArgs e)
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+>> "%SEMO_WORK%\setup_gui.cs" echo             Rectangle r = new Rectangle(0, 0, this.Width - 1, this.Height - 1);
+>> "%SEMO_WORK%\setup_gui.cs" echo             using (System.Drawing.Drawing2D.GraphicsPath gp = Round(r, r.Height / 2))
+>> "%SEMO_WORK%\setup_gui.cs" echo                 using (SolidBrush b = new SolidBrush(H("#0a1120"))) e.Graphics.FillPath(b, gp);
+>> "%SEMO_WORK%\setup_gui.cs" echo             if (_val ^> 0)
+>> "%SEMO_WORK%\setup_gui.cs" echo             {
+>> "%SEMO_WORK%\setup_gui.cs" echo                 int bw = Math.Max(r.Height, (this.Width - 2) * _val / 100);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 Rectangle rb = new Rectangle(1, 1, bw, this.Height - 2);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 if (_failed)
+>> "%SEMO_WORK%\setup_gui.cs" echo                 {
+>> "%SEMO_WORK%\setup_gui.cs" echo                     using (SolidBrush b = new SolidBrush(RED))
+>> "%SEMO_WORK%\setup_gui.cs" echo                         using (System.Drawing.Drawing2D.GraphicsPath gp = Round(rb, rb.Height / 2)) e.Graphics.FillPath(b, gp);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 }
+>> "%SEMO_WORK%\setup_gui.cs" echo                 else
+>> "%SEMO_WORK%\setup_gui.cs" echo                 {
+>> "%SEMO_WORK%\setup_gui.cs" echo                     using (System.Drawing.Drawing2D.LinearGradientBrush b = new System.Drawing.Drawing2D.LinearGradientBrush(
+>> "%SEMO_WORK%\setup_gui.cs" echo                         new Rectangle(0, 0, this.Width, this.Height), CYAN, GREEN, System.Drawing.Drawing2D.LinearGradientMode.Horizontal))
+>> "%SEMO_WORK%\setup_gui.cs" echo                         using (System.Drawing.Drawing2D.GraphicsPath gp = Round(rb, rb.Height / 2)) e.Graphics.FillPath(b, gp);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 }
+>> "%SEMO_WORK%\setup_gui.cs" echo             }
+>> "%SEMO_WORK%\setup_gui.cs" echo             using (Pen p = new Pen(H("#1e2d47")))
+>> "%SEMO_WORK%\setup_gui.cs" echo                 using (System.Drawing.Drawing2D.GraphicsPath gp = Round(r, r.Height / 2)) e.Graphics.DrawPath(p, gp);
+>> "%SEMO_WORK%\setup_gui.cs" echo         }
+>> "%SEMO_WORK%\setup_gui.cs" echo         static System.Drawing.Drawing2D.GraphicsPath Round(Rectangle r, int rad)
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             System.Drawing.Drawing2D.GraphicsPath gp = new System.Drawing.Drawing2D.GraphicsPath();
+>> "%SEMO_WORK%\setup_gui.cs" echo             if (rad ^< 1) { gp.AddRectangle(r); return gp; }
+>> "%SEMO_WORK%\setup_gui.cs" echo             gp.AddArc(r.X, r.Y, rad * 2, rad * 2, 180, 90);
+>> "%SEMO_WORK%\setup_gui.cs" echo             gp.AddArc(r.Right - rad * 2, r.Y, rad * 2, rad * 2, 270, 90);
+>> "%SEMO_WORK%\setup_gui.cs" echo             gp.AddArc(r.Right - rad * 2, r.Bottom - rad * 2, rad * 2, rad * 2, 0, 90);
+>> "%SEMO_WORK%\setup_gui.cs" echo             gp.AddArc(r.X, r.Bottom - rad * 2, rad * 2, rad * 2, 90, 90);
+>> "%SEMO_WORK%\setup_gui.cs" echo             gp.CloseFigure();
+>> "%SEMO_WORK%\setup_gui.cs" echo             return gp;
+>> "%SEMO_WORK%\setup_gui.cs" echo         }
+>> "%SEMO_WORK%\setup_gui.cs" echo     }
+>> "%SEMO_WORK%\setup_gui.cs" echo.
+>> "%SEMO_WORK%\setup_gui.cs" echo     class Stepper : Control
+>> "%SEMO_WORK%\setup_gui.cs" echo     {
+>> "%SEMO_WORK%\setup_gui.cs" echo         public string[] Labels;
+>> "%SEMO_WORK%\setup_gui.cs" echo         int _cur, _done;
+>> "%SEMO_WORK%\setup_gui.cs" echo         bool _err;
+>> "%SEMO_WORK%\setup_gui.cs" echo         public Stepper()
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             this.SetStyle(ControlStyles.AllPaintingInWmPaint ^| ControlStyles.OptimizedDoubleBuffer ^|
+>> "%SEMO_WORK%\setup_gui.cs" echo                           ControlStyles.UserPaint ^| ControlStyles.ResizeRedraw, true);
+>> "%SEMO_WORK%\setup_gui.cs" echo             this.BackColor = BG_ROOT;
+>> "%SEMO_WORK%\setup_gui.cs" echo         }
+>> "%SEMO_WORK%\setup_gui.cs" echo         public void Set(int cur, int done) { _cur = cur; _done = done; _err = false; this.Invalidate(); }
+>> "%SEMO_WORK%\setup_gui.cs" echo         public void SetErr() { _err = true; this.Invalidate(); }
+>> "%SEMO_WORK%\setup_gui.cs" echo         protected override void OnPaint(PaintEventArgs e)
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+>> "%SEMO_WORK%\setup_gui.cs" echo             e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+>> "%SEMO_WORK%\setup_gui.cs" echo             int n = 4;
+>> "%SEMO_WORK%\setup_gui.cs" echo             int stepW = this.Width / n;
+>> "%SEMO_WORK%\setup_gui.cs" echo             int d = 30, cy = 12;
+>> "%SEMO_WORK%\setup_gui.cs" echo             for (int i = 0; i ^< n; i++)
+>> "%SEMO_WORK%\setup_gui.cs" echo             {
+>> "%SEMO_WORK%\setup_gui.cs" echo                 int cx = i * stepW + 40;
+>> "%SEMO_WORK%\setup_gui.cs" echo                 if (i ^< n - 1)
+>> "%SEMO_WORK%\setup_gui.cs" echo                 {
+>> "%SEMO_WORK%\setup_gui.cs" echo                     bool linkDone = (i ^< _done);
+>> "%SEMO_WORK%\setup_gui.cs" echo                     using (Pen p = new Pen(linkDone ? GREEN : H("#1e2d47"), 2))
+>> "%SEMO_WORK%\setup_gui.cs" echo                         e.Graphics.DrawLine(p, cx + d / 2 + 6, cy + d / 2, (i + 1) * stepW + 40 - d / 2 - 6, cy + d / 2);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 }
+>> "%SEMO_WORK%\setup_gui.cs" echo                 bool done = (i ^< _done), cur = (i == _cur);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 Color fill = done ? GREEN : (cur ? (_err ? RED : CYAN) : H("#192540"));
+>> "%SEMO_WORK%\setup_gui.cs" echo                 using (SolidBrush b = new SolidBrush(fill))
+>> "%SEMO_WORK%\setup_gui.cs" echo                     e.Graphics.FillEllipse(b, cx - d / 2, cy, d, d);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 if (!done ^&^& !cur)
+>> "%SEMO_WORK%\setup_gui.cs" echo                     using (Pen p = new Pen(H("#23324d"), 1)) e.Graphics.DrawEllipse(p, cx - d / 2, cy, d, d);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 string tx = done ? "✓" : (i + 1).ToString();
+>> "%SEMO_WORK%\setup_gui.cs" echo                 using (Font f = new Font("Segoe UI", done ? 11f : 10f, done ? FontStyle.Bold : FontStyle.Regular))
+>> "%SEMO_WORK%\setup_gui.cs" echo                     using (SolidBrush b = new SolidBrush((done ^|^| cur) ? Color.White : MUT))
+>> "%SEMO_WORK%\setup_gui.cs" echo                     {
+>> "%SEMO_WORK%\setup_gui.cs" echo                         SizeF sz = e.Graphics.MeasureString(tx, f);
+>> "%SEMO_WORK%\setup_gui.cs" echo                         e.Graphics.DrawString(tx, f, b, cx - sz.Width / 2, cy + d / 2 - sz.Height / 2);
+>> "%SEMO_WORK%\setup_gui.cs" echo                     }
+>> "%SEMO_WORK%\setup_gui.cs" echo                 string lb = (Labels != null ^&^& i ^< Labels.Length) ? Labels[i] : "";
+>> "%SEMO_WORK%\setup_gui.cs" echo                 using (Font f = new Font("Segoe UI", 8.25f, cur ? FontStyle.Bold : FontStyle.Regular))
+>> "%SEMO_WORK%\setup_gui.cs" echo                     using (SolidBrush b = new SolidBrush(cur ? FG : (done ? H("#cbd5e1") : DIM)))
+>> "%SEMO_WORK%\setup_gui.cs" echo                     {
+>> "%SEMO_WORK%\setup_gui.cs" echo                         SizeF sz = e.Graphics.MeasureString(lb, f);
+>> "%SEMO_WORK%\setup_gui.cs" echo                         e.Graphics.DrawString(lb, f, b, cx - sz.Width / 2, cy + d + 8);
+>> "%SEMO_WORK%\setup_gui.cs" echo                     }
+>> "%SEMO_WORK%\setup_gui.cs" echo             }
+>> "%SEMO_WORK%\setup_gui.cs" echo         }
+>> "%SEMO_WORK%\setup_gui.cs" echo     }
+>> "%SEMO_WORK%\setup_gui.cs" echo.
+>> "%SEMO_WORK%\setup_gui.cs" echo     class FlatBtn : Control
+>> "%SEMO_WORK%\setup_gui.cs" echo     {
+>> "%SEMO_WORK%\setup_gui.cs" echo         public bool Primary;
+>> "%SEMO_WORK%\setup_gui.cs" echo         bool _hover;
+>> "%SEMO_WORK%\setup_gui.cs" echo         public FlatBtn()
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             this.SetStyle(ControlStyles.AllPaintingInWmPaint ^| ControlStyles.OptimizedDoubleBuffer ^|
+>> "%SEMO_WORK%\setup_gui.cs" echo                           ControlStyles.UserPaint ^| ControlStyles.ResizeRedraw, true);
+>> "%SEMO_WORK%\setup_gui.cs" echo             this.Cursor = Cursors.Hand;
+>> "%SEMO_WORK%\setup_gui.cs" echo         }
+>> "%SEMO_WORK%\setup_gui.cs" echo         protected override void OnMouseEnter(EventArgs e) { _hover = true; this.Invalidate(); base.OnMouseEnter(e); }
+>> "%SEMO_WORK%\setup_gui.cs" echo         protected override void OnMouseLeave(EventArgs e) { _hover = false; this.Invalidate(); base.OnMouseLeave(e); }
+>> "%SEMO_WORK%\setup_gui.cs" echo         protected override void OnPaint(PaintEventArgs e)
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+>> "%SEMO_WORK%\setup_gui.cs" echo             e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+>> "%SEMO_WORK%\setup_gui.cs" echo             Rectangle r = new Rectangle(0, 0, this.Width - 1, this.Height - 1);
+>> "%SEMO_WORK%\setup_gui.cs" echo             System.Drawing.Drawing2D.GraphicsPath gp = new System.Drawing.Drawing2D.GraphicsPath();
+>> "%SEMO_WORK%\setup_gui.cs" echo             int rad = 8;
+>> "%SEMO_WORK%\setup_gui.cs" echo             gp.AddArc(r.X, r.Y, rad * 2, rad * 2, 180, 90);
+>> "%SEMO_WORK%\setup_gui.cs" echo             gp.AddArc(r.Right - rad * 2, r.Y, rad * 2, rad * 2, 270, 90);
+>> "%SEMO_WORK%\setup_gui.cs" echo             gp.AddArc(r.Right - rad * 2, r.Bottom - rad * 2, rad * 2, rad * 2, 0, 90);
+>> "%SEMO_WORK%\setup_gui.cs" echo             gp.AddArc(r.X, r.Bottom - rad * 2, rad * 2, rad * 2, 90, 90);
+>> "%SEMO_WORK%\setup_gui.cs" echo             gp.CloseFigure();
+>> "%SEMO_WORK%\setup_gui.cs" echo             if (Primary)
+>> "%SEMO_WORK%\setup_gui.cs" echo             {
+>> "%SEMO_WORK%\setup_gui.cs" echo                 using (SolidBrush b = new SolidBrush(_hover ? H("#38bdf8") : CYAN)) e.Graphics.FillPath(b, gp);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 using (SolidBrush b = new SolidBrush(Color.White))
+>> "%SEMO_WORK%\setup_gui.cs" echo                     using (Font f = new Font("Segoe UI", 9.75f, FontStyle.Bold))
+>> "%SEMO_WORK%\setup_gui.cs" echo                     {
+>> "%SEMO_WORK%\setup_gui.cs" echo                         SizeF sz = e.Graphics.MeasureString(this.Text, f);
+>> "%SEMO_WORK%\setup_gui.cs" echo                         e.Graphics.DrawString(this.Text, f, b, this.Width / 2 - sz.Width / 2, this.Height / 2 - sz.Height / 2);
+>> "%SEMO_WORK%\setup_gui.cs" echo                     }
+>> "%SEMO_WORK%\setup_gui.cs" echo             }
+>> "%SEMO_WORK%\setup_gui.cs" echo             else
+>> "%SEMO_WORK%\setup_gui.cs" echo             {
+>> "%SEMO_WORK%\setup_gui.cs" echo                 using (SolidBrush b = new SolidBrush(_hover ? H("#1b2a47") : H("#131c31"))) e.Graphics.FillPath(b, gp);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 using (Pen p = new Pen(_hover ? H("#38bdf8") : H("#23324d"), 1)) e.Graphics.DrawPath(p, gp);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 using (SolidBrush b = new SolidBrush(FG))
+>> "%SEMO_WORK%\setup_gui.cs" echo                     using (Font f = new Font("Segoe UI", 9.25f))
+>> "%SEMO_WORK%\setup_gui.cs" echo                     {
+>> "%SEMO_WORK%\setup_gui.cs" echo                         SizeF sz = e.Graphics.MeasureString(this.Text, f);
+>> "%SEMO_WORK%\setup_gui.cs" echo                         e.Graphics.DrawString(this.Text, f, b, this.Width / 2 - sz.Width / 2, this.Height / 2 - sz.Height / 2);
+>> "%SEMO_WORK%\setup_gui.cs" echo                     }
+>> "%SEMO_WORK%\setup_gui.cs" echo             }
+>> "%SEMO_WORK%\setup_gui.cs" echo             gp.Dispose();
+>> "%SEMO_WORK%\setup_gui.cs" echo         }
+>> "%SEMO_WORK%\setup_gui.cs" echo     }
+>> "%SEMO_WORK%\setup_gui.cs" echo.
+>> "%SEMO_WORK%\setup_gui.cs" echo     class TitleBar : Control
+>> "%SEMO_WORK%\setup_gui.cs" echo     {
+>> "%SEMO_WORK%\setup_gui.cs" echo         bool _xhover;
+>> "%SEMO_WORK%\setup_gui.cs" echo         Form _f;
+>> "%SEMO_WORK%\setup_gui.cs" echo         Point _drag;
+>> "%SEMO_WORK%\setup_gui.cs" echo         bool _dragging;
+>> "%SEMO_WORK%\setup_gui.cs" echo         public TitleBar(Form f)
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             _f = f;
+>> "%SEMO_WORK%\setup_gui.cs" echo             this.SetStyle(ControlStyles.AllPaintingInWmPaint ^| ControlStyles.OptimizedDoubleBuffer ^|
+>> "%SEMO_WORK%\setup_gui.cs" echo                           ControlStyles.UserPaint ^| ControlStyles.ResizeRedraw, true);
+>> "%SEMO_WORK%\setup_gui.cs" echo             this.Dock = DockStyle.Top;
+>> "%SEMO_WORK%\setup_gui.cs" echo             this.Height = 46;
+>> "%SEMO_WORK%\setup_gui.cs" echo             this.Cursor = Cursors.Default;
+>> "%SEMO_WORK%\setup_gui.cs" echo         }
+>> "%SEMO_WORK%\setup_gui.cs" echo         protected override void OnMouseEnter(EventArgs e) { base.OnMouseEnter(e); }
+>> "%SEMO_WORK%\setup_gui.cs" echo         protected override void OnMouseDown(MouseEventArgs e)
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             _dragging = true;
+>> "%SEMO_WORK%\setup_gui.cs" echo             _drag = new Point(e.X, e.Y);
+>> "%SEMO_WORK%\setup_gui.cs" echo             base.OnMouseDown(e);
+>> "%SEMO_WORK%\setup_gui.cs" echo         }
+>> "%SEMO_WORK%\setup_gui.cs" echo         protected override void OnMouseMove(MouseEventArgs e)
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             if (_dragging)
+>> "%SEMO_WORK%\setup_gui.cs" echo             {
+>> "%SEMO_WORK%\setup_gui.cs" echo                 Point scr = this.PointToScreen(new Point(e.X, e.Y));
+>> "%SEMO_WORK%\setup_gui.cs" echo                 _f.Location = new Point(scr.X - _drag.X, scr.Y - _drag.Y);
+>> "%SEMO_WORK%\setup_gui.cs" echo             }
+>> "%SEMO_WORK%\setup_gui.cs" echo             int cx = this.Width - 46;
+>> "%SEMO_WORK%\setup_gui.cs" echo             bool h = (e.X ^>= cx ^&^& e.Y ^>= 0);
+>> "%SEMO_WORK%\setup_gui.cs" echo             if (h != _xhover) { _xhover = h; this.Invalidate(); }
+>> "%SEMO_WORK%\setup_gui.cs" echo             base.OnMouseMove(e);
+>> "%SEMO_WORK%\setup_gui.cs" echo         }
+>> "%SEMO_WORK%\setup_gui.cs" echo         protected override void OnMouseUp(MouseEventArgs e)
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             _dragging = false;
+>> "%SEMO_WORK%\setup_gui.cs" echo             if (e.X ^>= this.Width - 46) _f.Close();
+>> "%SEMO_WORK%\setup_gui.cs" echo             base.OnMouseUp(e);
+>> "%SEMO_WORK%\setup_gui.cs" echo         }
+>> "%SEMO_WORK%\setup_gui.cs" echo         protected override void OnPaint(PaintEventArgs e)
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+>> "%SEMO_WORK%\setup_gui.cs" echo             using (SolidBrush b = new SolidBrush(H("#0d1526"))) e.Graphics.FillRectangle(b, this.ClientRectangle);
+>> "%SEMO_WORK%\setup_gui.cs" echo             using (Pen p = new Pen(H("#1e2d47"))) e.Graphics.DrawLine(p, 0, this.Height - 1, this.Width, this.Height - 1);
+>> "%SEMO_WORK%\setup_gui.cs" echo             try
+>> "%SEMO_WORK%\setup_gui.cs" echo             {
+>> "%SEMO_WORK%\setup_gui.cs" echo                 Image ic = ImgFromB64("idm_icon_48.png");
+>> "%SEMO_WORK%\setup_gui.cs" echo                 if (ic != null) e.Graphics.DrawImage(ic, new Rectangle(14, 12, 22, 22));
+>> "%SEMO_WORK%\setup_gui.cs" echo             }
+>> "%SEMO_WORK%\setup_gui.cs" echo             catch { }
+>> "%SEMO_WORK%\setup_gui.cs" echo             using (SolidBrush b = new SolidBrush(FG))
+>> "%SEMO_WORK%\setup_gui.cs" echo                 using (Font f = new Font("Segoe UI", 9.5f, FontStyle.Bold))
+>> "%SEMO_WORK%\setup_gui.cs" echo                     e.Graphics.DrawString("IDM SEMO", f, b, 46, 13);
+>> "%SEMO_WORK%\setup_gui.cs" echo             using (SolidBrush b = new SolidBrush(DIM))
+>> "%SEMO_WORK%\setup_gui.cs" echo                 using (Font f = new Font("Segoe UI", 8f))
+>> "%SEMO_WORK%\setup_gui.cs" echo                 {
+>> "%SEMO_WORK%\setup_gui.cs" echo                     string t = "BELGESELSEMO · " + Tr("setup.target");
+>> "%SEMO_WORK%\setup_gui.cs" echo                     SizeF sz = e.Graphics.MeasureString(t, f);
+>> "%SEMO_WORK%\setup_gui.cs" echo                     e.Graphics.DrawString(t, f, b, 46 + 88, 16);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 }
+>> "%SEMO_WORK%\setup_gui.cs" echo             Rectangle xr = new Rectangle(this.Width - 46, 0, 46, this.Height);
+>> "%SEMO_WORK%\setup_gui.cs" echo             if (_xhover)
+>> "%SEMO_WORK%\setup_gui.cs" echo             {
+>> "%SEMO_WORK%\setup_gui.cs" echo                 using (SolidBrush b = new SolidBrush(H("#ef4444"))) e.Graphics.FillRectangle(b, xr);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 using (SolidBrush b = new SolidBrush(Color.White))
+>> "%SEMO_WORK%\setup_gui.cs" echo                     using (Font f = new Font("Segoe UI", 11f, FontStyle.Bold))
+>> "%SEMO_WORK%\setup_gui.cs" echo                     {
+>> "%SEMO_WORK%\setup_gui.cs" echo                         SizeF sz = e.Graphics.MeasureString("✕", f);
+>> "%SEMO_WORK%\setup_gui.cs" echo                         e.Graphics.DrawString("✕", f, b, xr.X + xr.Width / 2 - sz.Width / 2, xr.Y + xr.Height / 2 - sz.Height / 2);
+>> "%SEMO_WORK%\setup_gui.cs" echo                     }
+>> "%SEMO_WORK%\setup_gui.cs" echo             }
+>> "%SEMO_WORK%\setup_gui.cs" echo             else
+>> "%SEMO_WORK%\setup_gui.cs" echo             {
+>> "%SEMO_WORK%\setup_gui.cs" echo                 using (SolidBrush b = new SolidBrush(MUT))
+>> "%SEMO_WORK%\setup_gui.cs" echo                     using (Font f = new Font("Segoe UI", 11f))
+>> "%SEMO_WORK%\setup_gui.cs" echo                     {
+>> "%SEMO_WORK%\setup_gui.cs" echo                         SizeF sz = e.Graphics.MeasureString("✕", f);
+>> "%SEMO_WORK%\setup_gui.cs" echo                         e.Graphics.DrawString("✕", f, b, xr.X + xr.Width / 2 - sz.Width / 2, xr.Y + xr.Height / 2 - sz.Height / 2);
+>> "%SEMO_WORK%\setup_gui.cs" echo                     }
+>> "%SEMO_WORK%\setup_gui.cs" echo             }
+>> "%SEMO_WORK%\setup_gui.cs" echo         }
+>> "%SEMO_WORK%\setup_gui.cs" echo     }
+>> "%SEMO_WORK%\setup_gui.cs" echo.
+>> "%SEMO_WORK%\setup_gui.cs" echo     class Carousel : Panel
+>> "%SEMO_WORK%\setup_gui.cs" echo     {
+>> "%SEMO_WORK%\setup_gui.cs" echo         Panel _content;
+>> "%SEMO_WORK%\setup_gui.cs" echo         System.Windows.Forms.Timer _anim, _auto;
+>> "%SEMO_WORK%\setup_gui.cs" echo         int _idx, _target, _cardW, _cardH, _count;
+>> "%SEMO_WORK%\setup_gui.cs" echo         bool _hover;
+>> "%SEMO_WORK%\setup_gui.cs" echo         public Carousel()
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             this.SetStyle(ControlStyles.AllPaintingInWmPaint ^| ControlStyles.OptimizedDoubleBuffer ^|
+>> "%SEMO_WORK%\setup_gui.cs" echo                           ControlStyles.UserPaint ^| ControlStyles.ResizeRedraw, true);
+>> "%SEMO_WORK%\setup_gui.cs" echo             _content = new Panel();
+>> "%SEMO_WORK%\setup_gui.cs" echo             _content.Location = new Point(0, 0);
+>> "%SEMO_WORK%\setup_gui.cs" echo             this.Controls.Add(_content);
+>> "%SEMO_WORK%\setup_gui.cs" echo             _anim = new System.Windows.Forms.Timer();
+>> "%SEMO_WORK%\setup_gui.cs" echo             _anim.Interval = 16;
+>> "%SEMO_WORK%\setup_gui.cs" echo             _anim.Tick += new EventHandler(AnimTick);
+>> "%SEMO_WORK%\setup_gui.cs" echo             _auto = new System.Windows.Forms.Timer();
+>> "%SEMO_WORK%\setup_gui.cs" echo             _auto.Interval = 5200;
+>> "%SEMO_WORK%\setup_gui.cs" echo             _auto.Tick += new EventHandler(delegate(object s2, EventArgs e2) { if (!_hover) Next(); });
+>> "%SEMO_WORK%\setup_gui.cs" echo         }
+>> "%SEMO_WORK%\setup_gui.cs" echo         public void Begin(int cardW, int cardH)
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             _cardW = cardW; _cardH = cardH; _count = 0;
+>> "%SEMO_WORK%\setup_gui.cs" echo             _content.Size = new Size(cardW, 10);
+>> "%SEMO_WORK%\setup_gui.cs" echo         }
+>> "%SEMO_WORK%\setup_gui.cs" echo         public void AddCard(Panel c)
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             c.Bounds = new Rectangle((this.Width - _cardW) / 2, _count * _cardH, _cardW, _cardH);
+>> "%SEMO_WORK%\setup_gui.cs" echo             _content.Controls.Add(c);
+>> "%SEMO_WORK%\setup_gui.cs" echo             _count++;
+>> "%SEMO_WORK%\setup_gui.cs" echo             _content.Size = new Size(_cardW, _count * _cardH);
+>> "%SEMO_WORK%\setup_gui.cs" echo         }
+>> "%SEMO_WORK%\setup_gui.cs" echo         public void Start()
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             _auto.Start();
+>> "%SEMO_WORK%\setup_gui.cs" echo             this.MouseWheel += new MouseEventHandler(OnWheel);
+>> "%SEMO_WORK%\setup_gui.cs" echo         }
+>> "%SEMO_WORK%\setup_gui.cs" echo         public void NoteHover(bool on) { _hover = on; }
+>> "%SEMO_WORK%\setup_gui.cs" echo         void OnWheel(object s, MouseEventArgs e)
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             if (e.Delta ^> 0) Prev(); else Next();
+>> "%SEMO_WORK%\setup_gui.cs" echo         }
+>> "%SEMO_WORK%\setup_gui.cs" echo         public void Next() { Go(1); }
+>> "%SEMO_WORK%\setup_gui.cs" echo         public void Prev() { Go(-1); }
+>> "%SEMO_WORK%\setup_gui.cs" echo         void Go(int dir)
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             if (_count == 0) return;
+>> "%SEMO_WORK%\setup_gui.cs" echo             _idx = ((_idx + dir) %% _count + _count) %% _count;
+>> "%SEMO_WORK%\setup_gui.cs" echo             _target = -_idx * _cardH;
+>> "%SEMO_WORK%\setup_gui.cs" echo             if (!_anim.Enabled) _anim.Start();
+>> "%SEMO_WORK%\setup_gui.cs" echo         }
+>> "%SEMO_WORK%\setup_gui.cs" echo         void AnimTick(object s, EventArgs e)
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             int d = _target - _content.Top;
+>> "%SEMO_WORK%\setup_gui.cs" echo             if (Math.Abs(d) ^< 2) { _content.Top = _target; _anim.Stop(); return; }
+>> "%SEMO_WORK%\setup_gui.cs" echo             _content.Top += (int)(d * 0.22);
+>> "%SEMO_WORK%\setup_gui.cs" echo         }
+>> "%SEMO_WORK%\setup_gui.cs" echo         protected override void OnMouseEnter(EventArgs e) { _hover = true; base.OnMouseEnter(e); }
+>> "%SEMO_WORK%\setup_gui.cs" echo         protected override void OnMouseLeave(EventArgs e) { _hover = false; base.OnMouseLeave(e); }
 >> "%SEMO_WORK%\setup_gui.cs" echo         protected override void OnPaint(PaintEventArgs e)
 >> "%SEMO_WORK%\setup_gui.cs" echo         {
 >> "%SEMO_WORK%\setup_gui.cs" echo             base.OnPaint(e);
->> "%SEMO_WORK%\setup_gui.cs" echo             Rectangle r = this.ClientRectangle;
->> "%SEMO_WORK%\setup_gui.cs" echo             using (SolidBrush b = new SolidBrush(H("#0a1120"))) e.Graphics.FillRectangle(b, r);
->> "%SEMO_WORK%\setup_gui.cs" echo             int w = (int)((double)r.Width * _val / 100.0);
->> "%SEMO_WORK%\setup_gui.cs" echo             if (w ^> 0)
->> "%SEMO_WORK%\setup_gui.cs" echo                 using (SolidBrush b = new SolidBrush(_failed ? H("#ef4444") : H("#0ea5e9")))
->> "%SEMO_WORK%\setup_gui.cs" echo                     e.Graphics.FillRectangle(b, 0, 0, w, r.Height);
->> "%SEMO_WORK%\setup_gui.cs" echo             using (Pen p = new Pen(H("#23324d"))) e.Graphics.DrawRectangle(p, 0, 0, r.Width - 1, r.Height - 1);
+>> "%SEMO_WORK%\setup_gui.cs" echo             if (_count == 0) return;
+>> "%SEMO_WORK%\setup_gui.cs" echo             int dotW = 7, gap = 7, activeW = 22;
+>> "%SEMO_WORK%\setup_gui.cs" echo             int total = _count * (dotW + gap) - gap + (activeW - dotW);
+>> "%SEMO_WORK%\setup_gui.cs" echo             int x = this.Width / 2 - total / 2;
+>> "%SEMO_WORK%\setup_gui.cs" echo             int y = _cardH + 26;
+>> "%SEMO_WORK%\setup_gui.cs" echo             for (int i = 0; i ^< _count; i++)
+>> "%SEMO_WORK%\setup_gui.cs" echo             {
+>> "%SEMO_WORK%\setup_gui.cs" echo                 int w = (i == _idx) ? activeW : dotW;
+>> "%SEMO_WORK%\setup_gui.cs" echo                 using (SolidBrush b = new SolidBrush(i == _idx ? CYAN : H("#23324d")))
+>> "%SEMO_WORK%\setup_gui.cs" echo                     using (System.Drawing.Drawing2D.GraphicsPath gp = Pill(x, y, w, dotW))
+>> "%SEMO_WORK%\setup_gui.cs" echo                         e.Graphics.FillPath(b, gp);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 x += w + gap;
+>> "%SEMO_WORK%\setup_gui.cs" echo             }
 >> "%SEMO_WORK%\setup_gui.cs" echo         }
+>> "%SEMO_WORK%\setup_gui.cs" echo         static System.Drawing.Drawing2D.GraphicsPath Pill(int x, int y, int w, int h)
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             System.Drawing.Drawing2D.GraphicsPath gp = new System.Drawing.Drawing2D.GraphicsPath();
+>> "%SEMO_WORK%\setup_gui.cs" echo             int rad = h / 2;
+>> "%SEMO_WORK%\setup_gui.cs" echo             gp.AddArc(x, y, rad * 2, rad * 2, 180, 90);
+>> "%SEMO_WORK%\setup_gui.cs" echo             gp.AddArc(x + w - rad * 2, y, rad * 2, rad * 2, 270, 90);
+>> "%SEMO_WORK%\setup_gui.cs" echo             gp.AddArc(x + w - rad * 2, y + h - rad * 2, rad * 2, rad * 2, 0, 90);
+>> "%SEMO_WORK%\setup_gui.cs" echo             gp.AddArc(x, y + h - rad * 2, rad * 2, rad * 2, 90, 90);
+>> "%SEMO_WORK%\setup_gui.cs" echo             gp.CloseFigure();
+>> "%SEMO_WORK%\setup_gui.cs" echo             return gp;
+>> "%SEMO_WORK%\setup_gui.cs" echo         }
+>> "%SEMO_WORK%\setup_gui.cs" echo     }
+>> "%SEMO_WORK%\setup_gui.cs" echo.
+>> "%SEMO_WORK%\setup_gui.cs" echo     // ---------------- durum ----------------
+>> "%SEMO_WORK%\setup_gui.cs" echo     static Form F;
+>> "%SEMO_WORK%\setup_gui.cs" echo     static RichTextBox LOG;
+>> "%SEMO_WORK%\setup_gui.cs" echo     static Stepper STEPS;
+>> "%SEMO_WORK%\setup_gui.cs" echo     static ModernBar BARC;
+>> "%SEMO_WORK%\setup_gui.cs" echo     static Label STAGE, PCT, INFO, PROJHEAD;
+>> "%SEMO_WORK%\setup_gui.cs" echo     static Panel LOGWRAP;
+>> "%SEMO_WORK%\setup_gui.cs" echo     static LinkLabel LNKLOG;
+>> "%SEMO_WORK%\setup_gui.cs" echo     static FlatBtn BTN_MAIN;
+>> "%SEMO_WORK%\setup_gui.cs" echo     static Carousel CAROUSEL;
+>> "%SEMO_WORK%\setup_gui.cs" echo     static volatile bool _failed;
+>> "%SEMO_WORK%\setup_gui.cs" echo.
+>> "%SEMO_WORK%\setup_gui.cs" echo     static void StepSync(int pct)
+>> "%SEMO_WORK%\setup_gui.cs" echo     {
+>> "%SEMO_WORK%\setup_gui.cs" echo         int cur, done;
+>> "%SEMO_WORK%\setup_gui.cs" echo         if (pct ^< 27) { cur = 0; done = 0; }
+>> "%SEMO_WORK%\setup_gui.cs" echo         else if (pct ^< 60) { cur = 1; done = 1; }
+>> "%SEMO_WORK%\setup_gui.cs" echo         else if (pct ^< 96) { cur = 2; done = 2; }
+>> "%SEMO_WORK%\setup_gui.cs" echo         else if (pct ^< 100) { cur = 3; done = 3; }
+>> "%SEMO_WORK%\setup_gui.cs" echo         else { cur = 3; done = 4; }
+>> "%SEMO_WORK%\setup_gui.cs" echo         try { F.Invoke((MethodInvoker)delegate { STEPS.Set(cur, done); }); } catch { }
 >> "%SEMO_WORK%\setup_gui.cs" echo     }
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo     static void Log(string line)
@@ -1045,6 +1428,7 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo                     BARC.Set(pct);
 >> "%SEMO_WORK%\setup_gui.cs" echo                     PCT.Text = pct.ToString() + "%%";
 >> "%SEMO_WORK%\setup_gui.cs" echo                     if (txt != null) STAGE.Text = txt;
+>> "%SEMO_WORK%\setup_gui.cs" echo                     StepSync(pct);
 >> "%SEMO_WORK%\setup_gui.cs" echo                     File.AppendAllText(Path.Combine(Path.GetTempPath(), "IDM_SEMO_setup.log"),
 >> "%SEMO_WORK%\setup_gui.cs" echo                         DateTime.Now.ToString("HH:mm:ss") + " ^| " + pct + "%% ^| " + txt + Environment.NewLine, Encoding.UTF8);
 >> "%SEMO_WORK%\setup_gui.cs" echo                 }
@@ -1065,7 +1449,19 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo                 DateTime.Now.ToString() + " ^| setup error ^| " + ex + Environment.NewLine, Encoding.UTF8);
 >> "%SEMO_WORK%\setup_gui.cs" echo         }
 >> "%SEMO_WORK%\setup_gui.cs" echo         catch { }
->> "%SEMO_WORK%\setup_gui.cs" echo         try { F.Invoke((MethodInvoker)delegate { STAGE.Text = Tr("setup.err") + " " + ex.Message; PCT.Text = "!"; }); } catch { }
+>> "%SEMO_WORK%\setup_gui.cs" echo         try
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             F.Invoke((MethodInvoker)delegate
+>> "%SEMO_WORK%\setup_gui.cs" echo             {
+>> "%SEMO_WORK%\setup_gui.cs" echo                 STAGE.Text = Tr("setup.err") + " " + ex.Message;
+>> "%SEMO_WORK%\setup_gui.cs" echo                 PCT.Text = "!";
+>> "%SEMO_WORK%\setup_gui.cs" echo                 STEPS.SetErr();
+>> "%SEMO_WORK%\setup_gui.cs" echo                 LOG.Visible = true;
+>> "%SEMO_WORK%\setup_gui.cs" echo                 LNKLOG.Text = LangRow(MISC_SRC)[3];
+>> "%SEMO_WORK%\setup_gui.cs" echo                 BTN_MAIN.Text = LangRow(MISC_SRC)[1];
+>> "%SEMO_WORK%\setup_gui.cs" echo             });
+>> "%SEMO_WORK%\setup_gui.cs" echo         }
+>> "%SEMO_WORK%\setup_gui.cs" echo         catch { }
 >> "%SEMO_WORK%\setup_gui.cs" echo     }
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo     // ---------------- yardimcilar ----------------
@@ -1097,28 +1493,6 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         return -1;
 >> "%SEMO_WORK%\setup_gui.cs" echo     }
 >> "%SEMO_WORK%\setup_gui.cs" echo.
->> "%SEMO_WORK%\setup_gui.cs" echo     static bool RunHidden(string exe, string args, int timeoutMs, out int code)
->> "%SEMO_WORK%\setup_gui.cs" echo     {
->> "%SEMO_WORK%\setup_gui.cs" echo         code = -1;
->> "%SEMO_WORK%\setup_gui.cs" echo         try
->> "%SEMO_WORK%\setup_gui.cs" echo         {
->> "%SEMO_WORK%\setup_gui.cs" echo             ProcessStartInfo si = new ProcessStartInfo();
->> "%SEMO_WORK%\setup_gui.cs" echo             si.FileName = exe;
->> "%SEMO_WORK%\setup_gui.cs" echo             si.Arguments = args;
->> "%SEMO_WORK%\setup_gui.cs" echo             si.UseShellExecute = false;
->> "%SEMO_WORK%\setup_gui.cs" echo             si.CreateNoWindow = true;
->> "%SEMO_WORK%\setup_gui.cs" echo             Process p = Process.Start(si);
->> "%SEMO_WORK%\setup_gui.cs" echo             if (!p.WaitForExit(timeoutMs))
->> "%SEMO_WORK%\setup_gui.cs" echo             {
->> "%SEMO_WORK%\setup_gui.cs" echo                 try { p.Kill(); } catch { }
->> "%SEMO_WORK%\setup_gui.cs" echo                 return false;
->> "%SEMO_WORK%\setup_gui.cs" echo             }
->> "%SEMO_WORK%\setup_gui.cs" echo             code = p.ExitCode;
->> "%SEMO_WORK%\setup_gui.cs" echo             return true;
->> "%SEMO_WORK%\setup_gui.cs" echo         }
->> "%SEMO_WORK%\setup_gui.cs" echo         catch { return false; }
->> "%SEMO_WORK%\setup_gui.cs" echo     }
->> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo     // ---------------- kurulum akisi ----------------
 >> "%SEMO_WORK%\setup_gui.cs" echo     static string BAT, INST, CSC, WORK;
 >> "%SEMO_WORK%\setup_gui.cs" echo     static bool IS_ADMIN;
@@ -1127,11 +1501,14 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo     {
 >> "%SEMO_WORK%\setup_gui.cs" echo         try
 >> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             Log("[*] " + Tr("setup.title"));
+>> "%SEMO_WORK%\setup_gui.cs" echo             Log("[i] " + Tr("setup.compiler") + ": " + CSC);
+>> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo             // 1) payload decode (bat'tan base64 -^> payload.cab)
->> "%SEMO_WORK%\setup_gui.cs" echo             Stage(3, Tr("setup.stage1").Replace("%%s", "38"));
+>> "%SEMO_WORK%\setup_gui.cs" echo             Stage(3, Tr2("setup.stage1", "38"));
 >> "%SEMO_WORK%\setup_gui.cs" echo             byte[] raw = File.ReadAllBytes(BAT);
 >> "%SEMO_WORK%\setup_gui.cs" echo             // marker kaynak kodda bitisik yazilmiyor: setupsrc echo ile bat'a duz metin
->> "%SEMO_WORK%\setup_gui.cs" echo             // gomuluyor — bitisik marker'a karsi gercek payload marker'iyla cakisir
+>> "%SEMO_WORK%\setup_gui.cs" echo             // gomuluyor — bitisik marker gercek payload marker'iyla cakisirdi
 >> "%SEMO_WORK%\setup_gui.cs" echo             int ip = IndexOf(raw, Encoding.ASCII.GetBytes("___SEMO" + "_PAYLOAD___"));
 >> "%SEMO_WORK%\setup_gui.cs" echo             if (ip ^< 0) throw new Exception("payload marker not found");
 >> "%SEMO_WORK%\setup_gui.cs" echo             char[] cbuf = new char[raw.Length - ip - 18];
@@ -1147,23 +1524,50 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo             File.WriteAllBytes(cabPath, cab);
 >> "%SEMO_WORK%\setup_gui.cs" echo             Stage(24, Tr2("setup.stage1ok", cab.Length.ToString()));
 >> "%SEMO_WORK%\setup_gui.cs" echo.
->> "%SEMO_WORK%\setup_gui.cs" echo             // 2) extract (expand.exe, XP/7/8/10/11 hepsinde var)
+>> "%SEMO_WORK%\setup_gui.cs" echo             // 2) cikarma — hedef klasor ONCE yaratilir
+>> "%SEMO_WORK%\setup_gui.cs" echo             //    (v13 hatasi: expand hedef dizin yokken sessizce kaliyor,
+>> "%SEMO_WORK%\setup_gui.cs" echo             //     Directory.GetFiles 'path not found' ile cakiyordu)
 >> "%SEMO_WORK%\setup_gui.cs" echo             Stage(27, Tr("setup.stage2"));
+>> "%SEMO_WORK%\setup_gui.cs" echo             string keepFf = Path.Combine(WORK, "keep_ffmpeg");
+>> "%SEMO_WORK%\setup_gui.cs" echo             try
+>> "%SEMO_WORK%\setup_gui.cs" echo             {
+>> "%SEMO_WORK%\setup_gui.cs" echo                 if (Directory.Exists(Path.Combine(INST, "ffmpeg")) ^&^& !Directory.Exists(keepFf))
+>> "%SEMO_WORK%\setup_gui.cs" echo                     Directory.Move(Path.Combine(INST, "ffmpeg"), keepFf);
+>> "%SEMO_WORK%\setup_gui.cs" echo             }
+>> "%SEMO_WORK%\setup_gui.cs" echo             catch { }
+>> "%SEMO_WORK%\setup_gui.cs" echo             try
+>> "%SEMO_WORK%\setup_gui.cs" echo             {
+>> "%SEMO_WORK%\setup_gui.cs" echo                 if (Directory.Exists(INST)) Directory.Delete(INST, true);
+>> "%SEMO_WORK%\setup_gui.cs" echo             }
+>> "%SEMO_WORK%\setup_gui.cs" echo             catch { }
+>> "%SEMO_WORK%\setup_gui.cs" echo             try { Directory.CreateDirectory(INST); }
+>> "%SEMO_WORK%\setup_gui.cs" echo             catch (Exception cdx)
+>> "%SEMO_WORK%\setup_gui.cs" echo             {
+>> "%SEMO_WORK%\setup_gui.cs" echo                 throw new Exception("hedef klasor yaratilamadi: " + INST + " (" + cdx.Message + ")");
+>> "%SEMO_WORK%\setup_gui.cs" echo             }
 >> "%SEMO_WORK%\setup_gui.cs" echo             int ec;
 >> "%SEMO_WORK%\setup_gui.cs" echo             RunHidden(Path.Combine(Environment.SystemDirectory, "expand.exe"),
 >> "%SEMO_WORK%\setup_gui.cs" echo                 "\"" + cabPath + "\" -F:* \"" + INST + "\"", 600000, out ec);
 >> "%SEMO_WORK%\setup_gui.cs" echo             int nf = Directory.GetFiles(INST, "*", SearchOption.AllDirectories).Length;
+>> "%SEMO_WORK%\setup_gui.cs" echo             if (nf == 0)
+>> "%SEMO_WORK%\setup_gui.cs" echo                 throw new Exception("expand " + ec + " ile bitti, 0 dosya — antivurus engellemis olabilir");
 >> "%SEMO_WORK%\setup_gui.cs" echo             Stage(55, Tr2("setup.stage2ok", nf.ToString()));
->> "%SEMO_WORK%\setup_gui.cs" echo             Log("[+] " + Tr2("setup.stage2ok", nf.ToString()) + ": " + INST);
+>> "%SEMO_WORK%\setup_gui.cs" echo             Log("[+] " + Tr2("setup.stage2ok", nf.ToString()) + ": " + INST, GREEN);
+>> "%SEMO_WORK%\setup_gui.cs" echo             try
+>> "%SEMO_WORK%\setup_gui.cs" echo             {
+>> "%SEMO_WORK%\setup_gui.cs" echo                 if (Directory.Exists(keepFf) ^&^& !Directory.Exists(Path.Combine(INST, "ffmpeg")))
+>> "%SEMO_WORK%\setup_gui.cs" echo                     Directory.Move(keepFf, Path.Combine(INST, "ffmpeg"));
+>> "%SEMO_WORK%\setup_gui.cs" echo             }
+>> "%SEMO_WORK%\setup_gui.cs" echo             catch { }
 >> "%SEMO_WORK%\setup_gui.cs" echo.
->> "%SEMO_WORK%\setup_gui.cs" echo             // 3) dil: panel dil dosyalari artik yerinde; kurulum dili zaten algilandi
+>> "%SEMO_WORK%\setup_gui.cs" echo             // 3) dil: panel dil dosyalari yerinde; kurulum dili zaten algilandi
 >> "%SEMO_WORK%\setup_gui.cs" echo             Stage(57, Tr("setup.stage3"));
 >> "%SEMO_WORK%\setup_gui.cs" echo             string plangFile = Path.Combine(INST, _lang + ".txt");
 >> "%SEMO_WORK%\setup_gui.cs" echo             if (!File.Exists(plangFile)) plangFile = Path.Combine(INST, "en.txt");
 >> "%SEMO_WORK%\setup_gui.cs" echo             Hashtable pmap = ParseLangFile(plangFile);
 >> "%SEMO_WORK%\setup_gui.cs" echo             Stage(58, Tr2("setup.stage3ok", _lang));
 >> "%SEMO_WORK%\setup_gui.cs" echo.
->> "%SEMO_WORK%\setup_gui.cs" echo             // 4) paneli derle (XP'nin kendi csc'si / bat'tan gelen csc)
+>> "%SEMO_WORK%\setup_gui.cs" echo             // 4) paneli derle
 >> "%SEMO_WORK%\setup_gui.cs" echo             Stage(60, Tr("setup.stage4"));
 >> "%SEMO_WORK%\setup_gui.cs" echo             string[] srcs = Directory.GetFiles(INST, "IDM_SEMO_*.cs");
 >> "%SEMO_WORK%\setup_gui.cs" echo             StringBuilder argb = new StringBuilder();
@@ -1182,7 +1586,7 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo                 throw new Exception("panel compile failed (exit " + bc + ") - see IDM_SEMO_build.log");
 >> "%SEMO_WORK%\setup_gui.cs" echo             }
 >> "%SEMO_WORK%\setup_gui.cs" echo             Stage(84, Tr("setup.stage4ok"));
->> "%SEMO_WORK%\setup_gui.cs" echo             Log("[+] " + Tr("setup.stage4ok"));
+>> "%SEMO_WORK%\setup_gui.cs" echo             Log("[+] " + Tr("setup.stage4ok"), GREEN);
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo             // 5) kisayollar + taskbar pin (cscript ile VBS)
 >> "%SEMO_WORK%\setup_gui.cs" echo             Stage(86, Tr("setup.stage5"));
@@ -1193,7 +1597,7 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo             File.WriteAllText(pinVbs, PinVbs(), Encoding.ASCII);
 >> "%SEMO_WORK%\setup_gui.cs" echo             RunHidden("cscript", "//nologo \"" + pinVbs + "\"", 60000, out ec);
 >> "%SEMO_WORK%\setup_gui.cs" echo             Stage(92, Tr("setup.stage5ok"));
->> "%SEMO_WORK%\setup_gui.cs" echo             Log("[+] " + Tr("setup.stage5ok"));
+>> "%SEMO_WORK%\setup_gui.cs" echo             Log("[+] " + Tr("setup.stage5ok"), GREEN);
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo             // 6) IDM tespiti
 >> "%SEMO_WORK%\setup_gui.cs" echo             Stage(93, Tr("setup.stage6"));
@@ -1223,8 +1627,7 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo             Stage(100, Tr("setup.done"));
 >> "%SEMO_WORK%\setup_gui.cs" echo             Log("[+] " + Tr("setup.done"), GREEN);
 >> "%SEMO_WORK%\setup_gui.cs" echo.
->> "%SEMO_WORK%\setup_gui.cs" echo             // kartlar pencere acilirken yuklu (gomulu b64) — kurulum surerken tanitim gorunur
->> "%SEMO_WORK%\setup_gui.cs" echo             Thread.Sleep(2200);
+>> "%SEMO_WORK%\setup_gui.cs" echo             Thread.Sleep(2400);
 >> "%SEMO_WORK%\setup_gui.cs" echo             try { F.Invoke((MethodInvoker)delegate { F.Close(); }); } catch { }
 >> "%SEMO_WORK%\setup_gui.cs" echo         }
 >> "%SEMO_WORK%\setup_gui.cs" echo         catch (Exception ex) { Fail(ex); }
@@ -1304,6 +1707,28 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         }
 >> "%SEMO_WORK%\setup_gui.cs" echo     }
 >> "%SEMO_WORK%\setup_gui.cs" echo.
+>> "%SEMO_WORK%\setup_gui.cs" echo     static bool RunHidden(string exe, string args, int timeoutMs, out int code)
+>> "%SEMO_WORK%\setup_gui.cs" echo     {
+>> "%SEMO_WORK%\setup_gui.cs" echo         code = -1;
+>> "%SEMO_WORK%\setup_gui.cs" echo         try
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             ProcessStartInfo si = new ProcessStartInfo();
+>> "%SEMO_WORK%\setup_gui.cs" echo             si.FileName = exe;
+>> "%SEMO_WORK%\setup_gui.cs" echo             si.Arguments = args;
+>> "%SEMO_WORK%\setup_gui.cs" echo             si.UseShellExecute = false;
+>> "%SEMO_WORK%\setup_gui.cs" echo             si.CreateNoWindow = true;
+>> "%SEMO_WORK%\setup_gui.cs" echo             Process p = Process.Start(si);
+>> "%SEMO_WORK%\setup_gui.cs" echo             if (!p.WaitForExit(timeoutMs))
+>> "%SEMO_WORK%\setup_gui.cs" echo             {
+>> "%SEMO_WORK%\setup_gui.cs" echo                 try { p.Kill(); } catch { }
+>> "%SEMO_WORK%\setup_gui.cs" echo                 return false;
+>> "%SEMO_WORK%\setup_gui.cs" echo             }
+>> "%SEMO_WORK%\setup_gui.cs" echo             code = p.ExitCode;
+>> "%SEMO_WORK%\setup_gui.cs" echo             return true;
+>> "%SEMO_WORK%\setup_gui.cs" echo         }
+>> "%SEMO_WORK%\setup_gui.cs" echo         catch { return false; }
+>> "%SEMO_WORK%\setup_gui.cs" echo     }
+>> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo     static string ShortcutVbs()
 >> "%SEMO_WORK%\setup_gui.cs" echo     {
 >> "%SEMO_WORK%\setup_gui.cs" echo         return "Option Explicit\n"
@@ -1353,6 +1778,7 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "End If\n";
 >> "%SEMO_WORK%\setup_gui.cs" echo     }
 >> "%SEMO_WORK%\setup_gui.cs" echo.
+>> "%SEMO_WORK%\setup_gui.cs" echo     // ---------------- proje kartlari (karusel) ----------------
 >> "%SEMO_WORK%\setup_gui.cs" echo     static void LoadProjectCards()
 >> "%SEMO_WORK%\setup_gui.cs" echo     {
 >> "%SEMO_WORK%\setup_gui.cs" echo         try
@@ -1370,69 +1796,76 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo                 string badge = Tr(pre + "badge");
 >> "%SEMO_WORK%\setup_gui.cs" echo                 if (badge == pre + "badge") badge = "";
 >> "%SEMO_WORK%\setup_gui.cs" echo                 Color accent = H(PROJ_COLOR[i]);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 Image icon = ImgFromB64(PROJECTS[i][2]);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 Image qr = ImgFromB64(PROJECTS[i][3]);
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo                 Panel card = new Panel();
->> "%SEMO_WORK%\setup_gui.cs" echo                 card.BackColor = BG_CARD_ALT;
->> "%SEMO_WORK%\setup_gui.cs" echo                 card.Size = new Size(206, 160);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 card.BackColor = BG_CARD;
 >> "%SEMO_WORK%\setup_gui.cs" echo                 card.Cursor = Cursors.Hand;
+>> "%SEMO_WORK%\setup_gui.cs" echo                 card.Size = new Size(344, 400);
 >> "%SEMO_WORK%\setup_gui.cs" echo.
->> "%SEMO_WORK%\setup_gui.cs" echo                 // ust renk seridi (projenin kendi rengi)
->> "%SEMO_WORK%\setup_gui.cs" echo                 Panel stripe = new Panel();
->> "%SEMO_WORK%\setup_gui.cs" echo                 stripe.BackColor = accent;
->> "%SEMO_WORK%\setup_gui.cs" echo                 stripe.Bounds = new Rectangle(0, 0, 206, 4);
->> "%SEMO_WORK%\setup_gui.cs" echo                 card.Controls.Add(stripe);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 // ust: gorsel alani — projenin rengiyle hafif tonlanan zemin + buyuk ikon
+>> "%SEMO_WORK%\setup_gui.cs" echo                 Panel img = new Panel();
+>> "%SEMO_WORK%\setup_gui.cs" echo                 img.Bounds = new Rectangle(0, 0, 344, 220);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 img.BackColor = H("#0b1324");
+>> "%SEMO_WORK%\setup_gui.cs" echo                 Color acc = accent;
+>> "%SEMO_WORK%\setup_gui.cs" echo                 img.Paint += new PaintEventHandler(delegate(object s3, PaintEventArgs e3)
+>> "%SEMO_WORK%\setup_gui.cs" echo                 {
+>> "%SEMO_WORK%\setup_gui.cs" echo                     e3.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+>> "%SEMO_WORK%\setup_gui.cs" echo                     using (SolidBrush b = new SolidBrush(Color.FromArgb(24, acc)))
+>> "%SEMO_WORK%\setup_gui.cs" echo                         e3.Graphics.FillRectangle(b, img.ClientRectangle);
+>> "%SEMO_WORK%\setup_gui.cs" echo                     using (SolidBrush b = new SolidBrush(acc))
+>> "%SEMO_WORK%\setup_gui.cs" echo                         e3.Graphics.FillRectangle(b, 0, 0, img.Width, 3);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 });
+>> "%SEMO_WORK%\setup_gui.cs" echo                 card.Controls.Add(img);
 >> "%SEMO_WORK%\setup_gui.cs" echo.
->> "%SEMO_WORK%\setup_gui.cs" echo                 // sol: uygulama ikonu
->> "%SEMO_WORK%\setup_gui.cs" echo                 Panel ib = new Panel();
->> "%SEMO_WORK%\setup_gui.cs" echo                 ib.BackColor = H("#0b1324");
->> "%SEMO_WORK%\setup_gui.cs" echo                 ib.Bounds = new Rectangle(10, 14, 54, 54);
 >> "%SEMO_WORK%\setup_gui.cs" echo                 PictureBox ic = new PictureBox();
 >> "%SEMO_WORK%\setup_gui.cs" echo                 ic.SizeMode = PictureBoxSizeMode.Zoom;
->> "%SEMO_WORK%\setup_gui.cs" echo                 ic.BackColor = H("#0b1324");
->> "%SEMO_WORK%\setup_gui.cs" echo                 ic.Bounds = new Rectangle(4, 4, 46, 46);
->> "%SEMO_WORK%\setup_gui.cs" echo                 ic.Image = ImgFromB64(PROJECTS[i][2]);
->> "%SEMO_WORK%\setup_gui.cs" echo                 ib.Controls.Add(ic);
->> "%SEMO_WORK%\setup_gui.cs" echo                 card.Controls.Add(ib);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 ic.BackColor = Color.Transparent;
+>> "%SEMO_WORK%\setup_gui.cs" echo                 ic.Bounds = new Rectangle(116, 52, 112, 112);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 ic.Image = icon;
+>> "%SEMO_WORK%\setup_gui.cs" echo                 img.Controls.Add(ic);
 >> "%SEMO_WORK%\setup_gui.cs" echo.
->> "%SEMO_WORK%\setup_gui.cs" echo                 // sag: karekod (tikla -^> buyuk pencere)
+>> "%SEMO_WORK%\setup_gui.cs" echo                 // karekod — tiklaninca buyuk pencere
 >> "%SEMO_WORK%\setup_gui.cs" echo                 Panel qb = new Panel();
 >> "%SEMO_WORK%\setup_gui.cs" echo                 qb.BackColor = Color.White;
->> "%SEMO_WORK%\setup_gui.cs" echo                 qb.Bounds = new Rectangle(142, 14, 54, 54);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 qb.Bounds = new Rectangle(284, 12, 46, 46);
 >> "%SEMO_WORK%\setup_gui.cs" echo                 PictureBox qp = new PictureBox();
 >> "%SEMO_WORK%\setup_gui.cs" echo                 qp.SizeMode = PictureBoxSizeMode.Zoom;
 >> "%SEMO_WORK%\setup_gui.cs" echo                 qp.BackColor = Color.White;
->> "%SEMO_WORK%\setup_gui.cs" echo                 qp.Bounds = new Rectangle(4, 4, 46, 46);
->> "%SEMO_WORK%\setup_gui.cs" echo                 qp.Image = ImgFromB64(PROJECTS[i][3]);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 qp.Bounds = new Rectangle(3, 3, 40, 40);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 qp.Image = qr;
 >> "%SEMO_WORK%\setup_gui.cs" echo                 qp.Cursor = Cursors.Hand;
->> "%SEMO_WORK%\setup_gui.cs" echo                 string qSlug = slug, qUrl = url;
->> "%SEMO_WORK%\setup_gui.cs" echo                 qp.Click += new EventHandler(delegate(object s3, EventArgs e3) { ShowQr(qSlug, qUrl, PROJECTS[i][3]); });
+>> "%SEMO_WORK%\setup_gui.cs" echo                 string qSlug = slug, qUrl = url, qImg = PROJECTS[i][3];
+>> "%SEMO_WORK%\setup_gui.cs" echo                 qp.Click += new EventHandler(delegate(object s3, EventArgs e3) { ShowQr(qSlug, qUrl, qImg); });
 >> "%SEMO_WORK%\setup_gui.cs" echo                 qb.Controls.Add(qp);
->> "%SEMO_WORK%\setup_gui.cs" echo                 card.Controls.Add(qb);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 img.Controls.Add(qb);
 >> "%SEMO_WORK%\setup_gui.cs" echo.
->> "%SEMO_WORK%\setup_gui.cs" echo                 // baslik + rozet + aciklama
 >> "%SEMO_WORK%\setup_gui.cs" echo                 Label t = new Label();
 >> "%SEMO_WORK%\setup_gui.cs" echo                 t.Text = title;
 >> "%SEMO_WORK%\setup_gui.cs" echo                 t.ForeColor = FG;
->> "%SEMO_WORK%\setup_gui.cs" echo                 t.Font = new Font("Segoe UI", 8.5f, FontStyle.Bold);
->> "%SEMO_WORK%\setup_gui.cs" echo                 t.Bounds = new Rectangle(10, 72, 186, 20);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 t.Font = new Font("Segoe UI", 11f, FontStyle.Bold);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 t.Bounds = new Rectangle(20, 234, 304, 24);
 >> "%SEMO_WORK%\setup_gui.cs" echo                 t.AutoEllipsis = true;
 >> "%SEMO_WORK%\setup_gui.cs" echo                 card.Controls.Add(t);
 >> "%SEMO_WORK%\setup_gui.cs" echo.
->> "%SEMO_WORK%\setup_gui.cs" echo                 Label b = new Label();
->> "%SEMO_WORK%\setup_gui.cs" echo                 b.Text = " " + badge + " ";
->> "%SEMO_WORK%\setup_gui.cs" echo                 b.ForeColor = Color.White;
->> "%SEMO_WORK%\setup_gui.cs" echo                 b.BackColor = accent;
->> "%SEMO_WORK%\setup_gui.cs" echo                 b.Font = new Font("Segoe UI", 6.5f, FontStyle.Bold);
->> "%SEMO_WORK%\setup_gui.cs" echo                 b.Bounds = new Rectangle(10, 94, 10, 16);
->> "%SEMO_WORK%\setup_gui.cs" echo                 b.AutoSize = true;
->> "%SEMO_WORK%\setup_gui.cs" echo                 card.Controls.Add(b);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 if (badge.Length ^> 0)
+>> "%SEMO_WORK%\setup_gui.cs" echo                 {
+>> "%SEMO_WORK%\setup_gui.cs" echo                     Label b = new Label();
+>> "%SEMO_WORK%\setup_gui.cs" echo                     b.Text = "  " + badge + "  ";
+>> "%SEMO_WORK%\setup_gui.cs" echo                     b.ForeColor = acc;
+>> "%SEMO_WORK%\setup_gui.cs" echo                     b.BackColor = Color.FromArgb(38, acc);
+>> "%SEMO_WORK%\setup_gui.cs" echo                     b.Font = new Font("Segoe UI", 7.5f, FontStyle.Bold);
+>> "%SEMO_WORK%\setup_gui.cs" echo                     b.AutoSize = true;
+>> "%SEMO_WORK%\setup_gui.cs" echo                     b.Bounds = new Rectangle(20, 264, 40, 18);
+>> "%SEMO_WORK%\setup_gui.cs" echo                     card.Controls.Add(b);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 }
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo                 Label s2 = new Label();
 >> "%SEMO_WORK%\setup_gui.cs" echo                 s2.Text = sub;
 >> "%SEMO_WORK%\setup_gui.cs" echo                 s2.ForeColor = MUT;
->> "%SEMO_WORK%\setup_gui.cs" echo                 s2.Font = new Font("Segoe UI", 7f);
->> "%SEMO_WORK%\setup_gui.cs" echo                 s2.Bounds = new Rectangle(10, 116, 186, 40);
->> "%SEMO_WORK%\setup_gui.cs" echo                 s2.AutoEllipsis = false;
+>> "%SEMO_WORK%\setup_gui.cs" echo                 s2.Font = new Font("Segoe UI", 8.25f);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 s2.Bounds = new Rectangle(20, 292, 304, 88);
 >> "%SEMO_WORK%\setup_gui.cs" echo                 card.Controls.Add(s2);
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo                 string u = url;
@@ -1440,10 +1873,10 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo                 card.Click += openUrl;
 >> "%SEMO_WORK%\setup_gui.cs" echo                 t.Click += openUrl;
 >> "%SEMO_WORK%\setup_gui.cs" echo                 s2.Click += openUrl;
->> "%SEMO_WORK%\setup_gui.cs" echo                 ib.Click += openUrl;
->> "%SEMO_WORK%\setup_gui.cs" echo                 card.MouseEnter += new EventHandler(delegate(object s3, EventArgs e3) { card.BackColor = BG_MAIN; });
->> "%SEMO_WORK%\setup_gui.cs" echo                 card.MouseLeave += new EventHandler(delegate(object s3, EventArgs e3) { card.BackColor = BG_CARD_ALT; });
->> "%SEMO_WORK%\setup_gui.cs" echo                 CARDS.Controls.Add(card);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 ic.Click += openUrl;
+>> "%SEMO_WORK%\setup_gui.cs" echo                 card.MouseEnter += new EventHandler(delegate(object s3, EventArgs e3) { card.BackColor = H("#1b2a47"); CAROUSEL.NoteHover(true); });
+>> "%SEMO_WORK%\setup_gui.cs" echo                 card.MouseLeave += new EventHandler(delegate(object s3, EventArgs e3) { card.BackColor = BG_CARD; CAROUSEL.NoteHover(false); });
+>> "%SEMO_WORK%\setup_gui.cs" echo                 CAROUSEL.AddCard(card);
 >> "%SEMO_WORK%\setup_gui.cs" echo             }
 >> "%SEMO_WORK%\setup_gui.cs" echo         }
 >> "%SEMO_WORK%\setup_gui.cs" echo         catch { }
@@ -1498,11 +1931,174 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         catch { }
 >> "%SEMO_WORK%\setup_gui.cs" echo     }
 >> "%SEMO_WORK%\setup_gui.cs" echo.
+>> "%SEMO_WORK%\setup_gui.cs" echo     // ---------------- arayuz kurulumu ----------------
+>> "%SEMO_WORK%\setup_gui.cs" echo     static string[] StepsFor()
+>> "%SEMO_WORK%\setup_gui.cs" echo     {
+>> "%SEMO_WORK%\setup_gui.cs" echo         string[] r = LangRow(STEPS_SRC);
+>> "%SEMO_WORK%\setup_gui.cs" echo         return (r != null ^&^& r.Length ^>= 4) ? r : new string[] { "1", "2", "3", "4" };
+>> "%SEMO_WORK%\setup_gui.cs" echo     }
+>> "%SEMO_WORK%\setup_gui.cs" echo.
+>> "%SEMO_WORK%\setup_gui.cs" echo     static void BuildUi()
+>> "%SEMO_WORK%\setup_gui.cs" echo     {
+>> "%SEMO_WORK%\setup_gui.cs" echo         F = new Form();
+>> "%SEMO_WORK%\setup_gui.cs" echo         F.Text = Tr("setup.title");
+>> "%SEMO_WORK%\setup_gui.cs" echo         F.FormBorderStyle = FormBorderStyle.None;
+>> "%SEMO_WORK%\setup_gui.cs" echo         F.ClientSize = new Size(1040, 640);
+>> "%SEMO_WORK%\setup_gui.cs" echo         F.StartPosition = FormStartPosition.CenterScreen;
+>> "%SEMO_WORK%\setup_gui.cs" echo         F.BackColor = BG_ROOT;
+>> "%SEMO_WORK%\setup_gui.cs" echo         F.Font = new Font("Segoe UI", 9f);
+>> "%SEMO_WORK%\setup_gui.cs" echo         F.MaximizeBox = false;
+>> "%SEMO_WORK%\setup_gui.cs" echo         F.MinimizeBox = false;
+>> "%SEMO_WORK%\setup_gui.cs" echo         F.TopMost = true;
+>> "%SEMO_WORK%\setup_gui.cs" echo.
+>> "%SEMO_WORK%\setup_gui.cs" echo         TitleBar tb = new TitleBar(F);
+>> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(tb);
+>> "%SEMO_WORK%\setup_gui.cs" echo.
+>> "%SEMO_WORK%\setup_gui.cs" echo         // ---- hero: ikon + baslik + aciklama ----
+>> "%SEMO_WORK%\setup_gui.cs" echo         PictureBox hico = new PictureBox();
+>> "%SEMO_WORK%\setup_gui.cs" echo         hico.SizeMode = PictureBoxSizeMode.Zoom;
+>> "%SEMO_WORK%\setup_gui.cs" echo         hico.BackColor = BG_ROOT;
+>> "%SEMO_WORK%\setup_gui.cs" echo         hico.Bounds = new Rectangle(26, 66, 64, 64);
+>> "%SEMO_WORK%\setup_gui.cs" echo         hico.Image = ImgFromB64("idm_icon_128.png");
+>> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(hico);
+>> "%SEMO_WORK%\setup_gui.cs" echo         Label heroT = new Label();
+>> "%SEMO_WORK%\setup_gui.cs" echo         heroT.Text = "IDM SEMO";
+>> "%SEMO_WORK%\setup_gui.cs" echo         heroT.ForeColor = FG;
+>> "%SEMO_WORK%\setup_gui.cs" echo         heroT.Font = new Font("Segoe UI", 19f, FontStyle.Bold);
+>> "%SEMO_WORK%\setup_gui.cs" echo         heroT.Bounds = new Rectangle(104, 60, 380, 38);
+>> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(heroT);
+>> "%SEMO_WORK%\setup_gui.cs" echo         Label heroS = new Label();
+>> "%SEMO_WORK%\setup_gui.cs" echo         heroS.Text = Tr("setup.sub");
+>> "%SEMO_WORK%\setup_gui.cs" echo         heroS.ForeColor = MUT;
+>> "%SEMO_WORK%\setup_gui.cs" echo         heroS.Font = new Font("Segoe UI", 8.5f);
+>> "%SEMO_WORK%\setup_gui.cs" echo         heroS.Bounds = new Rectangle(104, 100, 520, 18);
+>> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(heroS);
+>> "%SEMO_WORK%\setup_gui.cs" echo         Label heroTip = new Label();
+>> "%SEMO_WORK%\setup_gui.cs" echo         heroTip.Text = Tr("setup.smartscreen");
+>> "%SEMO_WORK%\setup_gui.cs" echo         heroTip.ForeColor = DIM;
+>> "%SEMO_WORK%\setup_gui.cs" echo         heroTip.Font = new Font("Segoe UI", 7.5f);
+>> "%SEMO_WORK%\setup_gui.cs" echo         heroTip.Bounds = new Rectangle(104, 120, 520, 16);
+>> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(heroTip);
+>> "%SEMO_WORK%\setup_gui.cs" echo.
+>> "%SEMO_WORK%\setup_gui.cs" echo         // ---- adim gostergesi ----
+>> "%SEMO_WORK%\setup_gui.cs" echo         STEPS = new Stepper();
+>> "%SEMO_WORK%\setup_gui.cs" echo         STEPS.Labels = StepsFor();
+>> "%SEMO_WORK%\setup_gui.cs" echo         STEPS.Bounds = new Rectangle(26, 150, 560, 66);
+>> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(STEPS);
+>> "%SEMO_WORK%\setup_gui.cs" echo         STEPS.Set(0, 0);
+>> "%SEMO_WORK%\setup_gui.cs" echo.
+>> "%SEMO_WORK%\setup_gui.cs" echo         // ---- ilerleme cubugu ----
+>> "%SEMO_WORK%\setup_gui.cs" echo         BARC = new ModernBar();
+>> "%SEMO_WORK%\setup_gui.cs" echo         BARC.Bounds = new Rectangle(26, 238, 520, 14);
+>> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(BARC);
+>> "%SEMO_WORK%\setup_gui.cs" echo         PCT = new Label();
+>> "%SEMO_WORK%\setup_gui.cs" echo         PCT.Text = "0%%";
+>> "%SEMO_WORK%\setup_gui.cs" echo         PCT.ForeColor = CYAN;
+>> "%SEMO_WORK%\setup_gui.cs" echo         PCT.Font = new Font("Segoe UI", 12.5f, FontStyle.Bold);
+>> "%SEMO_WORK%\setup_gui.cs" echo         PCT.Bounds = new Rectangle(554, 232, 60, 24);
+>> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(PCT);
+>> "%SEMO_WORK%\setup_gui.cs" echo         STAGE = new Label();
+>> "%SEMO_WORK%\setup_gui.cs" echo         STAGE.Text = Tr("setup.ready");
+>> "%SEMO_WORK%\setup_gui.cs" echo         STAGE.ForeColor = FG;
+>> "%SEMO_WORK%\setup_gui.cs" echo         STAGE.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
+>> "%SEMO_WORK%\setup_gui.cs" echo         STAGE.Bounds = new Rectangle(26, 262, 560, 20);
+>> "%SEMO_WORK%\setup_gui.cs" echo         STAGE.AutoEllipsis = true;
+>> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(STAGE);
+>> "%SEMO_WORK%\setup_gui.cs" echo         INFO = new Label();
+>> "%SEMO_WORK%\setup_gui.cs" echo         INFO.Text = OsName() + "  ·  " + INST + (IS_ADMIN ? "  ·  admin" : "  ·  user");
+>> "%SEMO_WORK%\setup_gui.cs" echo         INFO.ForeColor = DIM;
+>> "%SEMO_WORK%\setup_gui.cs" echo         INFO.Font = new Font("Segoe UI", 8.25f);
+>> "%SEMO_WORK%\setup_gui.cs" echo         INFO.Bounds = new Rectangle(26, 286, 560, 17);
+>> "%SEMO_WORK%\setup_gui.cs" echo         INFO.AutoEllipsis = true;
+>> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(INFO);
+>> "%SEMO_WORK%\setup_gui.cs" echo.
+>> "%SEMO_WORK%\setup_gui.cs" echo         // ---- kurulum gunlugu (gizle/goster) ----
+>> "%SEMO_WORK%\setup_gui.cs" echo         LOGWRAP = new Panel();
+>> "%SEMO_WORK%\setup_gui.cs" echo         LOGWRAP.BackColor = CONSOLE;
+>> "%SEMO_WORK%\setup_gui.cs" echo         LOGWRAP.Bounds = new Rectangle(26, 312, 560, 236);
+>> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(LOGWRAP);
+>> "%SEMO_WORK%\setup_gui.cs" echo         LOG = new RichTextBox();
+>> "%SEMO_WORK%\setup_gui.cs" echo         LOG.Multiline = true;
+>> "%SEMO_WORK%\setup_gui.cs" echo         LOG.ReadOnly = true;
+>> "%SEMO_WORK%\setup_gui.cs" echo         LOG.ScrollBars = RichTextBoxScrollBars.Vertical;
+>> "%SEMO_WORK%\setup_gui.cs" echo         LOG.BackColor = CONSOLE;
+>> "%SEMO_WORK%\setup_gui.cs" echo         LOG.ForeColor = FG;
+>> "%SEMO_WORK%\setup_gui.cs" echo         LOG.BorderStyle = BorderStyle.None;
+>> "%SEMO_WORK%\setup_gui.cs" echo         LOG.Font = new Font("Consolas", 8.5f);
+>> "%SEMO_WORK%\setup_gui.cs" echo         LOG.Bounds = new Rectangle(12, 8, 536, 220);
+>> "%SEMO_WORK%\setup_gui.cs" echo         LOGWRAP.Controls.Add(LOG);
+>> "%SEMO_WORK%\setup_gui.cs" echo         LNKLOG = new LinkLabel();
+>> "%SEMO_WORK%\setup_gui.cs" echo         LNKLOG.LinkColor = CYAN;
+>> "%SEMO_WORK%\setup_gui.cs" echo         LNKLOG.ActiveLinkColor = H("#7dd3fc");
+>> "%SEMO_WORK%\setup_gui.cs" echo         LNKLOG.LinkBehavior = LinkBehavior.HoverUnderline;
+>> "%SEMO_WORK%\setup_gui.cs" echo         LNKLOG.Font = new Font("Segoe UI", 8.25f);
+>> "%SEMO_WORK%\setup_gui.cs" echo         LNKLOG.Bounds = new Rectangle(26, 560, 200, 20);
+>> "%SEMO_WORK%\setup_gui.cs" echo         LNKLOG.Text = LangRow(MISC_SRC)[3];
+>> "%SEMO_WORK%\setup_gui.cs" echo         LNKLOG.Click += new EventHandler(delegate(object s2, EventArgs e2)
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             LOGWRAP.Visible = !LOGWRAP.Visible;
+>> "%SEMO_WORK%\setup_gui.cs" echo             string[] m = LangRow(MISC_SRC);
+>> "%SEMO_WORK%\setup_gui.cs" echo             LNKLOG.Text = LOGWRAP.Visible ? m[3] : m[2];
+>> "%SEMO_WORK%\setup_gui.cs" echo         });
+>> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(LNKLOG);
+>> "%SEMO_WORK%\setup_gui.cs" echo.
+>> "%SEMO_WORK%\setup_gui.cs" echo         BTN_MAIN = new FlatBtn();
+>> "%SEMO_WORK%\setup_gui.cs" echo         BTN_MAIN.Primary = false;
+>> "%SEMO_WORK%\setup_gui.cs" echo         BTN_MAIN.Text = LangRow(MISC_SRC)[0];
+>> "%SEMO_WORK%\setup_gui.cs" echo         BTN_MAIN.Bounds = new Rectangle(466, 556, 120, 40);
+>> "%SEMO_WORK%\setup_gui.cs" echo         BTN_MAIN.Click += new EventHandler(delegate(object s2, EventArgs e2) { F.Close(); });
+>> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(BTN_MAIN);
+>> "%SEMO_WORK%\setup_gui.cs" echo.
+>> "%SEMO_WORK%\setup_gui.cs" echo         // ---- sag panel: proje kartlari karuseli ----
+>> "%SEMO_WORK%\setup_gui.cs" echo         Panel right = new Panel();
+>> "%SEMO_WORK%\setup_gui.cs" echo         right.BackColor = BG_CARD;
+>> "%SEMO_WORK%\setup_gui.cs" echo         right.Bounds = new Rectangle(640, 46, 400, 594);
+>> "%SEMO_WORK%\setup_gui.cs" echo         right.Paint += new PaintEventHandler(delegate(object s2, PaintEventArgs e2)
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             using (Pen p = new Pen(H("#1e2d47"))) e2.Graphics.DrawLine(p, 0, 0, 0, right.Height);
+>> "%SEMO_WORK%\setup_gui.cs" echo         });
+>> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(right);
+>> "%SEMO_WORK%\setup_gui.cs" echo         PROJHEAD = new Label();
+>> "%SEMO_WORK%\setup_gui.cs" echo         PROJHEAD.Text = Tr("setup.projects");
+>> "%SEMO_WORK%\setup_gui.cs" echo         PROJHEAD.ForeColor = FG;
+>> "%SEMO_WORK%\setup_gui.cs" echo         PROJHEAD.Font = new Font("Segoe UI", 10.5f, FontStyle.Bold);
+>> "%SEMO_WORK%\setup_gui.cs" echo         PROJHEAD.Bounds = new Rectangle(28, 20, 344, 22);
+>> "%SEMO_WORK%\setup_gui.cs" echo         right.Controls.Add(PROJHEAD);
+>> "%SEMO_WORK%\setup_gui.cs" echo         Label projsub = new Label();
+>> "%SEMO_WORK%\setup_gui.cs" echo         projsub.Text = "belgeselsemo.com.tr";
+>> "%SEMO_WORK%\setup_gui.cs" echo         projsub.ForeColor = DIM;
+>> "%SEMO_WORK%\setup_gui.cs" echo         projsub.Font = new Font("Segoe UI", 7.5f);
+>> "%SEMO_WORK%\setup_gui.cs" echo         projsub.Bounds = new Rectangle(28, 42, 344, 16);
+>> "%SEMO_WORK%\setup_gui.cs" echo         right.Controls.Add(projsub);
+>> "%SEMO_WORK%\setup_gui.cs" echo.
+>> "%SEMO_WORK%\setup_gui.cs" echo         CAROUSEL = new Carousel();
+>> "%SEMO_WORK%\setup_gui.cs" echo         CAROUSEL.Bounds = new Rectangle(20, 62, 364, 478);
+>> "%SEMO_WORK%\setup_gui.cs" echo         CAROUSEL.BackColor = BG_CARD;
+>> "%SEMO_WORK%\setup_gui.cs" echo         right.Controls.Add(CAROUSEL);
+>> "%SEMO_WORK%\setup_gui.cs" echo         CAROUSEL.Begin(344, 400);
+>> "%SEMO_WORK%\setup_gui.cs" echo         LoadProjectCards();
+>> "%SEMO_WORK%\setup_gui.cs" echo         CAROUSEL.Start();
+>> "%SEMO_WORK%\setup_gui.cs" echo.
+>> "%SEMO_WORK%\setup_gui.cs" echo         Label plang = new Label();
+>> "%SEMO_WORK%\setup_gui.cs" echo         plang.Text = Tr("setup.panel_lang");
+>> "%SEMO_WORK%\setup_gui.cs" echo         plang.ForeColor = DIM;
+>> "%SEMO_WORK%\setup_gui.cs" echo         plang.Font = new Font("Segoe UI", 7.5f);
+>> "%SEMO_WORK%\setup_gui.cs" echo         plang.Bounds = new Rectangle(28, 552, 344, 32);
+>> "%SEMO_WORK%\setup_gui.cs" echo         right.Controls.Add(plang);
+>> "%SEMO_WORK%\setup_gui.cs" echo.
+>> "%SEMO_WORK%\setup_gui.cs" echo         F.Shown += new EventHandler(delegate(object s2, EventArgs e2)
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             Thread th = new Thread(new ThreadStart(DoWork));
+>> "%SEMO_WORK%\setup_gui.cs" echo             th.IsBackground = true;
+>> "%SEMO_WORK%\setup_gui.cs" echo             th.Start();
+>> "%SEMO_WORK%\setup_gui.cs" echo         });
+>> "%SEMO_WORK%\setup_gui.cs" echo     }
+>> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo     // ---------------- Main ----------------
 >> "%SEMO_WORK%\setup_gui.cs" echo     [STAThread]
 >> "%SEMO_WORK%\setup_gui.cs" echo     static void Main(string[] args)
 >> "%SEMO_WORK%\setup_gui.cs" echo     {
->> "%SEMO_WORK%\setup_gui.cs" echo         // v10: sihirbaz corak olmamali — her cokme MessageBox + log ile gorunur
+>> "%SEMO_WORK%\setup_gui.cs" echo         // her cokme MessageBox + log ile gorunur — sessiz olum yok
 >> "%SEMO_WORK%\setup_gui.cs" echo         try
 >> "%SEMO_WORK%\setup_gui.cs" echo         {
 >> "%SEMO_WORK%\setup_gui.cs" echo             Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
@@ -1541,6 +2137,9 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo     static void MainSafe(string[] args)
 >> "%SEMO_WORK%\setup_gui.cs" echo     {
+>> "%SEMO_WORK%\setup_gui.cs" echo         Application.EnableVisualStyles();
+>> "%SEMO_WORK%\setup_gui.cs" echo         Application.SetCompatibleTextRenderingDefault(false);
+>> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo         BAT = (args.Length ^> 0) ? args[0] : "";
 >> "%SEMO_WORK%\setup_gui.cs" echo         IS_ADMIN = (args.Length ^> 2 ^&^& args[2] == "1");
 >> "%SEMO_WORK%\setup_gui.cs" echo         CSC = (args.Length ^> 3 ^&^& args[3].Length ^> 0) ? args[3] : "csc.exe";
@@ -1548,135 +2147,10 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         WORK = Path.Combine(Path.GetTempPath(), "IDM_SEMO_setup");
 >> "%SEMO_WORK%\setup_gui.cs" echo         try { Directory.CreateDirectory(WORK); } catch { }
 >> "%SEMO_WORK%\setup_gui.cs" echo.
+>> "%SEMO_WORK%\setup_gui.cs" echo         InitImgs();   // v14 FIX: v13'te hic cagrilmiyordu — kart gorselleri hep bostu
 >> "%SEMO_WORK%\setup_gui.cs" echo         LoadSetupStrings(DetectLang());
+>> "%SEMO_WORK%\setup_gui.cs" echo         BuildUi();
 >> "%SEMO_WORK%\setup_gui.cs" echo.
->> "%SEMO_WORK%\setup_gui.cs" echo         F = new Form();
->> "%SEMO_WORK%\setup_gui.cs" echo         F.Text = "BELGESELSEMO IDM SEMO - " + Tr("setup.title");
->> "%SEMO_WORK%\setup_gui.cs" echo         F.ClientSize = new Size(1060, 680);
->> "%SEMO_WORK%\setup_gui.cs" echo         F.StartPosition = FormStartPosition.CenterScreen;
->> "%SEMO_WORK%\setup_gui.cs" echo         F.BackColor = BG_ROOT;
->> "%SEMO_WORK%\setup_gui.cs" echo         F.Font = new Font("Segoe UI", 9f);
->> "%SEMO_WORK%\setup_gui.cs" echo         F.FormBorderStyle = FormBorderStyle.FixedSingle;
->> "%SEMO_WORK%\setup_gui.cs" echo         F.MaximizeBox = false;
->> "%SEMO_WORK%\setup_gui.cs" echo         F.TopMost = true;
->> "%SEMO_WORK%\setup_gui.cs" echo.
->> "%SEMO_WORK%\setup_gui.cs" echo         // ---- ust kart: ikon + baslik + aciklama + smartscreen notu ----
->> "%SEMO_WORK%\setup_gui.cs" echo         Panel head = new Panel();
->> "%SEMO_WORK%\setup_gui.cs" echo         head.BackColor = BG_CARD;
->> "%SEMO_WORK%\setup_gui.cs" echo         head.Bounds = new Rectangle(22, 16, 1016, 92);
->> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(head);
->> "%SEMO_WORK%\setup_gui.cs" echo         PictureBox hico = new PictureBox();
->> "%SEMO_WORK%\setup_gui.cs" echo         hico.SizeMode = PictureBoxSizeMode.Zoom;
->> "%SEMO_WORK%\setup_gui.cs" echo         hico.BackColor = BG_CARD;
->> "%SEMO_WORK%\setup_gui.cs" echo         hico.Bounds = new Rectangle(14, 16, 60, 60);
->> "%SEMO_WORK%\setup_gui.cs" echo         hico.Image = ImgFromB64("idm_icon_48.png");
->> "%SEMO_WORK%\setup_gui.cs" echo         head.Controls.Add(hico);
->> "%SEMO_WORK%\setup_gui.cs" echo         Label headT = new Label();
->> "%SEMO_WORK%\setup_gui.cs" echo         headT.Text = "IDM SEMO";
->> "%SEMO_WORK%\setup_gui.cs" echo         headT.ForeColor = CYAN;
->> "%SEMO_WORK%\setup_gui.cs" echo         headT.Font = new Font("Segoe UI", 15f, FontStyle.Bold);
->> "%SEMO_WORK%\setup_gui.cs" echo         headT.Bounds = new Rectangle(84, 10, 320, 30);
->> "%SEMO_WORK%\setup_gui.cs" echo         head.Controls.Add(headT);
->> "%SEMO_WORK%\setup_gui.cs" echo         HEADSUB = new Label();
->> "%SEMO_WORK%\setup_gui.cs" echo         HEADSUB.Text = Tr("setup.sub");
->> "%SEMO_WORK%\setup_gui.cs" echo         HEADSUB.ForeColor = MUT;
->> "%SEMO_WORK%\setup_gui.cs" echo         HEADSUB.Font = new Font("Segoe UI", 8.5f);
->> "%SEMO_WORK%\setup_gui.cs" echo         HEADSUB.Bounds = new Rectangle(84, 42, 920, 18);
->> "%SEMO_WORK%\setup_gui.cs" echo         head.Controls.Add(HEADSUB);
->> "%SEMO_WORK%\setup_gui.cs" echo         HEADTIP = new Label();
->> "%SEMO_WORK%\setup_gui.cs" echo         HEADTIP.Text = Tr("setup.smartscreen");
->> "%SEMO_WORK%\setup_gui.cs" echo         HEADTIP.ForeColor = DIM;
->> "%SEMO_WORK%\setup_gui.cs" echo         HEADTIP.Font = new Font("Segoe UI", 7.5f);
->> "%SEMO_WORK%\setup_gui.cs" echo         HEADTIP.Bounds = new Rectangle(84, 64, 920, 16);
->> "%SEMO_WORK%\setup_gui.cs" echo         head.Controls.Add(HEADTIP);
->> "%SEMO_WORK%\setup_gui.cs" echo.
->> "%SEMO_WORK%\setup_gui.cs" echo         // ---- bilgi satirlari (cmd ciktisi birebir, modern) ----
->> "%SEMO_WORK%\setup_gui.cs" echo         Label info = new Label();
->> "%SEMO_WORK%\setup_gui.cs" echo         info.Font = new Font("Consolas", 9f);
->> "%SEMO_WORK%\setup_gui.cs" echo         info.ForeColor = H("#7dd3fc");
->> "%SEMO_WORK%\setup_gui.cs" echo         info.BackColor = BG_MAIN;
->> "%SEMO_WORK%\setup_gui.cs" echo         info.Bounds = new Rectangle(22, 116, 1016, 58);
->> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(info);
->> "%SEMO_WORK%\setup_gui.cs" echo.
->> "%SEMO_WORK%\setup_gui.cs" echo         // ---- sol: log konsolu ----
->> "%SEMO_WORK%\setup_gui.cs" echo         LOG = new RichTextBox();
->> "%SEMO_WORK%\setup_gui.cs" echo         LOG.Multiline = true;
->> "%SEMO_WORK%\setup_gui.cs" echo         LOG.ReadOnly = true;
->> "%SEMO_WORK%\setup_gui.cs" echo         LOG.ScrollBars = RichTextBoxScrollBars.Vertical;
->> "%SEMO_WORK%\setup_gui.cs" echo         LOG.BackColor = CONSOLE;
->> "%SEMO_WORK%\setup_gui.cs" echo         LOG.ForeColor = FG;
->> "%SEMO_WORK%\setup_gui.cs" echo         LOG.BorderStyle = BorderStyle.FixedSingle;
->> "%SEMO_WORK%\setup_gui.cs" echo         LOG.Font = new Font("Consolas", 8.5f);
->> "%SEMO_WORK%\setup_gui.cs" echo         LOG.Bounds = new Rectangle(22, 182, 560, 420);
->> "%SEMO_WORK%\setup_gui.cs" echo         LOG.Anchor = AnchorStyles.Top ^| AnchorStyles.Bottom ^| AnchorStyles.Left ^| AnchorStyles.Right;
->> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(LOG);
->> "%SEMO_WORK%\setup_gui.cs" echo.
->> "%SEMO_WORK%\setup_gui.cs" echo         // ---- sag: proje kartlari grid ----
->> "%SEMO_WORK%\setup_gui.cs" echo         Panel projP = new Panel();
->> "%SEMO_WORK%\setup_gui.cs" echo         projP.BackColor = BG_CARD;
->> "%SEMO_WORK%\setup_gui.cs" echo         projP.Bounds = new Rectangle(592, 182, 446, 420);
->> "%SEMO_WORK%\setup_gui.cs" echo         projP.Anchor = AnchorStyles.Top ^| AnchorStyles.Bottom ^| AnchorStyles.Left ^| AnchorStyles.Right;
->> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(projP);
->> "%SEMO_WORK%\setup_gui.cs" echo         PROJHEAD = new Label();
->> "%SEMO_WORK%\setup_gui.cs" echo         PROJHEAD.Text = Tr("setup.projects");
->> "%SEMO_WORK%\setup_gui.cs" echo         PROJHEAD.ForeColor = H("#7dd3fc");
->> "%SEMO_WORK%\setup_gui.cs" echo         PROJHEAD.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
->> "%SEMO_WORK%\setup_gui.cs" echo         PROJHEAD.Bounds = new Rectangle(10, 6, 420, 20);
->> "%SEMO_WORK%\setup_gui.cs" echo         projP.Controls.Add(PROJHEAD);
->> "%SEMO_WORK%\setup_gui.cs" echo         CARDS = new FlowLayoutPanel();
->> "%SEMO_WORK%\setup_gui.cs" echo         CARDS.AutoScroll = true;
->> "%SEMO_WORK%\setup_gui.cs" echo         CARDS.BackColor = BG_CARD;
->> "%SEMO_WORK%\setup_gui.cs" echo         CARDS.Bounds = new Rectangle(6, 30, 434, 384);
->> "%SEMO_WORK%\setup_gui.cs" echo         CARDS.Anchor = AnchorStyles.Top ^| AnchorStyles.Bottom ^| AnchorStyles.Left ^| AnchorStyles.Right;
->> "%SEMO_WORK%\setup_gui.cs" echo         projP.Controls.Add(CARDS);
->> "%SEMO_WORK%\setup_gui.cs" echo         Label plang = new Label();
->> "%SEMO_WORK%\setup_gui.cs" echo         plang.Text = Tr("setup.panel_lang");
->> "%SEMO_WORK%\setup_gui.cs" echo         plang.ForeColor = DIM;
->> "%SEMO_WORK%\setup_gui.cs" echo         plang.Font = new Font("Segoe UI", 7f);
->> "%SEMO_WORK%\setup_gui.cs" echo         plang.Bounds = new Rectangle(10, 400, 420, 16);
->> "%SEMO_WORK%\setup_gui.cs" echo         projP.Controls.Add(plang);
->> "%SEMO_WORK%\setup_gui.cs" echo.
->> "%SEMO_WORK%\setup_gui.cs" echo         // v12: kartlar HEMEN dolu — kurulum surerken projeler tanitilir
->> "%SEMO_WORK%\setup_gui.cs" echo         LoadProjectCards();
->> "%SEMO_WORK%\setup_gui.cs" echo.
->> "%SEMO_WORK%\setup_gui.cs" echo         // ---- alt: stage + bar + pct ----
->> "%SEMO_WORK%\setup_gui.cs" echo         STAGE = new Label();
->> "%SEMO_WORK%\setup_gui.cs" echo         STAGE.Text = Tr("setup.ready");
->> "%SEMO_WORK%\setup_gui.cs" echo         STAGE.ForeColor = FG;
->> "%SEMO_WORK%\setup_gui.cs" echo         STAGE.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
->> "%SEMO_WORK%\setup_gui.cs" echo         STAGE.Bounds = new Rectangle(22, 612, 880, 20);
->> "%SEMO_WORK%\setup_gui.cs" echo         STAGE.AutoEllipsis = true;
->> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(STAGE);
->> "%SEMO_WORK%\setup_gui.cs" echo         BARBG = new Panel();
->> "%SEMO_WORK%\setup_gui.cs" echo         BARBG.BackColor = H("#0a1120");
->> "%SEMO_WORK%\setup_gui.cs" echo         BARBG.Bounds = new Rectangle(22, 640, 940, 12);
->> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(BARBG);
->> "%SEMO_WORK%\setup_gui.cs" echo         BARC = new SStrip();
->> "%SEMO_WORK%\setup_gui.cs" echo         BARC.Bounds = new Rectangle(0, 0, 940, 12);
->> "%SEMO_WORK%\setup_gui.cs" echo         BARBG.Controls.Add(BARC);
->> "%SEMO_WORK%\setup_gui.cs" echo         PCT = new Label();
->> "%SEMO_WORK%\setup_gui.cs" echo         PCT.Text = "0%%";
->> "%SEMO_WORK%\setup_gui.cs" echo         PCT.ForeColor = CYAN;
->> "%SEMO_WORK%\setup_gui.cs" echo         PCT.Font = new Font("Consolas", 10f, FontStyle.Bold);
->> "%SEMO_WORK%\setup_gui.cs" echo         PCT.Bounds = new Rectangle(972, 636, 66, 20);
->> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(PCT);
->> "%SEMO_WORK%\setup_gui.cs" echo.
->> "%SEMO_WORK%\setup_gui.cs" echo         // bilgi satiri: OS / hedef / derleyici (cmd ciktisi 1:1)
->> "%SEMO_WORK%\setup_gui.cs" echo         info.Text = "  [*] " + Tr("setup.os") + "      : " + OsName() + "\n"
->> "%SEMO_WORK%\setup_gui.cs" echo                  + "  [*] " + Tr("setup.target") + "   : " + INST + (IS_ADMIN ? "" : "  (user)\n") + ((IS_ADMIN) ? "\n" : "")
->> "%SEMO_WORK%\setup_gui.cs" echo                  + "  [*] " + Tr("setup.compiler") + ": " + CSC;
->> "%SEMO_WORK%\setup_gui.cs" echo.
->> "%SEMO_WORK%\setup_gui.cs" echo         Log("[*] " + Tr("setup.title"));
->> "%SEMO_WORK%\setup_gui.cs" echo.
->> "%SEMO_WORK%\setup_gui.cs" echo         // v11: is parcasi pencere GORUNTULENDIKTEN sonra baslasin (handle garantisi)
->> "%SEMO_WORK%\setup_gui.cs" echo         F.Shown += new EventHandler(delegate(object s2, EventArgs e2)
->> "%SEMO_WORK%\setup_gui.cs" echo         {
->> "%SEMO_WORK%\setup_gui.cs" echo             Thread th = new Thread(new ThreadStart(DoWork));
->> "%SEMO_WORK%\setup_gui.cs" echo             th.IsBackground = true;
->> "%SEMO_WORK%\setup_gui.cs" echo             th.Start();
->> "%SEMO_WORK%\setup_gui.cs" echo         });
->> "%SEMO_WORK%\setup_gui.cs" echo.
->> "%SEMO_WORK%\setup_gui.cs" echo         Application.EnableVisualStyles();
 >> "%SEMO_WORK%\setup_gui.cs" echo         Application.Run(F);
 >> "%SEMO_WORK%\setup_gui.cs" echo     }
 >> "%SEMO_WORK%\setup_gui.cs" echo }
@@ -1709,55 +2183,55 @@ exit /b 0
 start "" mshta "%TEMP%\semo_wait.hta"
 exit /b 0
 ___SEMO_PAYLOAD___
-TVNDRgAAAABVcqsBAAAAACwAAAAAAAAAAwEBAGEAAAAAAAAA7AoAAP8DAQBTaAAAAAAAAAAAYV2I
-qwAASURNX1NFTU9fRWQyay5jcwCwLwAAU2gAAAAAYV2IqwAASURNX1NFTU9fRWQya1NyYy5jcwDl
-YgAAA5gAAAAAYV2IqwAASURNX1NFTU9fRW5naW5lcy5jcwDmHAAA6PoAAAAAYV2IqwAASURNX1NF
-TU9fSTE4bi5jcwBiagAAzhcBAAAAYV2IqwAASURNX1NFTU9fTWFpbi5jcwBGsQAAMIIBAAAAYV2I
-qwAASURNX1NFTU9fUGFnZXNBLmNzANSMAAB2MwIAAABhXYirAABJRE1fU0VNT19QYWdlc0IuY3MA
-rdgAAErAAgAAAGFdiKsAAElETV9TRU1PX1BhZ2VzQy5jcwBgTAAA95gDAAAAYV2IqwAASURNX1NF
-TU9fUGFnZXNELmNzAP0tAABX5QMAAABhXYirAABJRE1fU0VNT19VaS5jcwC2BgAAVBMEAAAAYV2I
-qwAAT0tVQkVOSS50eHQARSIAAAoaBAAAAGFdiKsAAGFwcF9iZWxnZXNlbHNlbW8ucG5nAMEbAABP
-PAQAAABhXYirAABhcHBfZXBnLnBuZwBeHAAAEFgEAAAAYV2IqwAAYXBwX25iNzI0LnBuZwDsGwAA
-bnQEAAAAYV2IqwAAYXBwX251dHVrLnBuZwA9KgAAWpAEAAAAYV2IqwAAYXBwX3RyaXZpYS5wbmcA
-qMIAAJe6BAAAAGFdiKsAAGFyLnR4dAAAnEkAP30FAAAAYV2IqwAAYXJpYTJjLmV4ZQDQpgAAPxlP
-AAAAYV2IqwAAYXoudHh0AB4HAAAPwE8AAABhXYirAABiYWRnZV9jcm93bi5wbmcAUgkAAC3HTwAA
-AGFdiKsAAGJhZGdlX2NyeXB0by5wbmcAOQYAAH/QTwAAAGFdiKsAAGJhZGdlX2hlYXJ0LnBuZwBn
-BgAAuNZPAAAAYV2IqwAAYmFkZ2VfeXQucG5nALEEAAAf3U8AAABhXYirAABidWxsZXRfZW1lcmFs
-ZC5wbmcAWAQAANDhTwAAAGFdiKsAAGJ1bGxldF9nb2xkLnBuZwAxoAAAKOZPAAAAYV2IqwAAZGUu
-dHh0AIfgAABZhlAAAABhXYirAABlbC50eHQAR5kAAOBmUQAAAGFdiKsAAGVuLnR4dAAayQAAJwBS
-AAAAYV2IqwAAZmEudHh0AIEDAABByVIAAABhXYirAABmbGFnX2FyLnBuZwCABAAAwsxSAAAAYV2I
-qwAAZmxhZ19hei5wbmcARgIAAELRUgAAAGFdiKsAAGZsYWdfZGUucG5nALQEAACI01IAAABhXYir
-AABmbGFnX2VsLnBuZwAGCwAAPNhSAAAAYV2IqwAAZmxhZ19lbi5wbmcACQQAAELjUgAAAGFdiKsA
-AGZsYWdfZmEucG5nAM4CAABL51IAAABhXYirAABmbGFnX2ZyLnBuZwAvBAAAGepSAAAAYV2IqwAA
-ZmxhZ19oaS5wbmcA1QEAAEjuUgAAAGFdiKsAAGZsYWdfaWQucG5nAJ0CAAAd8FIAAABhXYirAABm
-bGFnX2l0LnBuZwDxAwAAuvJSAAAAYV2IqwAAZmxhZ19qYS5wbmcA4AMAAKv2UgAAAGFdiKsAAGZs
-YWdfa2EucG5nAPcEAACL+lIAAABhXYirAABmbGFnX2t5LnBuZwDCAgAAgv9SAAAAYV2IqwAAZmxh
-Z19ubC5wbmcA7AMAAEQCUwAAAGFdiKsAAGZsYWdfcHQucG5nAJgCAAAwBlMAAABhXYirAABmbGFn
-X3JvLnBuZwBdAgAAyAhTAAAAYV2IqwAAZmxhZ19ydS5wbmcAnQUAACULUwAAAGFdiKsAAGZsYWdf
-dHIucG5nANQDAADCEFMAAABhXYirAABmbGFnX3ZpLnBuZwA2BAAAlhRTAAAAYV2IqwAAZmxhZ196
-aC5wbmcA/KMAAMwYUwAAAGFdiKsAAGZyLnR4dACnCQEAyLxTAAAAYV2IqwAAaGkudHh0AICYAABv
-xlQAAABhXYirAABpZC50eHQALq8FAO9eVQAAAGFdiKsAAGlkbV9pY29uLmljbwDiWQAAHQ5bAAAA
-YV2IqwAAaWRtX2ljb25fMTI4LnBuZwBfFQAA/2dbAAAAYV2IqwAAaWRtX2ljb25fNDgucG5nACCb
-AABefVsAAABhXYirAABpdC50eHQARrMAAH4YXAAAAGFdiKsAAGphLnR4dADHIAEAxMtcAAAAYV2I
-qwAAa2EudHh0ALHcAACL7F0AAABhXYirAABreS50eHQArwIAADzJXgAAAGFdiKsAAG5hdl8wLnBu
-ZwD1AQAA68teAAAAYV2IqwAAbmF2XzEucG5nACoDAADgzV4AAABhXYirAABuYXZfMi5wbmcA1wIA
-AArRXgAAAGFdiKsAAG5hdl8zLnBuZwDfAgAA4dNeAAAAYV2IqwAAbmF2XzQucG5nANACAADA1l4A
-AABhXYirAABuYXZfNS5wbmcAQwIAAJDZXgAAAGFdiKsAAG5hdl82LnBuZwAGBAAA09teAAAAYV2I
-qwAAbmF2XzcucG5nADsCAADZ314AAABhXYirAABuYXZfOC5wbmcABwMAABTiXgAAAGFdiKsAAG5h
-dl85LnBuZwChmgAAG+VeAAAAYV2IqwAAbmwudHh0AKshAAC8f18AAABhXYirAABwcm9qX2JlbGdl
-c2Vsc2Vtb2ZsaXgucG5nAHgUAABnoV8AAABhXYirAABwcm9qX2Vjb25vbXkucG5nAHcYAADftV8A
-AABhXYirAABwcm9qX21hdHBheS5wbmcAaSAEAFbOXwAAAGFdiKsAAHByb2pfcmV0cm9fYmFubmVy
-LnBuZwDSMQAAv+5jAAAAYV2IqwAAcHJval9yZXRyb19pY29uLnBuZwCYDwAAkSBkAAAAYV2IqwAA
-cHJval95b3V0dWJlLnBuZwCOnQAAKTBkAAAAYV2IqwAAcHQudHh0AIYFAAC3zWQAAABhXYirAABx
-cl9kb24ucG5nAEAGAAA902QAAABhXYirAABxcl9lcGcucG5nAH8FAAB92WQAAABhXYirAABxcl9m
-bGl4LnBuZwCKBQAA/N5kAAAAYV2IqwAAcXJfZ3AucG5nAEQGAACG5GQAAABhXYirAABxcl9ncGFw
-cC5wbmcA0AMAAMrqZAAAAGFdiKsAAHFyX21hdHBheS5wbmcASQYAAJruZAAAAGFdiKsAAHFyX25i
-LnBuZwBSBgAA4/RkAAAAYV2IqwAAcXJfbnV0dWsucG5nAH8FAAA1+2QAAABhXYirAABxcl9wb3Mu
-cG5nAHMFAAC0AGUAAABhXYirAABxcl9wcmVtLnBuZwBaBgAAJwZlAAAAYV2IqwAAcXJfdHJpdmlh
-LnBuZwCrBAAAgQxlAAAAYV2IqwAAcXJfd2ViLnBuZwCcBAAALBFlAAAAYV2IqwAAcXJfeXQucG5n
-AO2gAADIFWUAAABhXYirAAByby50eHQA99oAALW2ZQAAAGFdiKsAAHJ1LnR4dAAwpgAArJFmAAAA
-YV2IqwAAdHIudHh0ADSxAADcN2cAAABhXYirAAB2aS50eHQA29Z6ABDpZwAAAGFdiKsAAHlvdXR1
-YmUtZGwuZXhlAOgXHAHrv+IAAABhXYirAAB5dC1kbHAuZXhlAGGVAADT1/4BAABhXYirAAB6aC50
+TVNDRgAAAABVcqsBAAAAACwAAAAAAAAAAwEBAGEAAAAAAAAA7AoAAP8DAQBTaAAAAAAAAAAAYV2X
+rQAASURNX1NFTU9fRWQyay5jcwCwLwAAU2gAAAAAYV2XrQAASURNX1NFTU9fRWQya1NyYy5jcwDl
+YgAAA5gAAAAAYV2XrQAASURNX1NFTU9fRW5naW5lcy5jcwDmHAAA6PoAAAAAYV2XrQAASURNX1NF
+TU9fSTE4bi5jcwBiagAAzhcBAAAAYV2XrQAASURNX1NFTU9fTWFpbi5jcwBGsQAAMIIBAAAAYV2X
+rQAASURNX1NFTU9fUGFnZXNBLmNzANSMAAB2MwIAAABhXZetAABJRE1fU0VNT19QYWdlc0IuY3MA
+rdgAAErAAgAAAGFdl60AAElETV9TRU1PX1BhZ2VzQy5jcwBgTAAA95gDAAAAYV2XrQAASURNX1NF
+TU9fUGFnZXNELmNzAP0tAABX5QMAAABhXZetAABJRE1fU0VNT19VaS5jcwC2BgAAVBMEAAAAYV2X
+rQAAT0tVQkVOSS50eHQARSIAAAoaBAAAAGFdl60AAGFwcF9iZWxnZXNlbHNlbW8ucG5nAMEbAABP
+PAQAAABhXZetAABhcHBfZXBnLnBuZwBeHAAAEFgEAAAAYV2XrQAAYXBwX25iNzI0LnBuZwDsGwAA
+bnQEAAAAYV2XrQAAYXBwX251dHVrLnBuZwA9KgAAWpAEAAAAYV2XrQAAYXBwX3RyaXZpYS5wbmcA
+qMIAAJe6BAAAAGFdl60AAGFyLnR4dAAAnEkAP30FAAAAYV2XrQAAYXJpYTJjLmV4ZQDQpgAAPxlP
+AAAAYV2XrQAAYXoudHh0AB4HAAAPwE8AAABhXZetAABiYWRnZV9jcm93bi5wbmcAUgkAAC3HTwAA
+AGFdl60AAGJhZGdlX2NyeXB0by5wbmcAOQYAAH/QTwAAAGFdl60AAGJhZGdlX2hlYXJ0LnBuZwBn
+BgAAuNZPAAAAYV2XrQAAYmFkZ2VfeXQucG5nALEEAAAf3U8AAABhXZetAABidWxsZXRfZW1lcmFs
+ZC5wbmcAWAQAANDhTwAAAGFdl60AAGJ1bGxldF9nb2xkLnBuZwAxoAAAKOZPAAAAYV2XrQAAZGUu
+dHh0AIfgAABZhlAAAABhXZetAABlbC50eHQAR5kAAOBmUQAAAGFdl60AAGVuLnR4dAAayQAAJwBS
+AAAAYV2XrQAAZmEudHh0AIEDAABByVIAAABhXZetAABmbGFnX2FyLnBuZwCABAAAwsxSAAAAYV2X
+rQAAZmxhZ19hei5wbmcARgIAAELRUgAAAGFdl60AAGZsYWdfZGUucG5nALQEAACI01IAAABhXZet
+AABmbGFnX2VsLnBuZwAGCwAAPNhSAAAAYV2XrQAAZmxhZ19lbi5wbmcACQQAAELjUgAAAGFdl60A
+AGZsYWdfZmEucG5nAM4CAABL51IAAABhXZetAABmbGFnX2ZyLnBuZwAvBAAAGepSAAAAYV2XrQAA
+ZmxhZ19oaS5wbmcA1QEAAEjuUgAAAGFdl60AAGZsYWdfaWQucG5nAJ0CAAAd8FIAAABhXZetAABm
+bGFnX2l0LnBuZwDxAwAAuvJSAAAAYV2XrQAAZmxhZ19qYS5wbmcA4AMAAKv2UgAAAGFdl60AAGZs
+YWdfa2EucG5nAPcEAACL+lIAAABhXZetAABmbGFnX2t5LnBuZwDCAgAAgv9SAAAAYV2XrQAAZmxh
+Z19ubC5wbmcA7AMAAEQCUwAAAGFdl60AAGZsYWdfcHQucG5nAJgCAAAwBlMAAABhXZetAABmbGFn
+X3JvLnBuZwBdAgAAyAhTAAAAYV2XrQAAZmxhZ19ydS5wbmcAnQUAACULUwAAAGFdl60AAGZsYWdf
+dHIucG5nANQDAADCEFMAAABhXZetAABmbGFnX3ZpLnBuZwA2BAAAlhRTAAAAYV2XrQAAZmxhZ196
+aC5wbmcA/KMAAMwYUwAAAGFdl60AAGZyLnR4dACnCQEAyLxTAAAAYV2XrQAAaGkudHh0AICYAABv
+xlQAAABhXZetAABpZC50eHQALq8FAO9eVQAAAGFdl60AAGlkbV9pY29uLmljbwDiWQAAHQ5bAAAA
+YV2XrQAAaWRtX2ljb25fMTI4LnBuZwBfFQAA/2dbAAAAYV2XrQAAaWRtX2ljb25fNDgucG5nACCb
+AABefVsAAABhXZetAABpdC50eHQARrMAAH4YXAAAAGFdl60AAGphLnR4dADHIAEAxMtcAAAAYV2X
+rQAAa2EudHh0ALHcAACL7F0AAABhXZetAABreS50eHQArwIAADzJXgAAAGFdl60AAG5hdl8wLnBu
+ZwD1AQAA68teAAAAYV2XrQAAbmF2XzEucG5nACoDAADgzV4AAABhXZetAABuYXZfMi5wbmcA1wIA
+AArRXgAAAGFdl60AAG5hdl8zLnBuZwDfAgAA4dNeAAAAYV2XrQAAbmF2XzQucG5nANACAADA1l4A
+AABhXZetAABuYXZfNS5wbmcAQwIAAJDZXgAAAGFdl60AAG5hdl82LnBuZwAGBAAA09teAAAAYV2X
+rQAAbmF2XzcucG5nADsCAADZ314AAABhXZetAABuYXZfOC5wbmcABwMAABTiXgAAAGFdl60AAG5h
+dl85LnBuZwChmgAAG+VeAAAAYV2XrQAAbmwudHh0AKshAAC8f18AAABhXZetAABwcm9qX2JlbGdl
+c2Vsc2Vtb2ZsaXgucG5nAHgUAABnoV8AAABhXZetAABwcm9qX2Vjb25vbXkucG5nAHcYAADftV8A
+AABhXZetAABwcm9qX21hdHBheS5wbmcAaSAEAFbOXwAAAGFdl60AAHByb2pfcmV0cm9fYmFubmVy
+LnBuZwDSMQAAv+5jAAAAYV2XrQAAcHJval9yZXRyb19pY29uLnBuZwCYDwAAkSBkAAAAYV2XrQAA
+cHJval95b3V0dWJlLnBuZwCOnQAAKTBkAAAAYV2XrQAAcHQudHh0AIYFAAC3zWQAAABhXZetAABx
+cl9kb24ucG5nAEAGAAA902QAAABhXZetAABxcl9lcGcucG5nAH8FAAB92WQAAABhXZetAABxcl9m
+bGl4LnBuZwCKBQAA/N5kAAAAYV2XrQAAcXJfZ3AucG5nAEQGAACG5GQAAABhXZetAABxcl9ncGFw
+cC5wbmcA0AMAAMrqZAAAAGFdl60AAHFyX21hdHBheS5wbmcASQYAAJruZAAAAGFdl60AAHFyX25i
+LnBuZwBSBgAA4/RkAAAAYV2XrQAAcXJfbnV0dWsucG5nAH8FAAA1+2QAAABhXZetAABxcl9wb3Mu
+cG5nAHMFAAC0AGUAAABhXZetAABxcl9wcmVtLnBuZwBaBgAAJwZlAAAAYV2XrQAAcXJfdHJpdmlh
+LnBuZwCrBAAAgQxlAAAAYV2XrQAAcXJfd2ViLnBuZwCcBAAALBFlAAAAYV2XrQAAcXJfeXQucG5n
+AO2gAADIFWUAAABhXZetAAByby50eHQA99oAALW2ZQAAAGFdl60AAHJ1LnR4dAAwpgAArJFmAAAA
+YV2XrQAAdHIudHh0ADSxAADcN2cAAABhXZetAAB2aS50eHQA29Z6ABDpZwAAAGFdl60AAHlvdXR1
+YmUtZGwuZXhlAOgXHAHrv+IAAABhXZetAAB5dC1kbHAuZXhlAGGVAADT1/4BAABhXZetAAB6aC50
 eHQAFZlbW9EZAIBDS9U923LbuJLv/gqMt84MuVYUiZLli5LMSRx74jq5le2cechmXZQIWVxTpIak
 HHkSb+1H7Bful2w3LiRIAiSlZGZnUzVjEgQafUMD6G5Ajx+T85dvyOXpm3fkf/7rvwl96fyD0PDG
 D+kxefNy2CHUc27J3E3mCU07JPDDW7J048QPbzokofEdjbsLmmZlO48fi2JiXZ28J8PRqG8TN/TI
