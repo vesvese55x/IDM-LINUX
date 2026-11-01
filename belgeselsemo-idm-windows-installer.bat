@@ -242,7 +242,7 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo     static string Tr2(string k, string arg)
 >> "%SEMO_WORK%\setup_gui.cs" echo     {
->> "%SEMO_WORK%\setup_gui.cs" echo         return Tr(k).Replace("%%s", arg);
+>> "%SEMO_WORK%\setup_gui.cs" echo         return Tr(k).Replace("%s", arg);
 >> "%SEMO_WORK%\setup_gui.cs" echo     }
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo     static void LoadSetupStrings(string code)
@@ -289,26 +289,27 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.os=Isletim sistemi\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.target=Kurulum yeri\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.compiler=C# derleyici\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=Payload cozuluyor (%%s MB)...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=Payload cozuldu (%%s bayt)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=Payload cozuluyor (%s MB)...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=Payload cozuldu (%s bayt)\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2=Dosyalar cikariliyor...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%%s dosya cikarildi\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%s dosya cikarildi\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3=Arayuz dili algilaniyor...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=Arayuz dili: %%s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=Arayuz dili: %s\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4=IDM SEMO paneli derleniyor...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4ok=IDM-SEMO.exe hazir\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5=Kisayollar olusturuluyor (masaustu + baslat menusu + gorev cubugu)...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5ok=Kisayollar hazir\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage6=IDM tespit ediliyor...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM bulundu: %%s\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM bulunamadi - panelde 'Kurulum ^& Baslatma' ^> 'Islemi Simdi Baslat' ile otomatik kurulur\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM bulundu: %s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM bulunamadi - panelde 'Kurulum & Baslatma' > 'Islemi Simdi Baslat' ile otomatik kurulur\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage7=IDM SEMO baslatiliyor...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.done=KURULUM TAMAMLANDI\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=IDM SEMO paneli %%s saniye içinde açılıyor\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=SmartScreen uyarisi gorurseniz: 'Daha fazla bilgi' ^> 'Yine de calistir'\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=Kurulum surerken diger projelerimiz...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=IDM SEMO paneli %s saniye içinde açılıyor\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=SmartScreen uyarisi gorurseniz: 'Daha fazla bilgi' > 'Yine de calistir'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=PROJELERİMİZ\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.err=Kurulum hatasi:\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.ready=Hazir\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.infolabel=İŞLEM BİLGİSİ\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.panel_lang=Panel dili kurulumdan sonra 'Dil Secimi' ekranindan degisebilir\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo         // en
@@ -317,26 +318,27 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.os=Operating system\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.target=Install location\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.compiler=C# compiler\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=Decoding payload (%%s MB)...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=Payload decoded (%%s bytes)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=Decoding payload (%s MB)...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=Payload decoded (%s bytes)\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2=Extracting files...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%%s files extracted\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%s files extracted\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3=Detecting interface language...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=Interface language: %%s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=Interface language: %s\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4=Compiling IDM SEMO panel...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4ok=IDM-SEMO.exe is ready\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5=Creating shortcuts (desktop + start menu + taskbar)...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5ok=Shortcuts ready\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage6=Detecting IDM...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM found: %%s\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM not found - install it from the panel: 'Installation ^& Launch' ^> 'Start Now'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM found: %s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM not found - install it from the panel: 'Installation & Launch' > 'Start Now'\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage7=Starting IDM SEMO...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.done=SETUP COMPLETE\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=IDM SEMO panel opens in %%s seconds\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=If SmartScreen warns you: 'More info' ^> 'Run anyway'\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=While installing, our other projects...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=IDM SEMO panel opens in %s seconds\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=If SmartScreen warns you: 'More info' > 'Run anyway'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=OUR PROJECTS\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.err=Setup error:\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.ready=Ready\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.infolabel=OPERATION STATUS\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.panel_lang=Panel language can be changed later from the 'Language' screen\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo         // ar
@@ -345,26 +347,27 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.os=نظام التشغيل\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.target=مكان التثبيت\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.compiler=مترجم C#\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=جارٍ فك ترميز الحزمة (%%s MB)...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=تم فك ترميز الحزمة (%%s بايت)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=جارٍ فك ترميز الحزمة (%s MB)...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=تم فك ترميز الحزمة (%s بايت)\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2=جارٍ استخراج الملفات...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=تم استخراج %%s ملفًا\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=تم استخراج %s ملفًا\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3=جارٍ اكتشاف لغة الواجهة...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=لغة الواجهة: %%s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=لغة الواجهة: %s\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4=جارٍ ترجمة لوحة IDM SEMO...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4ok=IDM-SEMO.exe جاهز\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5=جارٍ إنشاء الاختصارات (سطح المكتب + قائمة ابدأ + شريط المهام)...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5ok=الاختصارات جاهزة\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage6=جارٍ اكتشاف IDM...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=تم العثور على IDM: %%s\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=لم يتم العثور على IDM - قم بتثبيته من اللوحة: 'التثبيت والتشغيل' ^> 'البدء الآن'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=تم العثور على IDM: %s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=لم يتم العثور على IDM - قم بتثبيته من اللوحة: 'التثبيت والتشغيل' > 'البدء الآن'\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage7=جارٍ تشغيل IDM SEMO...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.done=اكتمل التثبيت\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=تُفتح لوحة IDM SEMO بعد %%s ثانية\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=إذا ظهر تحذير SmartScreen: 'مزيد من المعلومات' ^> 'تشغيل على أي حال'\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=أثناء التثبيت، مشاريعنا الأخرى...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=تُفتح لوحة IDM SEMO بعد %s ثانية\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=إذا ظهر تحذير SmartScreen: 'مزيد من المعلومات' > 'تشغيل على أي حال'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=مشاريعنا\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.err=خطأ في الإعداد:\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.ready=جاهز\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.infolabel=معلومات العملية\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.panel_lang=يمكن تغيير لغة اللوحة لاحقًا من شاشة 'اللغة'\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo         // az
@@ -373,26 +376,27 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.os=Əməliyyat sistemi\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.target=Quraşdırma yeri\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.compiler=C# kompilyatoru\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=Payload açılır (%%s MB)...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=Payload açıldı (%%s bayt)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=Payload açılır (%s MB)...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=Payload açıldı (%s bayt)\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2=Fayllar çıxarılır...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%%s fayl çıxarıldı\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%s fayl çıxarıldı\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3=İnterfeys dili aşkarlanır...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=İnterfeys dili: %%s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=İnterfeys dili: %s\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4=IDM SEMO paneli derlenir...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4ok=IDM-SEMO.exe hazırdır\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5=Qısayollar yaradılır (masaüstü + başlat menyusu + tapşırıq paneli)...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5ok=Qısayollar hazırdır\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage6=IDM aşkarlanır...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM tapıldı: %%s\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM tapılmadı - paneldən quraşdırın: 'Quraşdırma ^& Başlatma' ^> 'İndi Başlat'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM tapıldı: %s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM tapılmadı - paneldən quraşdırın: 'Quraşdırma & Başlatma' > 'İndi Başlat'\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage7=IDM SEMO başladılır...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.done=QURAŞDIRMA TAMAMLANDI\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=IDM SEMO paneli %%s saniyəyə açılır\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=SmartScreen xəbərdarlığı görünsə: 'Daha çox məlumat' ^> 'Yenə də işə sal'\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=Quraşdırma davam edərkən digər layihələrimiz...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=IDM SEMO paneli %s saniyəyə açılır\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=SmartScreen xəbərdarlığı görünsə: 'Daha çox məlumat' > 'Yenə də işə sal'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=LAYİHƏLƏRİMİZ\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.err=Quraşdırma xətası:\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.ready=Hazır\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.infolabel=ƏMƏLİYYAT MƏLUMATI\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.panel_lang=Panel dili sonradan 'Dil Seçimi' ekranından dəyişə bilər\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo         // de
@@ -401,26 +405,27 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.os=Betriebssystem\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.target=Installationsort\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.compiler=C#-Compiler\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=Payload wird dekodiert (%%s MB)...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=Payload dekodiert (%%s Bytes)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=Payload wird dekodiert (%s MB)...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=Payload dekodiert (%s Bytes)\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2=Dateien werden extrahiert...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%%s Dateien extrahiert\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%s Dateien extrahiert\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3=Oberflächensprache wird erkannt...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=Oberflächensprache: %%s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=Oberflächensprache: %s\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4=IDM SEMO-Panel wird kompiliert...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4ok=IDM-SEMO.exe ist bereit\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5=Verknüpfungen werden erstellt (Desktop + Startmenü + Taskleiste)...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5ok=Verknüpfungen bereit\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage6=IDM wird erkannt...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM gefunden: %%s\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM nicht gefunden - Installation im Panel: 'Installation ^& Start' ^> 'Jetzt starten'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM gefunden: %s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM nicht gefunden - Installation im Panel: 'Installation & Start' > 'Jetzt starten'\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage7=IDM SEMO wird gestartet...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.done=INSTALLATION ABGESCHLOSSEN\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=IDM-SEMO-Panel öffnet in %%s Sekunden\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=Wenn SmartScreen warnt: 'Weitere Informationen' ^> 'Trotzdem ausführen'\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=Während der Installation, unsere anderen Projekte...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=IDM-SEMO-Panel öffnet in %s Sekunden\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=Wenn SmartScreen warnt: 'Weitere Informationen' > 'Trotzdem ausführen'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=UNSERE PROJEKTE\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.err=Setup-Fehler:\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.ready=Bereit\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.infolabel=VORGANGSSTATUS\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.panel_lang=Panelsprache kann später im 'Sprache'-Bildschirm geändert werden\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo         // el
@@ -429,26 +434,27 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.os=Λειτουργικό σύστημα\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.target=Τοποθεσία εγκατάστασης\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.compiler=Μεταγλωττιστής C#\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=Αποκωδικοποίηση payload (%%s MB)...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=Το payload αποκωδικοποιήθηκε (%%s bytes)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=Αποκωδικοποίηση payload (%s MB)...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=Το payload αποκωδικοποιήθηκε (%s bytes)\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2=Εξαγωγή αρχείων...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%%s αρχεία εξήχθησαν\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%s αρχεία εξήχθησαν\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3=Εντοπισμός γλώσσας διεπαφής...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=Γλώσσα διεπαφής: %%s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=Γλώσσα διεπαφής: %s\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4=Μεταγλώττιση πίνακα IDM SEMO...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4ok=Το IDM-SEMO.exe είναι έτοιμο\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5=Δημιουργία συντομεύσεων (επιφάνεια εργασίας + μενού έναρξης + γραμμή εργασιών)...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5ok=Οι συντομεύσεις είναι έτοιμες\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage6=Εντοπισμός IDM...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=Το IDM βρέθηκε: %%s\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=Το IDM δεν βρέθηκε - εγκατάσταση από τον πίνακα: 'Εγκατάσταση ^& Εκκίνηση' ^> 'Έναρξη τώρα'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=Το IDM βρέθηκε: %s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=Το IDM δεν βρέθηκε - εγκατάσταση από τον πίνακα: 'Εγκατάσταση & Εκκίνηση' > 'Έναρξη τώρα'\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage7=Εκκίνηση IDM SEMO...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.done=Η ΕΓΚΑΤΑΣΤΑΣΗ ΟΛΟΚΛΗΡΩΘΗΚΕ\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=Το πάνελ IDM SEMO ανοίγει σε %%s δευτερόλεπτα\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=Αν εμφανιστεί προειδοποίηση SmartScreen: 'Περισσότερες πληροφορίες' ^> 'Εκτέλεση ούτως ή άλλως'\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=Κατά την εγκατάσταση, τα άλλα έργα μας...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=Το πάνελ IDM SEMO ανοίγει σε %s δευτερόλεπτα\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=Αν εμφανιστεί προειδοποίηση SmartScreen: 'Περισσότερες πληροφορίες' > 'Εκτέλεση ούτως ή άλλως'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=ΤΑ ΕΡΓΑ ΜΑΣ\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.err=Σφάλμα εγκατάστασης:\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.ready=Έτοιμο\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.infolabel=ΚΑΤΑΣΤΑΣΗ ΕΡΓΑΣΙΑΣ\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.panel_lang=Η γλώσσα του πίνακα μπορεί να αλλάξει αργότερα από την οθόνη 'Γλώσσα'\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo         // fa
@@ -457,26 +463,27 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.os=سیستم‌عامل\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.target=محل نصب\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.compiler=کامپایلر C#\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=در حال رمزگشایی بسته (%%s MB)...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=بسته رمزگشایی شد (%%s بایت)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=در حال رمزگشایی بسته (%s MB)...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=بسته رمزگشایی شد (%s بایت)\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2=در حال استخراج فایل‌ها...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%%s فایل استخراج شد\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%s فایل استخراج شد\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3=در حال تشخیص زبان رابط...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=زبان رابط: %%s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=زبان رابط: %s\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4=در حال کامپایل پنل IDM SEMO...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4ok=IDM-SEMO.exe آماده است\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5=در حال ساخت میان‌برها (دسکتاپ + منوی استارت + نوار وظیفه)...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5ok=میان‌برها آماده‌اند\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage6=در حال تشخیص IDM...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM پیدا شد: %%s\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM پیدا نشد - از پنل نصب کنید: 'نصب و راه‌اندازی' ^> 'شروع کن'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM پیدا شد: %s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM پیدا نشد - از پنل نصب کنید: 'نصب و راه‌اندازی' > 'شروع کن'\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage7=در حال اجرای IDM SEMO...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.done=نصب کامل شد\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=پنل IDM SEMO تا %%s ثانیه باز می‌شود\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=اگر SmartScreen هشدار داد: 'اطلاعات بیشتر' ^> 'اجرا به هر حال'\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=در حین نصب، پروژه‌های دیگر ما...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=پنل IDM SEMO تا %s ثانیه باز می‌شود\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=اگر SmartScreen هشدار داد: 'اطلاعات بیشتر' > 'اجرا به هر حال'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=پروژه‌های ما\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.err=خطای نصب:\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.ready=آماده\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.infolabel=اطلاعات عملیات\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.panel_lang=زبان پنل بعداً از صفحه 'انتخاب زبان' قابل تغییر است\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo         // fr
@@ -485,26 +492,27 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.os=Système d'exploitation\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.target=Emplacement d'installation\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.compiler=Compilateur C#\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=Décodage du payload (%%s Mo)...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=Payload décodé (%%s octets)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=Décodage du payload (%s Mo)...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=Payload décodé (%s octets)\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2=Extraction des fichiers...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%%s fichiers extraits\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%s fichiers extraits\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3=Détection de la langue de l'interface...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=Langue de l'interface : %%s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=Langue de l'interface : %s\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4=Compilation du panneau IDM SEMO...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4ok=IDM-SEMO.exe est prêt\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5=Création des raccourcis (bureau + menu démarrer + barre des tâches)...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5ok=Raccourcis prêts\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage6=Détection d'IDM...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM trouvé : %%s\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM introuvable - installez-le depuis le panneau : 'Installation ^& Lancement' ^> 'Démarrer maintenant'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM trouvé : %s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM introuvable - installez-le depuis le panneau : 'Installation & Lancement' > 'Démarrer maintenant'\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage7=Démarrage d'IDM SEMO...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.done=INSTALLATION TERMINÉE\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=Le panneau IDM SEMO s'ouvre dans %%s secondes\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=Si SmartScreen vous avertit : 'Plus d'infos' ^> 'Exécuter quand même'\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=Pendant l'installation, nos autres projets...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=Le panneau IDM SEMO s'ouvre dans %s secondes\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=Si SmartScreen vous avertit : 'Plus d'infos' > 'Exécuter quand même'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=NOS PROJETS\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.err=Erreur d'installation :\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.ready=Prêt\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.infolabel=ÉTAT DE L'OPÉRATION\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.panel_lang=La langue du panneau peut être modifiée plus tard dans l'écran 'Langue'\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo         // hi
@@ -513,26 +521,27 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.os=ऑपरेटिंग सिस्टम\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.target=इंस्टॉल स्थान\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.compiler=C# कंपाइलर\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=पेलोड डिकोड हो रहा है (%%s MB)...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=पेलोड डिकोड हो गया (%%s बाइट)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=पेलोड डिकोड हो रहा है (%s MB)...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=पेलोड डिकोड हो गया (%s बाइट)\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2=फ़ाइलें निकाली जा रही हैं...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%%s फ़ाइलें निकाली गईं\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%s फ़ाइलें निकाली गईं\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3=इंटरफ़ेस भाषा पहचानी जा रही है...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=इंटरफ़ेस भाषा: %%s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=इंटरफ़ेस भाषा: %s\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4=IDM SEMO पैनल कंपाइल हो रहा है...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4ok=IDM-SEMO.exe तैयार है\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5=शॉर्टकट बनाए जा रहे हैं (डेस्कटॉप + स्टार्ट मेनू + टास्कबार)...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5ok=शॉर्टकट तैयार\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage6=IDM पहचाना जा रहा है...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM मिला: %%s\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM नहीं मिला - पैनल से इंस्टॉल करें: 'इंस्टॉलेशन ^& लॉन्च' ^> 'अभी शुरू करें'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM मिला: %s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM नहीं मिला - पैनल से इंस्टॉल करें: 'इंस्टॉलेशन & लॉन्च' > 'अभी शुरू करें'\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage7=IDM SEMO शुरू हो रहा है...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.done=इंस्टॉलेशन पूर्ण\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=IDM SEMO पैनल %%s सेकंड में खुल रहा है\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=अगर SmartScreen चेतावनी दे: 'अधिक जानकारी' ^> 'फिर भी चलाएँ'\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=इंस्टॉलेशन के दौरान, हमारे अन्य प्रोजेक्ट...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=IDM SEMO पैनल %s सेकंड में खुल रहा है\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=अगर SmartScreen चेतावनी दे: 'अधिक जानकारी' > 'फिर भी चलाएँ'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=हमारे प्रोजेक्ट्स\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.err=सेटअप त्रुटि:\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.ready=तैयार\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.infolabel=ऑपरेशन जानकारी\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.panel_lang=पैनल भाषा बाद में 'भाषा' स्क्रीन से बदली जा सकती है\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo         // id
@@ -541,26 +550,27 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.os=Sistem operasi\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.target=Lokasi instalasi\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.compiler=Kompiler C#\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=Mendekode payload (%%s MB)...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=Payload didekode (%%s byte)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=Mendekode payload (%s MB)...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=Payload didekode (%s byte)\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2=Mengekstrak file...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%%s file diekstrak\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%s file diekstrak\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3=Mendeteksi bahasa antarmuka...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=Bahasa antarmuka: %%s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=Bahasa antarmuka: %s\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4=Mengompilasi panel IDM SEMO...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4ok=IDM-SEMO.exe siap\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5=Membuat pintasan (desktop + menu mulai + bilah tugas)...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5ok=Pintasan siap\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage6=Mendeteksi IDM...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM ditemukan: %%s\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM tidak ditemukan - instal dari panel: 'Instalasi ^& Peluncuran' ^> 'Mulai Sekarang'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM ditemukan: %s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM tidak ditemukan - instal dari panel: 'Instalasi & Peluncuran' > 'Mulai Sekarang'\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage7=Memulai IDM SEMO...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.done=INSTALASI SELESAI\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=Panel IDM SEMO terbuka dalam %%s detik\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=Jika SmartScreen memperingatkan: 'Info selengkapnya' ^> 'Jalankan tetap'\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=Saat menginstal, proyek kami yang lain...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=Panel IDM SEMO terbuka dalam %s detik\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=Jika SmartScreen memperingatkan: 'Info selengkapnya' > 'Jalankan tetap'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=PROYEK KAMI\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.err=Kesalahan setup:\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.ready=Siap\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.infolabel=INFO OPERASI\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.panel_lang=Bahasa panel dapat diubah nanti dari layar 'Bahasa'\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo         // it
@@ -569,26 +579,27 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.os=Sistema operativo\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.target=Percorso di installazione\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.compiler=Compilatore C#\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=Decodifica del payload (%%s MB)...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=Payload decodificato (%%s byte)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=Decodifica del payload (%s MB)...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=Payload decodificato (%s byte)\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2=Estrazione dei file...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%%s file estratti\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%s file estratti\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3=Rilevamento della lingua dell'interfaccia...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=Lingua dell'interfaccia: %%s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=Lingua dell'interfaccia: %s\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4=Compilazione del pannello IDM SEMO...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4ok=IDM-SEMO.exe è pronto\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5=Creazione dei collegamenti (desktop + menu start + barra delle applicazioni)...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5ok=Collegamenti pronti\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage6=Rilevamento di IDM...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM trovato: %%s\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM non trovato - installalo dal pannello: 'Installazione ^& Avvio' ^> 'Avvia ora'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM trovato: %s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM non trovato - installalo dal pannello: 'Installazione & Avvio' > 'Avvia ora'\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage7=Avvio di IDM SEMO...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.done=INSTALLAZIONE COMPLETATA\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=Il pannello IDM SEMO si apre tra %%s secondi\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=Se SmartScreen avvisa: 'Ulteriori informazioni' ^> 'Esegui comunque'\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=Durante l'installazione, i nostri altri progetti...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=Il pannello IDM SEMO si apre tra %s secondi\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=Se SmartScreen avvisa: 'Ulteriori informazioni' > 'Esegui comunque'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=I NOSTRI PROGETTI\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.err=Errore di installazione:\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.ready=Pronto\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.infolabel=STATO OPERAZIONE\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.panel_lang=La lingua del pannello può essere cambiata in seguito dalla schermata 'Lingua'\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo         // ja
@@ -597,26 +608,27 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.os=オペレーティングシステム\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.target=インストール先\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.compiler=C# コンパイラ\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=ペイロードをデコード中 (%%s MB)...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=ペイロードをデコードしました (%%s バイト)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=ペイロードをデコード中 (%s MB)...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=ペイロードをデコードしました (%s バイト)\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2=ファイルを展開中...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%%s 個のファイルを展開しました\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%s 個のファイルを展開しました\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3=インターフェース言語を検出中...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=インターフェース言語: %%s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=インターフェース言語: %s\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4=IDM SEMO パネルをコンパイル中...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4ok=IDM-SEMO.exe の準備ができました\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5=ショートカットを作成中 (デスクトップ + スタートメニュー + タスクバー)...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5ok=ショートカットの準備ができました\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage6=IDM を検出中...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM が見つかりました: %%s\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM が見つかりません - パネルからインストールしてください: 'インストールと起動' ^> '今すぐ開始'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM が見つかりました: %s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM が見つかりません - パネルからインストールしてください: 'インストールと起動' > '今すぐ開始'\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage7=IDM SEMO を起動中...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.done=インストール完了\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=IDM SEMOパネルは%%s秒後に開きます\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=SmartScreen の警告が出た場合: '詳細情報' ^> '実行'\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=インストール中、他のプロジェクトもご覧ください...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=IDM SEMOパネルは%s秒後に開きます\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=SmartScreen の警告が出た場合: '詳細情報' > '実行'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=私たちのプロジェクト\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.err=セットアップエラー:\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.ready=準備完了\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.infolabel=処理情報\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.panel_lang=パネルの言語は後で「言語」画面から変更できます\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo         // ka
@@ -625,26 +637,27 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.os=ოპერაციული სისტემა\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.target=დაყენების ადგილი\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.compiler=C# კომპილატორი\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=პეილოდი იშიფრება (%%s MB)...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=პეილოდი გაიშიფრა (%%s ბაიტი)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=პეილოდი იშიფრება (%s MB)...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=პეილოდი გაიშიფრა (%s ბაიტი)\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2=ფაილები იხსნება...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%%s ფაილი ამოიღეს\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%s ფაილი ამოიღეს\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3=ინტერფეისის ენა გამოვლენილია...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=ინტერფეისის ენა: %%s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=ინტერფეისის ენა: %s\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4=IDM SEMO პანელი კომპილირდება...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4ok=IDM-SEMO.exe მზადაა\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5=მალსახმობები იქმნება (დესკტოპი + დაწყების მენიუ + დავალებების პანელი)...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5ok=მალსახმობები მზადაა\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage6=IDM გამოვლენა...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM ნაპოვნია: %%s\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM ვერ მოიძებნა - დააყენეთ პანელიდან: 'დაყენება და გაშვება' ^> 'ახლავე დაწყება'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM ნაპოვნია: %s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM ვერ მოიძებნა - დააყენეთ პანელიდან: 'დაყენება და გაშვება' > 'ახლავე დაწყება'\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage7=IDM SEMO ირთვება...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.done=დაყენება დასრულდა\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=IDM SEMO პანელი გაიხსნება %%s წამში\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=თუ SmartScreen გაფრთხილებს: 'დამატებითი ინფო' ^> 'მაინც გაშვება'\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=დაყენებისას, ჩვენი სხვა პროექტები...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=IDM SEMO პანელი გაიხსნება %s წამში\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=თუ SmartScreen გაფრთხილებს: 'დამატებითი ინფო' > 'მაინც გაშვება'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=ჩვენი პროექტები\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.err=დაყენების შეცდომა:\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.ready=მზადაა\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.infolabel=ოპერაციის ინფორმაცია\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.panel_lang=პანელის ენა შემდეგ შეიძლება შეიცვალოს 'ენის არჩევანის' ეკრანზე\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo         // ky
@@ -653,26 +666,27 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.os=Операциялык система\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.target=Орнотуу жери\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.compiler=C# компилятору\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=Payload чечилүүдө (%%s MB)...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=Payload чечилди (%%s байт)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=Payload чечилүүдө (%s MB)...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=Payload чечилди (%s байт)\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2=Файлдар чыгарылууда...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%%s файл чыгарылды\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%s файл чыгарылды\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3=Интерфейс тили аныкталууда...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=Интерфейс тили: %%s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=Интерфейс тили: %s\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4=IDM SEMO панели компиляцияланууда...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4ok=IDM-SEMO.exe даяр\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5=Кыска жолдор түзүлүүдө (иш столу + баштоо менюсу + тапшырма панели)...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5ok=Кыска жолдор даяр\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage6=IDM аныкталууда...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM табылды: %%s\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM табылган жок - панелден орнотуңуз: 'Орнотуу ^& Жүргүзүү' ^> 'Азыр Баштоо'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM табылды: %s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM табылган жок - панелден орнотуңуз: 'Орнотуу & Жүргүзүү' > 'Азыр Баштоо'\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage7=IDM SEMO жүргүзүлүүдө...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.done=ОРНОТУУ БҮТТҮ\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=IDM SEMO панели %%s секундта ачылат\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=SmartScreen эскертсе: 'Көбүрөөк маалымат' ^> 'Баарыдан мурун иштетүү'\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=Орнотуу учурунда, башка долбоорлорубуз...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=IDM SEMO панели %s секундта ачылат\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=SmartScreen эскертсе: 'Көбүрөөк маалымат' > 'Баарыдан мурун иштетүү'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=БИЗДИН ПРОЕКТИМДЕР\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.err=Орнотуу катасы:\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.ready=Даяр\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.infolabel=ИШ МААЛЫМАТЫ\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.panel_lang=Панелдин тилин кийин 'Тил тандоо' экранынан өзгөртсө болот\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo         // nl
@@ -681,26 +695,27 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.os=Besturingssysteem\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.target=Installatielocatie\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.compiler=C#-compiler\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=Payload wordt gedecodeerd (%%s MB)...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=Payload gedecodeerd (%%s bytes)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=Payload wordt gedecodeerd (%s MB)...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=Payload gedecodeerd (%s bytes)\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2=Bestanden worden uitgepakt...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%%s bestanden uitgepakt\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%s bestanden uitgepakt\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3=Interfacetaal wordt gedetecteerd...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=Interfacetaal: %%s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=Interfacetaal: %s\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4=IDM SEMO-paneel wordt gecompileerd...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4ok=IDM-SEMO.exe is klaar\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5=Snelkoppelingen worden gemaakt (bureaublad + startmenu + taakbalk)...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5ok=Snelkoppelingen klaar\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage6=IDM wordt gedetecteerd...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM gevonden: %%s\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM niet gevonden - installeer via het paneel: 'Installatie ^& Start' ^> 'Nu starten'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM gevonden: %s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM niet gevonden - installeer via het paneel: 'Installatie & Start' > 'Nu starten'\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage7=IDM SEMO wordt gestart...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.done=INSTALLATIE VOLTOOID\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=IDM SEMO-paneel opent over %%s seconden\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=Als SmartScreen waarschuwt: 'Meer info' ^> 'Toch uitvoeren'\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=Tijdens de installatie, onze andere projecten...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=IDM SEMO-paneel opent over %s seconden\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=Als SmartScreen waarschuwt: 'Meer info' > 'Toch uitvoeren'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=ONZE PROJECTEN\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.err=Setup-fout:\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.ready=Klaar\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.infolabel=PROCESSTATUS\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.panel_lang=Paneeltaal kan later worden gewijzigd via het scherm 'Taal'\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo         // pt
@@ -709,26 +724,27 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.os=Sistema operacional\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.target=Local de instalação\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.compiler=Compilador C#\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=Decodificando payload (%%s MB)...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=Payload decodificado (%%s bytes)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=Decodificando payload (%s MB)...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=Payload decodificado (%s bytes)\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2=Extraindo arquivos...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%%s arquivos extraídos\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%s arquivos extraídos\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3=Detectando idioma da interface...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=Idioma da interface: %%s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=Idioma da interface: %s\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4=Compilando painel IDM SEMO...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4ok=IDM-SEMO.exe está pronto\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5=Criando atalhos (área de trabalho + menu iniciar + barra de tarefas)...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5ok=Atalhos prontos\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage6=Detectando IDM...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM encontrado: %%s\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM não encontrado - instale pelo painel: 'Instalação ^& Início' ^> 'Iniciar agora'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM encontrado: %s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM não encontrado - instale pelo painel: 'Instalação & Início' > 'Iniciar agora'\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage7=Iniciando IDM SEMO...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.done=INSTALAÇÃO CONCLUÍDA\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=O painel IDM SEMO abre em %%s segundos\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=Se o SmartScreen avisar: 'Mais informações' ^> 'Executar assim mesmo'\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=Durante a instalação, nossos outros projetos...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=O painel IDM SEMO abre em %s segundos\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=Se o SmartScreen avisar: 'Mais informações' > 'Executar assim mesmo'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=NOSSOS PROJETOS\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.err=Erro de instalação:\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.ready=Pronto\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.infolabel=STATUS DA OPERAÇÃO\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.panel_lang=O idioma do painel pode ser alterado depois na tela 'Idioma'\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo         // ro
@@ -737,26 +753,27 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.os=Sistem de operare\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.target=Locația instalării\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.compiler=Compilator C#\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=Se decodează payload (%%s MB)...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=Payload decodat (%%s bytes)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=Se decodează payload (%s MB)...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=Payload decodat (%s bytes)\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2=Se extrag fișierele...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%%s fișiere extrase\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=%s fișiere extrase\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3=Se detectează limba interfeței...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=Limba interfeței: %%s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=Limba interfeței: %s\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4=Se compilează panoul IDM SEMO...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4ok=IDM-SEMO.exe este gata\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5=Se creează scurtături (desktop + meniu start + bara de activități)...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5ok=Scurtături gata\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage6=Se detectează IDM...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM găsit: %%s\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM negăsit - instalați din panou: 'Instalare ^& Lansare' ^> 'Pornire acum'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM găsit: %s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM negăsit - instalați din panou: 'Instalare & Lansare' > 'Pornire acum'\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage7=Se pornește IDM SEMO...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.done=INSTALARE COMPLETATĂ\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=Panoul IDM SEMO se deschide în %%s secunde\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=Dacă SmartScreen vă avertizează: 'Mai multe informații' ^> 'Rulează oricum'\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=În timpul instalării, celelalte proiecte ale noastre...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=Panoul IDM SEMO se deschide în %s secunde\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=Dacă SmartScreen vă avertizează: 'Mai multe informații' > 'Rulează oricum'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=PROIECTELE NOASTRE\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.err=Eroare de instalare:\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.ready=Gata\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.infolabel=STARE OPERAȚIUNE\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.panel_lang=Limba panoului poate fi schimbată mai târziu din ecranul 'Limbă'\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo         // ru
@@ -765,26 +782,27 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.os=Операционная система\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.target=Место установки\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.compiler=Компилятор C#\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=Декодирование payload (%%s МБ)...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=Payload декодирован (%%s байт)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=Декодирование payload (%s МБ)...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=Payload декодирован (%s байт)\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2=Распаковка файлов...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=Распаковано файлов: %%s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=Распаковано файлов: %s\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3=Определение языка интерфейса...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=Язык интерфейса: %%s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=Язык интерфейса: %s\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4=Компиляция панели IDM SEMO...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4ok=IDM-SEMO.exe готов\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5=Создание ярлыков (рабочий стол + меню «Пуск» + панель задач)...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5ok=Ярлыки готовы\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage6=Поиск IDM...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM найден: %%s\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM не найден — установите из панели: «Установка и запуск» ^> «Запустить сейчас»\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=IDM найден: %s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=IDM не найден — установите из панели: «Установка и запуск» > «Запустить сейчас»\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage7=Запуск IDM SEMO...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.done=УСТАНОВКА ЗАВЕРШЕНА\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=Панель IDM SEMO откроется через %%s секунд\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=Если SmartScreen предупреждает: «Подробнее» ^> «Выполнить в любом случае»\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=Во время установки — наши другие проекты...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=Панель IDM SEMO откроется через %s секунд\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=Если SmartScreen предупреждает: «Подробнее» > «Выполнить в любом случае»\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=НАШИ ПРОЕКТЫ\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.err=Ошибка установки:\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.ready=Готово\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.infolabel=ИНФОРМАЦИЯ О ПРОЦЕССЕ\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.panel_lang=Язык панели можно изменить позже на экране «Язык»\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo         // vi
@@ -793,26 +811,27 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.os=Hệ điều hành\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.target=Vị trí cài đặt\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.compiler=Trình biên dịch C#\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=Đang giải mã payload (%%s MB)...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=Đã giải mã payload (%%s byte)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=Đang giải mã payload (%s MB)...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=Đã giải mã payload (%s byte)\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2=Đang giải nén tệp...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=Đã giải nén %%s tệp\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=Đã giải nén %s tệp\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3=Đang phát hiện ngôn ngữ giao diện...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=Ngôn ngữ giao diện: %%s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=Ngôn ngữ giao diện: %s\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4=Đang biên dịch bảng điều khiển IDM SEMO...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4ok=IDM-SEMO.exe đã sẵn sàng\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5=Đang tạo lối tắt (màn hình nền + menu bắt đầu + thanh tác vụ)...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5ok=Lối tắt đã sẵn sàng\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage6=Đang phát hiện IDM...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=Đã tìm thấy IDM: %%s\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=Không tìm thấy IDM - cài đặt từ bảng điều khiển: 'Cài đặt ^& Khởi chạy' ^> 'Bắt đầu ngay'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=Đã tìm thấy IDM: %s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=Không tìm thấy IDM - cài đặt từ bảng điều khiển: 'Cài đặt & Khởi chạy' > 'Bắt đầu ngay'\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage7=Đang khởi động IDM SEMO...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.done=CÀI ĐẶT HOÀN TẤT\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=Bảng điều khiển IDM SEMO mở sau %%s giây\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=Nếu SmartScreen cảnh báo: 'Thông tin thêm' ^> 'Vẫn chạy'\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=Trong khi cài đặt, các dự án khác của chúng tôi...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=Bảng điều khiển IDM SEMO mở sau %s giây\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=Nếu SmartScreen cảnh báo: 'Thông tin thêm' > 'Vẫn chạy'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=CÁC DỰ ÁN CỦA CHÚNG TÔI\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.err=Lỗi cài đặt:\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.ready=Sẵn sàng\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.infolabel=TRẠNG THÁI TIẾN TRÌNH\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.panel_lang=Có thể đổi ngôn ngữ bảng điều khiển sau từ màn hình 'Ngôn ngữ'\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo         // zh
@@ -821,50 +840,51 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.os=操作系统\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.target=安装位置\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.compiler=C# 编译器\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=正在解码载荷 (%%s MB)...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=载荷已解码 (%%s 字节)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1=正在解码载荷 (%s MB)...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage1ok=载荷已解码 (%s 字节)\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2=正在解压文件...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=已解压 %%s 个文件\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage2ok=已解压 %s 个文件\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3=正在检测界面语言...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=界面语言: %%s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage3ok=界面语言: %s\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4=正在编译 IDM SEMO 面板...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage4ok=IDM-SEMO.exe 已就绪\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5=正在创建快捷方式 (桌面 + 开始菜单 + 任务栏)...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage5ok=快捷方式已就绪\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage6=正在检测 IDM...\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=找到 IDM: %%s\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=未找到 IDM - 请从面板安装: '安装与启动' ^> '立即开始'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmfound=找到 IDM: %s\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.idmmissing=未找到 IDM - 请从面板安装: '安装与启动' > '立即开始'\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.stage7=正在启动 IDM SEMO...\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.done=安装完成\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=IDM SEMO 面板将在%%s秒后打开\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=如果 SmartScreen 发出警告: '更多信息' ^> '仍要运行'\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=安装期间，我们的其他项目...\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.finish=IDM SEMO 面板将在%s秒后打开\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.smartscreen=如果 SmartScreen 发出警告: '更多信息' > '仍要运行'\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.projects=我们的项目\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.err=安装错误:\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.ready=就绪\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.infolabel=操作状态\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "setup.panel_lang=面板语言稍后可在“语言”屏幕中更改\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo     };
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo     static string BTN_SRC =
->> "%SEMO_WORK%\setup_gui.cs" echo         "tr=İNDİR^|ABONE OL\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "en=GET IT^|SUBSCRIBE\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "ar=احصل عليه^|اشترك\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "az=ƏLDƏ ET^|ABUNƏ OL\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "de=HOLEN^|ABONNIEREN\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "el=ΛΗΨΗ^|ΕΓΓΡΑΦΗ\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "fa=دریافت^|اشتراک\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "fr=OBTENIR^|S'ABONNER\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "hi=प्राप्त करें^|सब्सक्राइब करें\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "id=DAPATKAN^|BERLANGGANAN\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "it=SCARICA^|ISCRIVITI\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "ja=入手する^|登録する\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "ka=მიღება^|გამოწერა\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "ky=АЛУУ^|ЖАЗЫЛУУ\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "nl=OPHALEN^|ABONNIEREN\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "pt=OBTER^|INSCREVER-SE\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "ro=DESCARCĂ^|ABONEAZĂ-TE\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "ru=СКАЧАТЬ^|ПОДПИСАТЬСЯ\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "vi=TẢI XUỐNG^|ĐĂNG KÝ\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "zh=下载^|订阅\n";
+>> "%SEMO_WORK%\setup_gui.cs" echo         "tr=İNDİR|ABONE OL\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "en=GET IT|SUBSCRIBE\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ar=احصل عليه|اشترك\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "az=ƏLDƏ ET|ABUNƏ OL\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "de=HOLEN|ABONNIEREN\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "el=ΛΗΨΗ|ΕΓΓΡΑΦΗ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "fa=دریافت|اشتراک\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "fr=OBTENIR|S'ABONNER\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "hi=प्राप्त करें|सब्सक्राइब करें\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "id=DAPATKAN|BERLANGGANAN\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "it=SCARICA|ISCRIVITI\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ja=入手する|登録する\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ka=მიღება|გამოწერა\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ky=АЛУУ|ЖАЗЫЛУУ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "nl=OPHALEN|ABONNIEREN\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "pt=OBTER|INSCREVER-SE\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ro=DESCARCĂ|ABONEAZĂ-TE\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ru=СКАЧАТЬ|ПОДПИСАТЬСЯ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "vi=TẢI XUỐNG|ĐĂNG KÝ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "zh=下载|订阅\n";
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo     // XP/Vista/7 font guvenligi: Segoe UI yalniz Vista+; XP/2003 -^> Tahoma (CJK fontuyla)
 >> "%SEMO_WORK%\setup_gui.cs" echo     static string UFONT = (Environment.OSVersion.Version.Major ^>= 6) ? "Segoe UI" : "Tahoma";
@@ -963,45 +983,685 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo     static string[] PROJ_DICTS = new string[]
 >> "%SEMO_WORK%\setup_gui.cs" echo     {
 >> "%SEMO_WORK%\setup_gui.cs" echo         // tr
->> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — Türkçe HD Belgesel ^& Araçlar Portalı\\nproj.item.belgeselsemo-web.sub=Tek ^& Seri Belgesel Arşivi • Bilim, Tarih, Uzay, Doğa ^& Ücretsiz Web Araçları\\nproj.item.belgeselsemo-web.badge=AKTİF WEB PORTALI\\nproj.item.youtube-learn-explore.title=BELGESELSEMO Learn ^& Explore (YouTube)\\nproj.item.youtube-learn-explore.sub=Belgesel • Sesli Kitap • Eğitim Dersleri • Bilim ^& Tarih Keşifleri\\nproj.item.youtube-learn-explore.badge=RESMİ YOUTUBE KANALI\\nproj.item.matpay.title=MATPAY — Matematik Paylaşımları (Lisans Ders Notları)\\nproj.item.matpay.sub=Üniversite / Lisans Düzeyi Matematik Ders Notları, İspatlar ve Akademik Kaynaklar\\nproj.item.matpay.badge=AKADEMİK ARŞİV\\nproj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — Masaüstü Medya ^& Araç Üssü\\nproj.item.belgeselsemoflix.sub=Tauri 2 Tabanlı Çapraz Platform Belgesel, Canlı TV Kapısı ^& Entegre Araçlar\\nproj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\\nproj.item.gp-epgviewer.title=BELGESELSEMO TV REHBERİ / TV GUIDE (EPG)\\nproj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Android Telefon, Tablet ^& Android TV Kumanda Uyumlu\\nproj.item.gp-epgviewer.badge=GOOGLE PLAY • 1.000+ İNDİRME\\nproj.item.gp-belgeselsemo.title=BELGESELSEMO — HD Belgesel ^& 20+ Günlük Araç\\nproj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1.000 Belgesel + 20'den Fazla Pratik Araç Tek Uygulamada\\nproj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\\nproj.item.gp-nb724.title=NÖBETÇİ ECZANELER 7/24 TR-KKTC\\nproj.item.gp-nb724.sub=com.belgeselsemo.nb724 • Türkiye (81 İl) ^& KKTC Anlık Nöbetçi Eczane ve GPS Yol Tarifi\\nproj.item.gp-nb724.badge=GOOGLE PLAY • SAĞLIK\\nproj.item.gp-nutuk.title=NUTUK 1919-1927 (Sesli Kitap, Sözlük ^& Bilgi Yarışması)\\nproj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • Gazi Mustafa Kemal Atatürk'ün Ölümsüz Eseri 20+ Dilde\\nproj.item.gp-nutuk.badge=GOOGLE PLAY • TARİH ^& KÜLTÜR\\nproj.item.gp-trivia.title=BELGESELSEMO TRIVIA — Online Bilgi Yarışması\\nproj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 Kategori, 18+ Dil ve Gerçek Zamanlı Çok Oyunculu Düello\\nproj.item.gp-trivia.badge=GOOGLE PLAY • EĞİTİCİ OYUN\\nproj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\\nproj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — Hepsi Tek Uygulamada!\\nproj.item.upcoming-retro-emulator.badge=YAKINDA • ÇAPRAZ PLATFORM\\nproj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\\nproj.item.upcoming-economy.sub=Canlı Döviz • Kripto Para • Değerli Madenler • Emtia • Hesaplama ^& Ekonomi Haberleri\\nproj.item.upcoming-economy.badge=YAKINDA • ANDROID",
+>> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — Türkçe HD Belgesel & Araçlar Portalı\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.sub=Tek & Seri Belgesel Arşivi • Bilim, Tarih, Uzay, Doğa & Ücretsiz Web Araçları\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.badge=AKTİF WEB PORTALI\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.title=BELGESELSEMO Learn & Explore (YouTube)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.sub=Belgesel • Sesli Kitap • Eğitim Dersleri • Bilim & Tarih Keşifleri\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.badge=RESMİ YOUTUBE KANALI\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.title=MATPAY — Matematik Paylaşımları (Lisans Ders Notları)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.sub=Üniversite / Lisans Düzeyi Matematik Ders Notları, İspatlar ve Akademik Kaynaklar\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.badge=AKADEMİK ARŞİV\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — Masaüstü Medya & Araç Üssü\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.sub=Tauri 2 Tabanlı Çapraz Platform Belgesel, Canlı TV Kapısı & Entegre Araçlar\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.title=BELGESELSEMO TV REHBERİ / TV GUIDE (EPG)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Android Telefon, Tablet & Android TV Kumanda Uyumlu\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.badge=GOOGLE PLAY • 1.000+ İNDİRME\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.title=BELGESELSEMO — HD Belgesel & 20+ Günlük Araç\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1.000 Belgesel + 20'den Fazla Pratik Araç Tek Uygulamada\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.title=NÖBETÇİ ECZANELER 7/24 TR-KKTC\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.sub=com.belgeselsemo.nb724 • Türkiye (81 İl) & KKTC Anlık Nöbetçi Eczane ve GPS Yol Tarifi\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.badge=GOOGLE PLAY • SAĞLIK\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.title=NUTUK 1919-1927 (Sesli Kitap, Sözlük & Bilgi Yarışması)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • Gazi Mustafa Kemal Atatürk'ün Ölümsüz Eseri 20+ Dilde\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.badge=GOOGLE PLAY • TARİH & KÜLTÜR\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.title=BELGESELSEMO TRIVIA — Online Bilgi Yarışması\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 Kategori, 18+ Dil ve Gerçek Zamanlı Çok Oyunculu Düello\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.badge=GOOGLE PLAY • EĞİTİCİ OYUN\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — Hepsi Tek Uygulamada!\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.badge=YAKINDA • ÇAPRAZ PLATFORM\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.sub=Canlı Döviz • Kripto Para • Değerli Madenler • Emtia • Hesaplama & Ekonomi Haberleri\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.badge=YAKINDA • ANDROID\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo         // en
->> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — HD Documentary ^& Online Tools Portal\\nproj.item.belgeselsemo-web.sub=Single ^& Series Documentaries • Science, History, Space, Nature ^& Free Web Tools\\nproj.item.belgeselsemo-web.badge=ACTIVE WEB PORTAL\\nproj.item.youtube-learn-explore.title=BELGESELSEMO Learn ^& Explore (YouTube)\\nproj.item.youtube-learn-explore.sub=Documentaries • Audiobooks • Educational Lectures • Science ^& History Explorations\\nproj.item.youtube-learn-explore.badge=OFFICIAL YOUTUBE CHANNEL\\nproj.item.matpay.title=MATPAY — Undergraduate Mathematics Lecture Notes\\nproj.item.matpay.sub=University-Level Mathematics Notes, Theorem Proofs ^& Academic Resources\\nproj.item.matpay.badge=ACADEMIC ARCHIVE\\nproj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — Cross-Platform Desktop Media ^& Tool Suite\\nproj.item.belgeselsemoflix.sub=Tauri 2 Desktop Documentary Hub, Live TV Gateways ^& Built-In Utilities\\nproj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\\nproj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (EPG)\\nproj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Compatible with Android Phones, Tablets ^& Android TV Remotes\\nproj.item.gp-epgviewer.badge=GOOGLE PLAY • 1,000+ DOWNLOADS\\nproj.item.gp-belgeselsemo.title=BELGESELSEMO — HD Documentaries ^& 20+ Daily Tools\\nproj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1,000 Documentaries + Over 20 Practical Tools in One App\\nproj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\\nproj.item.gp-nb724.title=ON-DUTY PHARMACIES 24/7 TR-TRNC\\nproj.item.gp-nb724.sub=com.belgeselsemo.nb724 • Live 24/7 On-Duty Pharmacies ^& GPS Directions Across Türkiye ^& TRNC\\nproj.item.gp-nb724.badge=GOOGLE PLAY • HEALTH\\nproj.item.gp-nutuk.title=NUTUK 1919-1927 (Audiobook, Dictionary ^& Quiz)\\nproj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • Mustafa Kemal Atatürk's Historic Address in 20+ Languages\\nproj.item.gp-nutuk.badge=GOOGLE PLAY • HISTORY ^& CULTURE\\nproj.item.gp-trivia.title=BELGESELSEMO TRIVIA — Online Multiplayer Quiz\\nproj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 Categories, 18+ Languages ^& Real-Time Duels\\nproj.item.gp-trivia.badge=GOOGLE PLAY • EDUCATIONAL GAME\\nproj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\\nproj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — All in One App!\\nproj.item.upcoming-retro-emulator.badge=COMING SOON • CROSS-PLATFORM\\nproj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\\nproj.item.upcoming-economy.sub=Live FX • Crypto • Precious Metals • Commodities • Calculators ^& Economy News\\nproj.item.upcoming-economy.badge=COMING SOON • ANDROID",
+>> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — HD Documentary & Online Tools Portal\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.sub=Single & Series Documentaries • Science, History, Space, Nature & Free Web Tools\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.badge=ACTIVE WEB PORTAL\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.title=BELGESELSEMO Learn & Explore (YouTube)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.sub=Documentaries • Audiobooks • Educational Lectures • Science & History Explorations\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.badge=OFFICIAL YOUTUBE CHANNEL\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.title=MATPAY — Undergraduate Mathematics Lecture Notes\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.sub=University-Level Mathematics Notes, Theorem Proofs & Academic Resources\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.badge=ACADEMIC ARCHIVE\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — Cross-Platform Desktop Media & Tool Suite\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.sub=Tauri 2 Desktop Documentary Hub, Live TV Gateways & Built-In Utilities\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (EPG)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Compatible with Android Phones, Tablets & Android TV Remotes\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.badge=GOOGLE PLAY • 1,000+ DOWNLOADS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.title=BELGESELSEMO — HD Documentaries & 20+ Daily Tools\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1,000 Documentaries + Over 20 Practical Tools in One App\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.title=ON-DUTY PHARMACIES 24/7 TR-TRNC\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.sub=com.belgeselsemo.nb724 • Live 24/7 On-Duty Pharmacies & GPS Directions Across Türkiye & TRNC\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.badge=GOOGLE PLAY • HEALTH\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.title=NUTUK 1919-1927 (Audiobook, Dictionary & Quiz)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • Mustafa Kemal Atatürk's Historic Address in 20+ Languages\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.badge=GOOGLE PLAY • HISTORY & CULTURE\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.title=BELGESELSEMO TRIVIA — Online Multiplayer Quiz\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 Categories, 18+ Languages & Real-Time Duels\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.badge=GOOGLE PLAY • EDUCATIONAL GAME\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — All in One App!\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.badge=COMING SOON • CROSS-PLATFORM\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.sub=Live FX • Crypto • Precious Metals • Commodities • Calculators & Economy News\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.badge=COMING SOON • ANDROID\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo         // ar
->> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — بوابة الأفلام الوثائقية HD والأدوات المجانية\\nproj.item.belgeselsemo-web.sub=أرشيف وثائقيات مفردة ومتسلسلة • علوم وتاريخ وفضاء وطبيعة وأدوات ويب\\nproj.item.belgeselsemo-web.badge=بوابة ويب نشطة\\nproj.item.youtube-learn-explore.title=BELGESELSEMO Learn ^& Explore (YouTube)\\nproj.item.youtube-learn-explore.sub=وثائقيات • كتب صوتية • دروس تعليمية • استكشافات العلوم والتاريخ\\nproj.item.youtube-learn-explore.badge=قناة YOUTUBE الرسمية\\nproj.item.matpay.title=MATPAY — محاضرات الرياضيات الجامعية وإثباتات النظريات\\nproj.item.matpay.sub=مذكرات رياضيات جامعية، براهين رياضية ومصادر أكاديمية مفتوحة\\nproj.item.matpay.badge=أرشيف أكاديمي\\nproj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — مركز الوسائط والأدوات لسطح المكتب\\nproj.item.belgeselsemoflix.sub=تطبيق سطح مكتب متعدد الأنظمة مبني على Tauri 2 للوثائقيات والتلفاز والأدوات\\nproj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\\nproj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (دليل البرامج EPG)\\nproj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • متوافق مع هواتف وأجهزة لوحية وأجهزة تحكم Android TV\\nproj.item.gp-epgviewer.badge=GOOGLE PLAY • +1,000 تنزيل\\nproj.item.gp-belgeselsemo.title=BELGESELSEMO — وثائقيات HD وأكثر من 20 أداة يومية\\nproj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1,000 فيلم وثائقي + أكثر من 20 أداة عملية في تطبيق واحد\\nproj.item.gp-belgeselsemo.badge=GOOGLE PLAY • +500 • 5.0 ★\\nproj.item.gp-nb724.title=الصيدليات المناوبة 24/7 (تركيا وقبرص الشمالية)\\nproj.item.gp-nb724.sub=com.belgeselsemo.nb724 • الصيدليات المناوبة لحظياً وتوجيه GPS\\nproj.item.gp-nb724.badge=GOOGLE PLAY • الصحة\\nproj.item.gp-nutuk.title=نُطُق NUTUK 1919-1927 (كتاب صوتي ومعجم ومسابقات)\\nproj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • العمل التاريخي لمصطفى كمال أتاتورك بأكثر من 20 لغة\\nproj.item.gp-nutuk.badge=GOOGLE PLAY • تاريخ وثقافة\\nproj.item.gp-trivia.title=BELGESELSEMO TRIVIA — مسابقة معلومات جماعية أونلاين\\nproj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 تصنيفاً و18+ لغة ومواجهات مباشرة في الوقت الفعلي\\nproj.item.gp-trivia.badge=GOOGLE PLAY • لعبة تعليمية\\nproj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\\nproj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — الكل في تطبيق واحد!\\nproj.item.upcoming-retro-emulator.badge=قريباً • متعدد المنصات\\nproj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\\nproj.item.upcoming-economy.sub=العملات المباشرة • العملات الرقمية • المعادن الثمينة • السلع • الحاسبات وأخبار الاقتصاد\\nproj.item.upcoming-economy.badge=قريباً • ANDROID",
+>> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — بوابة الأفلام الوثائقية HD والأدوات المجانية\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.sub=أرشيف وثائقيات مفردة ومتسلسلة • علوم وتاريخ وفضاء وطبيعة وأدوات ويب\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.badge=بوابة ويب نشطة\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.title=BELGESELSEMO Learn & Explore (YouTube)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.sub=وثائقيات • كتب صوتية • دروس تعليمية • استكشافات العلوم والتاريخ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.badge=قناة YOUTUBE الرسمية\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.title=MATPAY — محاضرات الرياضيات الجامعية وإثباتات النظريات\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.sub=مذكرات رياضيات جامعية، براهين رياضية ومصادر أكاديمية مفتوحة\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.badge=أرشيف أكاديمي\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — مركز الوسائط والأدوات لسطح المكتب\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.sub=تطبيق سطح مكتب متعدد الأنظمة مبني على Tauri 2 للوثائقيات والتلفاز والأدوات\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (دليل البرامج EPG)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • متوافق مع هواتف وأجهزة لوحية وأجهزة تحكم Android TV\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.badge=GOOGLE PLAY • +1,000 تنزيل\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.title=BELGESELSEMO — وثائقيات HD وأكثر من 20 أداة يومية\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1,000 فيلم وثائقي + أكثر من 20 أداة عملية في تطبيق واحد\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.badge=GOOGLE PLAY • +500 • 5.0 ★\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.title=الصيدليات المناوبة 24/7 (تركيا وقبرص الشمالية)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.sub=com.belgeselsemo.nb724 • الصيدليات المناوبة لحظياً وتوجيه GPS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.badge=GOOGLE PLAY • الصحة\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.title=نُطُق NUTUK 1919-1927 (كتاب صوتي ومعجم ومسابقات)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • العمل التاريخي لمصطفى كمال أتاتورك بأكثر من 20 لغة\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.badge=GOOGLE PLAY • تاريخ وثقافة\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.title=BELGESELSEMO TRIVIA — مسابقة معلومات جماعية أونلاين\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 تصنيفاً و18+ لغة ومواجهات مباشرة في الوقت الفعلي\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.badge=GOOGLE PLAY • لعبة تعليمية\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — الكل في تطبيق واحد!\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.badge=قريباً • متعدد المنصات\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.sub=العملات المباشرة • العملات الرقمية • المعادن الثمينة • السلع • الحاسبات وأخبار الاقتصاد\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.badge=قريباً • ANDROID\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo         // az
->> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — HD Sənədli Film və Alətlər Portalı\\nproj.item.belgeselsemo-web.sub=Tək və Serial Sənədli Filmlər • Elm, Tarix, Kosmos, Təbiət və Pulsuz Veb Alətləri\\nproj.item.belgeselsemo-web.badge=AKTİV VEB PORTALI\\nproj.item.youtube-learn-explore.title=BELGESELSEMO Learn ^& Explore (YouTube)\\nproj.item.youtube-learn-explore.sub=Sənədli Film • Səsli Kitab • Təhsil Dərsləri • Elm və Tarix Kəşfləri\\nproj.item.youtube-learn-explore.badge=RƏSMİ YOUTUBE KANALI\\nproj.item.matpay.title=MATPAY — Riyaziyyat Paylaşımları (Bakalavr Mühazirə Qeydləri)\\nproj.item.matpay.sub=Universitet Səviyyəli Riyaziyyat Dərs Qeydləri, İsbatlar və Akademik Mənbələr\\nproj.item.matpay.badge=AKADEMİK ARXİV\\nproj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — Masaüstü Media və Alət Mərkəzi\\nproj.item.belgeselsemoflix.sub=Tauri 2 Əsaslı Çarpaz Platforma Sənədli Film, Canlı TV Qapısı və Daxili Alətlər\\nproj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\\nproj.item.gp-epgviewer.title=BELGESELSEMO TV BƏLƏDÇİSİ / TV GUIDE (EPG)\\nproj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Android Telefon, Planşet və Android TV Pultuna Uyğun\\nproj.item.gp-epgviewer.badge=GOOGLE PLAY • 1.000+ YÜKLƏMƏ\\nproj.item.gp-belgeselsemo.title=BELGESELSEMO — HD Sənədli Film və 20+ Gündəlik Alət\\nproj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1.000 Sənədli Film + 20-dən Çox Praktik Alət Tək Tətbiqdə\\nproj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\\nproj.item.gp-nb724.title=NÖVBƏTÇİ APTEKLƏR 7/24 TR-ŞKTR\\nproj.item.gp-nb724.sub=com.belgeselsemo.nb724 • Türkiyə (81 İl) və ŞKTR Anlıq Növbətçi Aptek və GPS Marşrut\\nproj.item.gp-nb724.badge=GOOGLE PLAY • SAĞLAMLIQ\\nproj.item.gp-nutuk.title=NUTUK 1919-1927 (Səsli Kitab, Lüğət və Viktorina)\\nproj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • Qazi Mustafa Kamal Atatürkün Ölməz Əsəri 20+ Dildə\\nproj.item.gp-nutuk.badge=GOOGLE PLAY • TARİX VƏ MƏDƏNİYYƏT\\nproj.item.gp-trivia.title=BELGESELSEMO TRIVIA — Onlayn Bilik Yarışması\\nproj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 Kateqoriya, 18+ Dil və Real Vaxt Çoxoyunçulu Duel\\nproj.item.gp-trivia.badge=GOOGLE PLAY • ÖYRƏDİCİ OYUN\\nproj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\\nproj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — Hamısı Tək Tətbiqdə!\\nproj.item.upcoming-retro-emulator.badge=TEZLİKLƏ • ÇARPAZ PLATFORMA\\nproj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\\nproj.item.upcoming-economy.sub=Canlı Valyuta • Kriptovalyuta • Qiymətli Metallar • Əmtəə • Hesablama və İqtisadi Xəbərlər\\nproj.item.upcoming-economy.badge=TEZLİKLƏ • ANDROID",
+>> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — HD Sənədli Film və Alətlər Portalı\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.sub=Tək və Serial Sənədli Filmlər • Elm, Tarix, Kosmos, Təbiət və Pulsuz Veb Alətləri\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.badge=AKTİV VEB PORTALI\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.title=BELGESELSEMO Learn & Explore (YouTube)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.sub=Sənədli Film • Səsli Kitab • Təhsil Dərsləri • Elm və Tarix Kəşfləri\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.badge=RƏSMİ YOUTUBE KANALI\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.title=MATPAY — Riyaziyyat Paylaşımları (Bakalavr Mühazirə Qeydləri)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.sub=Universitet Səviyyəli Riyaziyyat Dərs Qeydləri, İsbatlar və Akademik Mənbələr\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.badge=AKADEMİK ARXİV\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — Masaüstü Media və Alət Mərkəzi\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.sub=Tauri 2 Əsaslı Çarpaz Platforma Sənədli Film, Canlı TV Qapısı və Daxili Alətlər\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.title=BELGESELSEMO TV BƏLƏDÇİSİ / TV GUIDE (EPG)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Android Telefon, Planşet və Android TV Pultuna Uyğun\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.badge=GOOGLE PLAY • 1.000+ YÜKLƏMƏ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.title=BELGESELSEMO — HD Sənədli Film və 20+ Gündəlik Alət\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1.000 Sənədli Film + 20-dən Çox Praktik Alət Tək Tətbiqdə\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.title=NÖVBƏTÇİ APTEKLƏR 7/24 TR-ŞKTR\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.sub=com.belgeselsemo.nb724 • Türkiyə (81 İl) və ŞKTR Anlıq Növbətçi Aptek və GPS Marşrut\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.badge=GOOGLE PLAY • SAĞLAMLIQ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.title=NUTUK 1919-1927 (Səsli Kitab, Lüğət və Viktorina)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • Qazi Mustafa Kamal Atatürkün Ölməz Əsəri 20+ Dildə\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.badge=GOOGLE PLAY • TARİX VƏ MƏDƏNİYYƏT\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.title=BELGESELSEMO TRIVIA — Onlayn Bilik Yarışması\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 Kateqoriya, 18+ Dil və Real Vaxt Çoxoyunçulu Duel\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.badge=GOOGLE PLAY • ÖYRƏDİCİ OYUN\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — Hamısı Tək Tətbiqdə!\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.badge=TEZLİKLƏ • ÇARPAZ PLATFORMA\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.sub=Canlı Valyuta • Kriptovalyuta • Qiymətli Metallar • Əmtəə • Hesablama və İqtisadi Xəbərlər\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.badge=TEZLİKLƏ • ANDROID\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo         // de
->> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — HD-Dokumentationen ^& Online-Werkzeuge\\nproj.item.belgeselsemo-web.sub=Einzel- ^& Seriendokumentationen • Wissenschaft, Geschichte, Weltraum, Natur ^& Web-Tools\\nproj.item.belgeselsemo-web.badge=AKTIVES WEBPORTAL\\nproj.item.youtube-learn-explore.title=BELGESELSEMO Learn ^& Explore (YouTube)\\nproj.item.youtube-learn-explore.sub=Dokumentationen • Hörbücher • Lehrveranstaltungen • Wissenschaft ^& Geschichte\\nproj.item.youtube-learn-explore.badge=OFFIZIELLER YOUTUBE-KANAL\\nproj.item.matpay.title=MATPAY — Mathematische Vorlesungsskripte (Studium)\\nproj.item.matpay.sub=Universitäre Mathematik-Vorlesungsnotizen, Beweise und akademische Ressourcen\\nproj.item.matpay.badge=AKADEMISCHES ARCHIV\\nproj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — Plattformübergreifende Desktop-Medienzentrale\\nproj.item.belgeselsemoflix.sub=Tauri-2-Desktop-Dokumentationszentrum, Live-TV-Zugänge ^& Integrierte Werkzeuge\\nproj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\\nproj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (EPG)\\nproj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Für Android-Smartphones, Tablets ^& Android-TV-Fernbedienungen\\nproj.item.gp-epgviewer.badge=GOOGLE PLAY • 1.000+ DOWNLOADS\\nproj.item.gp-belgeselsemo.title=BELGESELSEMO — HD-Dokus ^& 20+ Alltagswerkzeuge\\nproj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1.000 Dokumentationen + über 20 praktische Werkzeuge in einer App\\nproj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\\nproj.item.gp-nb724.title=NOTDIENST-APOTHEKEN 24/7 TR-NZ\\nproj.item.gp-nb724.sub=com.belgeselsemo.nb724 • Live 24/7 Notdienst-Apotheken ^& GPS-Navigation (Türkei ^& Nordzypern)\\nproj.item.gp-nb724.badge=GOOGLE PLAY • GESUNDHEIT\\nproj.item.gp-nutuk.title=NUTUK 1919-1927 (Hörbuch, Wörterbuch ^& Quiz)\\nproj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • Mustafa Kemal Atatürks historisches Werk in über 20 Sprachen\\nproj.item.gp-nutuk.badge=GOOGLE PLAY • GESCHICHTE ^& KULTUR\\nproj.item.gp-trivia.title=BELGESELSEMO TRIVIA — Online-Wissensquiz\\nproj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 Kategorien, 18+ Sprachen ^& Echtzeit-Mehrspieler-Duelle\\nproj.item.gp-trivia.badge=GOOGLE PLAY • SPIEL ^& WISSEN\\nproj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\\nproj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — Alles in einer App!\\nproj.item.upcoming-retro-emulator.badge=DEMNÄCHST • CROSS-PLATFORM\\nproj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\\nproj.item.upcoming-economy.sub=Live-Devisen • Krypto • Edelmetalle • Rohstoffe • Rechner ^& Wirtschaftsnachrichten\\nproj.item.upcoming-economy.badge=DEMNÄCHST • ANDROID",
+>> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — HD-Dokumentationen & Online-Werkzeuge\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.sub=Einzel- & Seriendokumentationen • Wissenschaft, Geschichte, Weltraum, Natur & Web-Tools\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.badge=AKTIVES WEBPORTAL\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.title=BELGESELSEMO Learn & Explore (YouTube)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.sub=Dokumentationen • Hörbücher • Lehrveranstaltungen • Wissenschaft & Geschichte\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.badge=OFFIZIELLER YOUTUBE-KANAL\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.title=MATPAY — Mathematische Vorlesungsskripte (Studium)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.sub=Universitäre Mathematik-Vorlesungsnotizen, Beweise und akademische Ressourcen\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.badge=AKADEMISCHES ARCHIV\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — Plattformübergreifende Desktop-Medienzentrale\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.sub=Tauri-2-Desktop-Dokumentationszentrum, Live-TV-Zugänge & Integrierte Werkzeuge\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (EPG)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Für Android-Smartphones, Tablets & Android-TV-Fernbedienungen\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.badge=GOOGLE PLAY • 1.000+ DOWNLOADS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.title=BELGESELSEMO — HD-Dokus & 20+ Alltagswerkzeuge\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1.000 Dokumentationen + über 20 praktische Werkzeuge in einer App\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.title=NOTDIENST-APOTHEKEN 24/7 TR-NZ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.sub=com.belgeselsemo.nb724 • Live 24/7 Notdienst-Apotheken & GPS-Navigation (Türkei & Nordzypern)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.badge=GOOGLE PLAY • GESUNDHEIT\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.title=NUTUK 1919-1927 (Hörbuch, Wörterbuch & Quiz)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • Mustafa Kemal Atatürks historisches Werk in über 20 Sprachen\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.badge=GOOGLE PLAY • GESCHICHTE & KULTUR\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.title=BELGESELSEMO TRIVIA — Online-Wissensquiz\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 Kategorien, 18+ Sprachen & Echtzeit-Mehrspieler-Duelle\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.badge=GOOGLE PLAY • SPIEL & WISSEN\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — Alles in einer App!\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.badge=DEMNÄCHST • CROSS-PLATFORM\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.sub=Live-Devisen • Krypto • Edelmetalle • Rohstoffe • Rechner & Wirtschaftsnachrichten\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.badge=DEMNÄCHST • ANDROID\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo         // el
->> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — Πύλη Ντοκιμαντέρ HD ^& Διαδικτυακών Εργαλείων\\nproj.item.belgeselsemo-web.sub=Αυτοτελή ^& Σειρές Ντοκιμαντέρ • Επιστήμη, Ιστορία, Διάστημα, Φύση ^& Δωρεάν Εργαλεία\\nproj.item.belgeselsemo-web.badge=ΕΝΕΡΓΗ ΔΙΑΔΙΚΤΥΑΚΗ ΠΥΛΗ\\nproj.item.youtube-learn-explore.title=BELGESELSEMO Learn ^& Explore (YouTube)\\nproj.item.youtube-learn-explore.sub=Ντοκιμαντέρ • Ηχοβιβλία • Εκπαιδευτικά Μαθήματα • Επιστήμη ^& Ιστορία\\nproj.item.youtube-learn-explore.badge=ΕΠΙΣΗΜΟ ΚΑΝΑΛΙ YOUTUBE\\nproj.item.matpay.title=MATPAY — Πανεπιστημιακές Σημειώσεις Μαθηματικών\\nproj.item.matpay.sub=Προπτυχιακές Σημειώσεις Μαθηματικών, Αποδείξεις Θεωρημάτων ^& Ακαδημαϊκές Πηγές\\nproj.item.matpay.badge=ΑΚΑΔΗΜΑΪΚΟ ΑΡΧΕΙΟ\\nproj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — Κέντρο Πολυμέσων ^& Εργαλείων Υπολογιστή\\nproj.item.belgeselsemoflix.sub=Διαπλατφορμική Εφαρμογή Tauri 2 για Ντοκιμαντέρ, Live TV ^& Ενσωματωμένα Εργαλεία\\nproj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\\nproj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (Οδηγός Προγράμματος EPG)\\nproj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Συμβατό με Κινητά, Tablet ^& Τηλεχειριστήρια Android TV\\nproj.item.gp-epgviewer.badge=GOOGLE PLAY • 1.000+ ΛΗΨΕΙΣ\\nproj.item.gp-belgeselsemo.title=BELGESELSEMO — Ντοκιμαντέρ HD ^& 20+ Καθημερινά Εργαλεία\\nproj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1.000 Ντοκιμαντέρ + Πάνω από 20 Χρήσιμα Εργαλεία σε Μία Εφαρμογή\\nproj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\\nproj.item.gp-nb724.title=ΕΦΗΜΕΡΕΥΟΝΤΑ ΦΑΡΜΑΚΕΙΑ 24/7 TR-KKTC\\nproj.item.gp-nb724.sub=com.belgeselsemo.nb724 • Ζωντανή Λίστα Εφημερευόντων Φαρμακείων ^& Πλοήγηση GPS\\nproj.item.gp-nb724.badge=GOOGLE PLAY • ΥΓΕΙΑ\\nproj.item.gp-nutuk.title=NUTUK 1919-1927 (Ηχοβιβλίο, Λεξικό ^& Κουίζ)\\nproj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • Το Ιστορικό Έργο του Μουσταφά Κεμάλ Ατατούρκ σε 20+ Γλώσσες\\nproj.item.gp-nutuk.badge=GOOGLE PLAY • ΙΣΤΟΡΙΑ ^& ΠΟΛΙΤΙΣΜΟΣ\\nproj.item.gp-trivia.title=BELGESELSEMO TRIVIA — Διαδικτυακό Κουίζ Πολλαπλών Παικτών\\nproj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 Κατηγορίες, 18+ Γλώσσες ^& Μονομαχίες Πραγματικού Χρόνου\\nproj.item.gp-trivia.badge=GOOGLE PLAY • ΕΚΠΑΙΔΕΥΤΙΚΟ ΠΑΙΧΝΙΔΙ\\nproj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\\nproj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — Όλα σε Μία Εφαρμογή!\\nproj.item.upcoming-retro-emulator.badge=ΠΡΟΣΕΧΩΣ • CROSS-PLATFORM\\nproj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\\nproj.item.upcoming-economy.sub=Ζωντανό Συνάλλαγμα • Κρυπτονομίσματα • Πολύτιμα Μέταλλα • Εμπορεύματα ^& Ειδήσεις\\nproj.item.upcoming-economy.badge=ΠΡΟΣΕΧΩΣ • ANDROID",
+>> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — Πύλη Ντοκιμαντέρ HD & Διαδικτυακών Εργαλείων\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.sub=Αυτοτελή & Σειρές Ντοκιμαντέρ • Επιστήμη, Ιστορία, Διάστημα, Φύση & Δωρεάν Εργαλεία\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.badge=ΕΝΕΡΓΗ ΔΙΑΔΙΚΤΥΑΚΗ ΠΥΛΗ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.title=BELGESELSEMO Learn & Explore (YouTube)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.sub=Ντοκιμαντέρ • Ηχοβιβλία • Εκπαιδευτικά Μαθήματα • Επιστήμη & Ιστορία\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.badge=ΕΠΙΣΗΜΟ ΚΑΝΑΛΙ YOUTUBE\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.title=MATPAY — Πανεπιστημιακές Σημειώσεις Μαθηματικών\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.sub=Προπτυχιακές Σημειώσεις Μαθηματικών, Αποδείξεις Θεωρημάτων & Ακαδημαϊκές Πηγές\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.badge=ΑΚΑΔΗΜΑΪΚΟ ΑΡΧΕΙΟ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — Κέντρο Πολυμέσων & Εργαλείων Υπολογιστή\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.sub=Διαπλατφορμική Εφαρμογή Tauri 2 για Ντοκιμαντέρ, Live TV & Ενσωματωμένα Εργαλεία\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (Οδηγός Προγράμματος EPG)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Συμβατό με Κινητά, Tablet & Τηλεχειριστήρια Android TV\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.badge=GOOGLE PLAY • 1.000+ ΛΗΨΕΙΣ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.title=BELGESELSEMO — Ντοκιμαντέρ HD & 20+ Καθημερινά Εργαλεία\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1.000 Ντοκιμαντέρ + Πάνω από 20 Χρήσιμα Εργαλεία σε Μία Εφαρμογή\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.title=ΕΦΗΜΕΡΕΥΟΝΤΑ ΦΑΡΜΑΚΕΙΑ 24/7 TR-KKTC\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.sub=com.belgeselsemo.nb724 • Ζωντανή Λίστα Εφημερευόντων Φαρμακείων & Πλοήγηση GPS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.badge=GOOGLE PLAY • ΥΓΕΙΑ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.title=NUTUK 1919-1927 (Ηχοβιβλίο, Λεξικό & Κουίζ)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • Το Ιστορικό Έργο του Μουσταφά Κεμάλ Ατατούρκ σε 20+ Γλώσσες\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.badge=GOOGLE PLAY • ΙΣΤΟΡΙΑ & ΠΟΛΙΤΙΣΜΟΣ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.title=BELGESELSEMO TRIVIA — Διαδικτυακό Κουίζ Πολλαπλών Παικτών\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 Κατηγορίες, 18+ Γλώσσες & Μονομαχίες Πραγματικού Χρόνου\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.badge=GOOGLE PLAY • ΕΚΠΑΙΔΕΥΤΙΚΟ ΠΑΙΧΝΙΔΙ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — Όλα σε Μία Εφαρμογή!\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.badge=ΠΡΟΣΕΧΩΣ • CROSS-PLATFORM\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.sub=Ζωντανό Συνάλλαγμα • Κρυπτονομίσματα • Πολύτιμα Μέταλλα • Εμπορεύματα & Ειδήσεις\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.badge=ΠΡΟΣΕΧΩΣ • ANDROID\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo         // fa
->> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — درگاه مستندهای HD و ابزارهای آنلاین\\nproj.item.belgeselsemo-web.sub=آرشیو مستندهای تک‌قسمتی و سریالی • علم، تاریخ، فضا، طبیعت و ابزارهای رایگان وب\\nproj.item.belgeselsemo-web.badge=درگاه وب فعال\\nproj.item.youtube-learn-explore.title=BELGESELSEMO Learn ^& Explore (یوتیوب)\\nproj.item.youtube-learn-explore.sub=مستند • کتاب صوتی • درس‌های آموزشی • کاوش در علم و تاریخ\\nproj.item.youtube-learn-explore.badge=کانال رسمی یوتیوب\\nproj.item.matpay.title=MATPAY — جزوات کارشناسی ریاضیات و اثبات قضایا\\nproj.item.matpay.sub=جزوات دانشگاهی ریاضی، اثبات‌های دقیق و منابع علمی آزاد\\nproj.item.matpay.badge=آرشیو دانشگاهی\\nproj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — مرکز رسانه و ابزارهای دسکتاپ\\nproj.item.belgeselsemoflix.sub=برنامه دسکتاپ چندسکویی مبتنی بر Tauri 2 برای مستند، تلویزیون زنده و ابزارها\\nproj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\\nproj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (راهنمای تلویزیون EPG)\\nproj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • سازگار با گوشی، تبلت و کنترل از راه دور Android TV\\nproj.item.gp-epgviewer.badge=GOOGLE PLAY • +1,000 دانلود\\nproj.item.gp-belgeselsemo.title=BELGESELSEMO — مستند HD و بیش از ۲۰ ابزار روزمره\\nproj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • ۱,۰۰۰ مستند + بیش از ۲۰ ابزار کاربردی در یک برنامه واحد\\nproj.item.gp-belgeselsemo.badge=GOOGLE PLAY • +500 • 5.0 ★\\nproj.item.gp-nb724.title=داروخانه‌های کشیک و شبانه‌روزی 24/7 TR-KKTC\\nproj.item.gp-nb724.sub=com.belgeselsemo.nb724 • فهرست زنده داروخانه‌های کشیک و مسیریابی GPS\\nproj.item.gp-nb724.badge=GOOGLE PLAY • سلامت\\nproj.item.gp-nutuk.title=نطق NUTUK 1919-1927 (کتاب صوتی، واژه‌نامه و آزمون)\\nproj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • اثر تاریخی مصطفی کمال آتاتورک به بیش از ۲۰ زبان\\nproj.item.gp-nutuk.badge=GOOGLE PLAY • تاریخ و فرهنگ\\nproj.item.gp-trivia.title=BELGESELSEMO TRIVIA — مسابقه آنلاین اطلاعات عمومی\\nproj.item.gp-trivia.sub=com.belgeselsemo.trivia • ۲۴ دسته‌بندی، ۱۸+ زبان و رقابت چندنفره هم‌زمان\\nproj.item.gp-trivia.badge=GOOGLE PLAY • بازی آموزشی\\nproj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\\nproj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — همه در یک برنامه!\\nproj.item.upcoming-retro-emulator.badge=به‌زودی • چندسکویی\\nproj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\\nproj.item.upcoming-economy.sub=نرخ زنده ارز • رمزارز • فلزات گران‌بها • کالاها • ماشین‌حساب و اخبار اقتصادی\\nproj.item.upcoming-economy.badge=به‌زودی • ANDROID",
+>> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — درگاه مستندهای HD و ابزارهای آنلاین\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.sub=آرشیو مستندهای تک‌قسمتی و سریالی • علم، تاریخ، فضا، طبیعت و ابزارهای رایگان وب\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.badge=درگاه وب فعال\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.title=BELGESELSEMO Learn & Explore (یوتیوب)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.sub=مستند • کتاب صوتی • درس‌های آموزشی • کاوش در علم و تاریخ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.badge=کانال رسمی یوتیوب\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.title=MATPAY — جزوات کارشناسی ریاضیات و اثبات قضایا\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.sub=جزوات دانشگاهی ریاضی، اثبات‌های دقیق و منابع علمی آزاد\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.badge=آرشیو دانشگاهی\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — مرکز رسانه و ابزارهای دسکتاپ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.sub=برنامه دسکتاپ چندسکویی مبتنی بر Tauri 2 برای مستند، تلویزیون زنده و ابزارها\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (راهنمای تلویزیون EPG)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • سازگار با گوشی، تبلت و کنترل از راه دور Android TV\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.badge=GOOGLE PLAY • +1,000 دانلود\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.title=BELGESELSEMO — مستند HD و بیش از ۲۰ ابزار روزمره\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • ۱,۰۰۰ مستند + بیش از ۲۰ ابزار کاربردی در یک برنامه واحد\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.badge=GOOGLE PLAY • +500 • 5.0 ★\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.title=داروخانه‌های کشیک و شبانه‌روزی 24/7 TR-KKTC\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.sub=com.belgeselsemo.nb724 • فهرست زنده داروخانه‌های کشیک و مسیریابی GPS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.badge=GOOGLE PLAY • سلامت\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.title=نطق NUTUK 1919-1927 (کتاب صوتی، واژه‌نامه و آزمون)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • اثر تاریخی مصطفی کمال آتاتورک به بیش از ۲۰ زبان\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.badge=GOOGLE PLAY • تاریخ و فرهنگ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.title=BELGESELSEMO TRIVIA — مسابقه آنلاین اطلاعات عمومی\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.sub=com.belgeselsemo.trivia • ۲۴ دسته‌بندی، ۱۸+ زبان و رقابت چندنفره هم‌زمان\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.badge=GOOGLE PLAY • بازی آموزشی\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — همه در یک برنامه!\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.badge=به‌زودی • چندسکویی\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.sub=نرخ زنده ارز • رمزارز • فلزات گران‌بها • کالاها • ماشین‌حساب و اخبار اقتصادی\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.badge=به‌زودی • ANDROID\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo         // fr
->> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — Portail de Documentaires HD ^& Outils Web\\nproj.item.belgeselsemo-web.sub=Documentaires Uniques ^& Séries • Science, Histoire, Espace, Nature ^& Outils Gratuits\\nproj.item.belgeselsemo-web.badge=PORTAIL WEB ACTIF\\nproj.item.youtube-learn-explore.title=BELGESELSEMO Learn ^& Explore (YouTube)\\nproj.item.youtube-learn-explore.sub=Documentaires • Livres Audio • Cours Éducatifs • Découvertes Science ^& Histoire\\nproj.item.youtube-learn-explore.badge=CHAÎNE YOUTUBE OFFICIELLE\\nproj.item.matpay.title=MATPAY — Notes de Cours de Mathématiques Universitaires\\nproj.item.matpay.sub=Cours de Licence en Mathématiques, Démonstrations de Théorèmes ^& Ressources Académiques\\nproj.item.matpay.badge=ARCHIVE ACADÉMIQUE\\nproj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — Centre Multimédia ^& Outils de Bureau\\nproj.item.belgeselsemoflix.sub=Application Tauri 2 Multiplateforme de Documentaires, TV en Direct ^& Outils Intégrés\\nproj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\\nproj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (EPG)\\nproj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Compatible Smartphones, Tablettes ^& Télécommandes Android TV\\nproj.item.gp-epgviewer.badge=GOOGLE PLAY • 1 000+ TÉLÉCH.\\nproj.item.gp-belgeselsemo.title=BELGESELSEMO — Documentaires HD ^& 20+ Outils Quotidiens\\nproj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1 000 Documentaires + Plus de 20 Outils Pratiques en Une Application\\nproj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\\nproj.item.gp-nb724.title=PHARMACIES DE GARDE 24/7 TR-RTCN\\nproj.item.gp-nb724.sub=com.belgeselsemo.nb724 • Pharmacies de Garde en Direct 24h/24 ^& Itinéraire GPS\\nproj.item.gp-nb724.badge=GOOGLE PLAY • SANTÉ\\nproj.item.gp-nutuk.title=NUTUK 1919-1927 (Livre Audio, Dictionnaire ^& Quiz)\\nproj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • L'Œuvre Historique de Mustafa Kemal Atatürk en 20+ Langues\\nproj.item.gp-nutuk.badge=GOOGLE PLAY • HISTOIRE ^& CULTURE\\nproj.item.gp-trivia.title=BELGESELSEMO TRIVIA — Quiz Multijoueur en Ligne\\nproj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 Catégories, 18+ Langues ^& Duels en Temps Réel\\nproj.item.gp-trivia.badge=GOOGLE PLAY • JEU ÉDUCATIF\\nproj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\\nproj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — Tout-en-Un !\\nproj.item.upcoming-retro-emulator.badge=BIENTÔT • MULTIPLATEFORME\\nproj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\\nproj.item.upcoming-economy.sub=Devises en Direct • Crypto • Métaux Précieux • Matières Premières • Calculs ^& Actualités\\nproj.item.upcoming-economy.badge=BIENTÔT • ANDROID",
+>> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — Portail de Documentaires HD & Outils Web\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.sub=Documentaires Uniques & Séries • Science, Histoire, Espace, Nature & Outils Gratuits\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.badge=PORTAIL WEB ACTIF\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.title=BELGESELSEMO Learn & Explore (YouTube)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.sub=Documentaires • Livres Audio • Cours Éducatifs • Découvertes Science & Histoire\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.badge=CHAÎNE YOUTUBE OFFICIELLE\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.title=MATPAY — Notes de Cours de Mathématiques Universitaires\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.sub=Cours de Licence en Mathématiques, Démonstrations de Théorèmes & Ressources Académiques\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.badge=ARCHIVE ACADÉMIQUE\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — Centre Multimédia & Outils de Bureau\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.sub=Application Tauri 2 Multiplateforme de Documentaires, TV en Direct & Outils Intégrés\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (EPG)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Compatible Smartphones, Tablettes & Télécommandes Android TV\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.badge=GOOGLE PLAY • 1 000+ TÉLÉCH.\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.title=BELGESELSEMO — Documentaires HD & 20+ Outils Quotidiens\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1 000 Documentaires + Plus de 20 Outils Pratiques en Une Application\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.title=PHARMACIES DE GARDE 24/7 TR-RTCN\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.sub=com.belgeselsemo.nb724 • Pharmacies de Garde en Direct 24h/24 & Itinéraire GPS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.badge=GOOGLE PLAY • SANTÉ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.title=NUTUK 1919-1927 (Livre Audio, Dictionnaire & Quiz)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • L'Œuvre Historique de Mustafa Kemal Atatürk en 20+ Langues\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.badge=GOOGLE PLAY • HISTOIRE & CULTURE\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.title=BELGESELSEMO TRIVIA — Quiz Multijoueur en Ligne\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 Catégories, 18+ Langues & Duels en Temps Réel\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.badge=GOOGLE PLAY • JEU ÉDUCATIF\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — Tout-en-Un !\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.badge=BIENTÔT • MULTIPLATEFORME\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.sub=Devises en Direct • Crypto • Métaux Précieux • Matières Premières • Calculs & Actualités\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.badge=BIENTÔT • ANDROID\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo         // hi
->> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — HD डॉक्यूमेंट्री और ऑनलाइन टूल्स पोर्टल\\nproj.item.belgeselsemo-web.sub=एकल और सीरीज़ डॉक्यूमेंट्री संग्रह • विज्ञान, इतिहास, अंतरिक्ष, प्रकृति और मुफ़्त वेब टूल्स\\nproj.item.belgeselsemo-web.badge=सक्रिय वेब पोर्टल\\nproj.item.youtube-learn-explore.title=BELGESELSEMO Learn ^& Explore (YouTube)\\nproj.item.youtube-learn-explore.sub=डॉक्यूमेंट्री • ऑडियोबुक • शैक्षिक व्याख्यान • विज्ञान और इतिहास खोज\\nproj.item.youtube-learn-explore.badge=आधिकारिक YOUTUBE चैनल\\nproj.item.matpay.title=MATPAY — स्नातक स्तर के गणित व्याख्यान नोट्स\\nproj.item.matpay.sub=विश्वविद्यालय स्तरीय गणित नोट्स, प्रमेय प्रमाण और शैक्षणिक संसाधन\\nproj.item.matpay.badge=अकादमिक संग्रह\\nproj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — डेस्कटॉप मीडिया और टूल सेंटर\\nproj.item.belgeselsemoflix.sub=Tauri 2 आधारित क्रॉस-प्लेटफ़ॉर्म डॉक्यूमेंट्री, लाइव टीवी गेटवे और इनबिल्ट टूल्स\\nproj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\\nproj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (EPG टीवी गाइड)\\nproj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Android फ़ोन, टैबलेट और Android TV रिमोट के अनुकूल\\nproj.item.gp-epgviewer.badge=GOOGLE PLAY • 1,000+ डाउनलोड\\nproj.item.gp-belgeselsemo.title=BELGESELSEMO — HD डॉक्यूमेंट्री और 20+ दैनिक टूल्स\\nproj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1,000 डॉक्यूमेंट्री + 20 से अधिक उपयोगी टूल्स एक ही ऐप में\\nproj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\\nproj.item.gp-nb724.title=24/7 ऑन-ड्यूटी फ़ार्मेसी TR-TRNC\\nproj.item.gp-nb724.sub=com.belgeselsemo.nb724 • तुर्की (81 प्रांत) और उत्तरी साइप्रस में लाइव ड्यूटी मेडिकल स्टोर व GPS दिशा\\nproj.item.gp-nb724.badge=GOOGLE PLAY • स्वास्थ्य\\nproj.item.gp-nutuk.title=NUTUK 1919-1927 (ऑडियोबुक, शब्दकोश और क्विज़)\\nproj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • मुस्तफ़ा कमाल अतातुर्क की ऐतिहासिक कृति 20+ भाषाओं में\\nproj.item.gp-nutuk.badge=GOOGLE PLAY • इतिहास और संस्कृति\\nproj.item.gp-trivia.title=BELGESELSEMO TRIVIA — ऑनलाइन मल्टीप्लेयर क्विज़\\nproj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 श्रेणियाँ, 18+ भाषाएँ और रियल-टाइम ऑनलाइन मुक़ाबले\\nproj.item.gp-trivia.badge=GOOGLE PLAY • शैक्षिक गेम\\nproj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\\nproj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — सब कुछ एक ही ऐप में!\\nproj.item.upcoming-retro-emulator.badge=जल्द आ रहा है • क्रॉस-प्लेटफ़ॉर्म\\nproj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\\nproj.item.upcoming-economy.sub=लाइव विदेशी मुद्रा • क्रिप्टो • कीमती धातुएँ • कमोडिटी • कैलकुलेटर व आर्थिक समाचार\\nproj.item.upcoming-economy.badge=जल्द आ रहा है • ANDROID",
+>> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — HD डॉक्यूमेंट्री और ऑनलाइन टूल्स पोर्टल\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.sub=एकल और सीरीज़ डॉक्यूमेंट्री संग्रह • विज्ञान, इतिहास, अंतरिक्ष, प्रकृति और मुफ़्त वेब टूल्स\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.badge=सक्रिय वेब पोर्टल\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.title=BELGESELSEMO Learn & Explore (YouTube)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.sub=डॉक्यूमेंट्री • ऑडियोबुक • शैक्षिक व्याख्यान • विज्ञान और इतिहास खोज\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.badge=आधिकारिक YOUTUBE चैनल\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.title=MATPAY — स्नातक स्तर के गणित व्याख्यान नोट्स\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.sub=विश्वविद्यालय स्तरीय गणित नोट्स, प्रमेय प्रमाण और शैक्षणिक संसाधन\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.badge=अकादमिक संग्रह\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — डेस्कटॉप मीडिया और टूल सेंटर\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.sub=Tauri 2 आधारित क्रॉस-प्लेटफ़ॉर्म डॉक्यूमेंट्री, लाइव टीवी गेटवे और इनबिल्ट टूल्स\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (EPG टीवी गाइड)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Android फ़ोन, टैबलेट और Android TV रिमोट के अनुकूल\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.badge=GOOGLE PLAY • 1,000+ डाउनलोड\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.title=BELGESELSEMO — HD डॉक्यूमेंट्री और 20+ दैनिक टूल्स\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1,000 डॉक्यूमेंट्री + 20 से अधिक उपयोगी टूल्स एक ही ऐप में\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.title=24/7 ऑन-ड्यूटी फ़ार्मेसी TR-TRNC\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.sub=com.belgeselsemo.nb724 • तुर्की (81 प्रांत) और उत्तरी साइप्रस में लाइव ड्यूटी मेडिकल स्टोर व GPS दिशा\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.badge=GOOGLE PLAY • स्वास्थ्य\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.title=NUTUK 1919-1927 (ऑडियोबुक, शब्दकोश और क्विज़)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • मुस्तफ़ा कमाल अतातुर्क की ऐतिहासिक कृति 20+ भाषाओं में\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.badge=GOOGLE PLAY • इतिहास और संस्कृति\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.title=BELGESELSEMO TRIVIA — ऑनलाइन मल्टीप्लेयर क्विज़\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 श्रेणियाँ, 18+ भाषाएँ और रियल-टाइम ऑनलाइन मुक़ाबले\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.badge=GOOGLE PLAY • शैक्षिक गेम\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — सब कुछ एक ही ऐप में!\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.badge=जल्द आ रहा है • क्रॉस-प्लेटफ़ॉर्म\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.sub=लाइव विदेशी मुद्रा • क्रिप्टो • कीमती धातुएँ • कमोडिटी • कैलकुलेटर व आर्थिक समाचार\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.badge=जल्द आ रहा है • ANDROID\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo         // id
->> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — Portal Dokumenter HD ^& Alat Web Gratis\\nproj.item.belgeselsemo-web.sub=Arsip Dokumenter Tunggal ^& Berseri • Sains, Sejarah, Antariksa, Alam ^& Alat Online\\nproj.item.belgeselsemo-web.badge=PORTAL WEB AKTIF\\nproj.item.youtube-learn-explore.title=BELGESELSEMO Learn ^& Explore (YouTube)\\nproj.item.youtube-learn-explore.sub=Dokumenter • Buku Audio • Materi Edukasi • Eksplorasi Sains ^& Sejarah\\nproj.item.youtube-learn-explore.badge=KANAL YOUTUBE RESMI\\nproj.item.matpay.title=MATPAY — Catatan Kuliah Matematika Sarjana\\nproj.item.matpay.sub=Catatan Matematika Tingkat Universitas, Pembuktian Teorema ^& Sumber Akademik\\nproj.item.matpay.badge=ARSIP AKADEMIK\\nproj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — Pusat Media ^& Alat Desktop Lintas Platform\\nproj.item.belgeselsemoflix.sub=Aplikasi Desktop Tauri 2 untuk Dokumenter, Gerbang TV Langsung ^& Alat Terpadu\\nproj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\\nproj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (Panduan EPG)\\nproj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Kompatibel untuk Ponsel, Tablet ^& Remote Android TV\\nproj.item.gp-epgviewer.badge=GOOGLE PLAY • 1.000+ UNDUHAN\\nproj.item.gp-belgeselsemo.title=BELGESELSEMO — Dokumenter HD ^& 20+ Alat Harian\\nproj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1.000 Dokumenter + Lebih dari 20 Alat Praktis dalam Satu Aplikasi\\nproj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\\nproj.item.gp-nb724.title=APOTEK SIAGA 24/7 TR-TRNC\\nproj.item.gp-nb724.sub=com.belgeselsemo.nb724 • Daftar Apotek Jaga 24 Jam ^& Navigasi GPS\\nproj.item.gp-nb724.badge=GOOGLE PLAY • KESEHATAN\\nproj.item.gp-nutuk.title=NUTUK 1919-1927 (Buku Audio, Kamus ^& Kuis Sejarah)\\nproj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • Karya Bersejarah Mustafa Kemal Atatürk dalam 20+ Bahasa\\nproj.item.gp-nutuk.badge=GOOGLE PLAY • SEJARAH ^& BUDAYA\\nproj.item.gp-trivia.title=BELGESELSEMO TRIVIA — Kuis Multipemain Online\\nproj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 Kategori, 18+ Bahasa ^& Duel Waktu Nyata\\nproj.item.gp-trivia.badge=GOOGLE PLAY • GAME EDUKASI\\nproj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\\nproj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — Semua dalam Satu Aplikasi!\\nproj.item.upcoming-retro-emulator.badge=SEGERA HADIR • LINTAS PLATFORM\\nproj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\\nproj.item.upcoming-economy.sub=Valas Langsung • Kripto • Logam Mulia • Komoditas • Kalkulator ^& Berita Ekonomi\\nproj.item.upcoming-economy.badge=SEGERA HADIR • ANDROID",
+>> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — Portal Dokumenter HD & Alat Web Gratis\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.sub=Arsip Dokumenter Tunggal & Berseri • Sains, Sejarah, Antariksa, Alam & Alat Online\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.badge=PORTAL WEB AKTIF\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.title=BELGESELSEMO Learn & Explore (YouTube)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.sub=Dokumenter • Buku Audio • Materi Edukasi • Eksplorasi Sains & Sejarah\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.badge=KANAL YOUTUBE RESMI\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.title=MATPAY — Catatan Kuliah Matematika Sarjana\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.sub=Catatan Matematika Tingkat Universitas, Pembuktian Teorema & Sumber Akademik\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.badge=ARSIP AKADEMIK\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — Pusat Media & Alat Desktop Lintas Platform\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.sub=Aplikasi Desktop Tauri 2 untuk Dokumenter, Gerbang TV Langsung & Alat Terpadu\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (Panduan EPG)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Kompatibel untuk Ponsel, Tablet & Remote Android TV\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.badge=GOOGLE PLAY • 1.000+ UNDUHAN\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.title=BELGESELSEMO — Dokumenter HD & 20+ Alat Harian\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1.000 Dokumenter + Lebih dari 20 Alat Praktis dalam Satu Aplikasi\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.title=APOTEK SIAGA 24/7 TR-TRNC\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.sub=com.belgeselsemo.nb724 • Daftar Apotek Jaga 24 Jam & Navigasi GPS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.badge=GOOGLE PLAY • KESEHATAN\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.title=NUTUK 1919-1927 (Buku Audio, Kamus & Kuis Sejarah)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • Karya Bersejarah Mustafa Kemal Atatürk dalam 20+ Bahasa\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.badge=GOOGLE PLAY • SEJARAH & BUDAYA\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.title=BELGESELSEMO TRIVIA — Kuis Multipemain Online\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 Kategori, 18+ Bahasa & Duel Waktu Nyata\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.badge=GOOGLE PLAY • GAME EDUKASI\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — Semua dalam Satu Aplikasi!\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.badge=SEGERA HADIR • LINTAS PLATFORM\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.sub=Valas Langsung • Kripto • Logam Mulia • Komoditas • Kalkulator & Berita Ekonomi\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.badge=SEGERA HADIR • ANDROID\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo         // it
->> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — Portale Documentari HD ^& Strumenti Web\\nproj.item.belgeselsemo-web.sub=Documentari Singoli ^& Serie • Scienza, Storia, Spazio, Natura ^& Strumenti Gratuiti\\nproj.item.belgeselsemo-web.badge=PORTALE WEB ATTIVO\\nproj.item.youtube-learn-explore.title=BELGESELSEMO Learn ^& Explore (YouTube)\\nproj.item.youtube-learn-explore.sub=Documentari • Audiolibri • Lezioni Educative • Scienza ^& Storia\\nproj.item.youtube-learn-explore.badge=CANALE YOUTUBE UFFICIALE\\nproj.item.matpay.title=MATPAY — Appunti Universitari di Matematica\\nproj.item.matpay.sub=Dispense di Laurea in Matematica, Dimostrazioni di Teoremi ^& Risorse Accademiche\\nproj.item.matpay.badge=ARCHIVIO ACCADEMICO\\nproj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — Centro Multimedia ^& Strumenti Desktop\\nproj.item.belgeselsemoflix.sub=App Desktop Tauri 2 Multipiattaforma per Documentari, Live TV ^& Utilità Integrate\\nproj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\\nproj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (Guida EPG)\\nproj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Compatibile con Smartphone, Tablet ^& Telecomandi Android TV\\nproj.item.gp-epgviewer.badge=GOOGLE PLAY • 1.000+ DOWNLOAD\\nproj.item.gp-belgeselsemo.title=BELGESELSEMO — Documentari HD ^& 20+ Strumenti Quotidiani\\nproj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1.000 Documentari + Oltre 20 Strumenti Pratici in Un'Unica App\\nproj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\\nproj.item.gp-nb724.title=FARMACIE DI TURNO 24/7 TR-RTCN\\nproj.item.gp-nb724.sub=com.belgeselsemo.nb724 • Farmacie di Turno in Tempo Reale ^& Navigazione GPS\\nproj.item.gp-nb724.badge=GOOGLE PLAY • SALUTE\\nproj.item.gp-nutuk.title=NUTUK 1919-1927 (Audiolibro, Dizionario ^& Quiz)\\nproj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • L'Opera Storica di Mustafa Kemal Atatürk in 20+ Lingue\\nproj.item.gp-nutuk.badge=GOOGLE PLAY • STORIA ^& CULTURA\\nproj.item.gp-trivia.title=BELGESELSEMO TRIVIA — Quiz Multiplayer Online\\nproj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 Categorie, 18+ Lingue ^& Sfide in Tempo Reale\\nproj.item.gp-trivia.badge=GOOGLE PLAY • GIOCO EDUCATIVO\\nproj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\\nproj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — Tutto in Un'Unica App!\\nproj.item.upcoming-retro-emulator.badge=IN ARRIVO • MULTIPIATTAFORMA\\nproj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\\nproj.item.upcoming-economy.sub=Valute Live • Cripto • Metalli Preziosi • Materie Prime • Calcolatori ^& Notizie\\nproj.item.upcoming-economy.badge=IN ARRIVO • ANDROID",
+>> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — Portale Documentari HD & Strumenti Web\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.sub=Documentari Singoli & Serie • Scienza, Storia, Spazio, Natura & Strumenti Gratuiti\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.badge=PORTALE WEB ATTIVO\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.title=BELGESELSEMO Learn & Explore (YouTube)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.sub=Documentari • Audiolibri • Lezioni Educative • Scienza & Storia\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.badge=CANALE YOUTUBE UFFICIALE\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.title=MATPAY — Appunti Universitari di Matematica\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.sub=Dispense di Laurea in Matematica, Dimostrazioni di Teoremi & Risorse Accademiche\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.badge=ARCHIVIO ACCADEMICO\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — Centro Multimedia & Strumenti Desktop\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.sub=App Desktop Tauri 2 Multipiattaforma per Documentari, Live TV & Utilità Integrate\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (Guida EPG)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Compatibile con Smartphone, Tablet & Telecomandi Android TV\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.badge=GOOGLE PLAY • 1.000+ DOWNLOAD\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.title=BELGESELSEMO — Documentari HD & 20+ Strumenti Quotidiani\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1.000 Documentari + Oltre 20 Strumenti Pratici in Un'Unica App\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.title=FARMACIE DI TURNO 24/7 TR-RTCN\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.sub=com.belgeselsemo.nb724 • Farmacie di Turno in Tempo Reale & Navigazione GPS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.badge=GOOGLE PLAY • SALUTE\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.title=NUTUK 1919-1927 (Audiolibro, Dizionario & Quiz)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • L'Opera Storica di Mustafa Kemal Atatürk in 20+ Lingue\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.badge=GOOGLE PLAY • STORIA & CULTURA\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.title=BELGESELSEMO TRIVIA — Quiz Multiplayer Online\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 Categorie, 18+ Lingue & Sfide in Tempo Reale\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.badge=GOOGLE PLAY • GIOCO EDUCATIVO\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — Tutto in Un'Unica App!\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.badge=IN ARRIVO • MULTIPIATTAFORMA\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.sub=Valute Live • Cripto • Metalli Preziosi • Materie Prime • Calcolatori & Notizie\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.badge=IN ARRIVO • ANDROID\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo         // ja
->> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — HD ドキュメンタリー ^& 無料 Web ツールポータル\\nproj.item.belgeselsemo-web.sub=単発 ^& シリーズ作品アーカイブ • 科学・歴史・宇宙・自然 ^& 便利なオンラインツール\\nproj.item.belgeselsemo-web.badge=稼働中 WEB ポータル\\nproj.item.youtube-learn-explore.title=BELGESELSEMO Learn ^& Explore (YouTube)\\nproj.item.youtube-learn-explore.sub=ドキュメンタリー • オーディオブック • 教育講座 • 科学と歴史の探求\\nproj.item.youtube-learn-explore.badge=公式 YOUTUBE チャンネル\\nproj.item.matpay.title=MATPAY — 大学数学講義ノート ^& 定理証明アーカイブ\\nproj.item.matpay.sub=大学学部レベルの数学講義ノート・厳密な証明・学術リソース\\nproj.item.matpay.badge=学術アーカイブ\\nproj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — デスクトップ総合メディア ^& ツール拠点\\nproj.item.belgeselsemoflix.sub=Tauri 2 ベースのクロスプラットフォーム・ドキュメンタリー、ライブ TV ^& 内蔵ツール\\nproj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\\nproj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (EPG 番組表)\\nproj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Android スマホ・タブレット・Android TV リモコン完全対応\\nproj.item.gp-epgviewer.badge=GOOGLE PLAY • 1,000+ DL\\nproj.item.gp-belgeselsemo.title=BELGESELSEMO — HD ドキュメンタリー ^& 20種以上の便利ツール\\nproj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 約1,000本のドキュメンタリーと20以上の実用ツールを1つに\\nproj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\\nproj.item.gp-nb724.title=24時間 年中無休 当番薬局ナビ (トルコ全81県 ^& 北キプロス)\\nproj.item.gp-nb724.sub=com.belgeselsemo.nb724 • 現在地から近い順に夜間・休日当番薬局を検索 ^& GPS ナビ\\nproj.item.gp-nb724.badge=GOOGLE PLAY • 医療・健康\\nproj.item.gp-nutuk.title=NUTUK 1919-1927（オーディオブック・用語辞典・クイズ）\\nproj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • アタテュルクの歴史的名著を20以上の言語で読む・聴く\\nproj.item.gp-nutuk.badge=GOOGLE PLAY • 歴史・文化\\nproj.item.gp-trivia.title=BELGESELSEMO TRIVIA — オンライン対戦クイズ\\nproj.item.gp-trivia.sub=com.belgeselsemo.trivia • 全24カテゴリー、18+ 言語、リアルタイム通信対戦\\nproj.item.gp-trivia.badge=GOOGLE PLAY • 知育クイズ\\nproj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\\nproj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — 5つの名機が1つのアプリに！\\nproj.item.upcoming-retro-emulator.badge=近日公開 • クロスプラットフォーム\\nproj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\\nproj.item.upcoming-economy.sub=リアルタイム為替 • 暗号資産 • 貴金属 • コモディティ • 計算ツール ^& 経済ニュース\\nproj.item.upcoming-economy.badge=近日公開 • ANDROID",
+>> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — HD ドキュメンタリー & 無料 Web ツールポータル\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.sub=単発 & シリーズ作品アーカイブ • 科学・歴史・宇宙・自然 & 便利なオンラインツール\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.badge=稼働中 WEB ポータル\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.title=BELGESELSEMO Learn & Explore (YouTube)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.sub=ドキュメンタリー • オーディオブック • 教育講座 • 科学と歴史の探求\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.badge=公式 YOUTUBE チャンネル\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.title=MATPAY — 大学数学講義ノート & 定理証明アーカイブ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.sub=大学学部レベルの数学講義ノート・厳密な証明・学術リソース\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.badge=学術アーカイブ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — デスクトップ総合メディア & ツール拠点\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.sub=Tauri 2 ベースのクロスプラットフォーム・ドキュメンタリー、ライブ TV & 内蔵ツール\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (EPG 番組表)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Android スマホ・タブレット・Android TV リモコン完全対応\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.badge=GOOGLE PLAY • 1,000+ DL\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.title=BELGESELSEMO — HD ドキュメンタリー & 20種以上の便利ツール\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 約1,000本のドキュメンタリーと20以上の実用ツールを1つに\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.title=24時間 年中無休 当番薬局ナビ (トルコ全81県 & 北キプロス)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.sub=com.belgeselsemo.nb724 • 現在地から近い順に夜間・休日当番薬局を検索 & GPS ナビ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.badge=GOOGLE PLAY • 医療・健康\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.title=NUTUK 1919-1927（オーディオブック・用語辞典・クイズ）\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • アタテュルクの歴史的名著を20以上の言語で読む・聴く\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.badge=GOOGLE PLAY • 歴史・文化\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.title=BELGESELSEMO TRIVIA — オンライン対戦クイズ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.sub=com.belgeselsemo.trivia • 全24カテゴリー、18+ 言語、リアルタイム通信対戦\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.badge=GOOGLE PLAY • 知育クイズ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — 5つの名機が1つのアプリに！\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.badge=近日公開 • クロスプラットフォーム\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.sub=リアルタイム為替 • 暗号資産 • 貴金属 • コモディティ • 計算ツール & 経済ニュース\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.badge=近日公開 • ANDROID\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo         // ka
->> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — HD დოკუმენტური ფილმებისა და ვებ-ხელსაწყოების პორტალი\\nproj.item.belgeselsemo-web.sub=ერთეული და სერიული დოკუმენტური არქივი • მეცნიერება, ისტორია, კოსმოსი, ბუნება და უფასო ხელსაწყოები\\nproj.item.belgeselsemo-web.badge=აქტიური ვებ-პორტალი\\nproj.item.youtube-learn-explore.title=BELGESELSEMO Learn ^& Explore (YouTube)\\nproj.item.youtube-learn-explore.sub=დოკუმენტური • აუდიოწიგნები • სასწავლო გაკვეთილები • მეცნიერება და ისტორია\\nproj.item.youtube-learn-explore.badge=ოფიციალური YOUTUBE არხი\\nproj.item.matpay.title=MATPAY — უმაღლესი მათემატიკის საუნივერსიტეტო ლექციები\\nproj.item.matpay.sub=საბაკალავრო მათემატიკის კონსპექტები, თეორემების დამტკიცება და აკადემიური რესურსები\\nproj.item.matpay.badge=აკადემიური არქივი\\nproj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — კომპიუტერული მედია და ხელსაწყოების ცენტრი\\nproj.item.belgeselsemoflix.sub=Tauri 2-ზე დაფუძნებული კროსპლატფორმული დოკუმენტური, Live TV და ხელსაწყოების აპლიკაცია\\nproj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\\nproj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (EPG ტელეპროგრამა)\\nproj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • თავსებადია Android ტელეფონებთან, პლანშეტებთან და Android TV პულტთან\\nproj.item.gp-epgviewer.badge=GOOGLE PLAY • 1 000+ ჩამოტვირთვა\\nproj.item.gp-belgeselsemo.title=BELGESELSEMO — HD დოკუმენტური ფილმები და 20+ ყოველდღიური ხელსაწყო\\nproj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1 000 ფილმი + 20-ზე მეტი პრაქტიკული ხელსაწყო ერთ აპლიკაციაში\\nproj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\\nproj.item.gp-nb724.title=მორიგე აფთიაქები 24/7 TR-KKTC\\nproj.item.gp-nb724.sub=com.belgeselsemo.nb724 • 24/7 მორიგე აფთიაქები და GPS მარშრუტი\\nproj.item.gp-nb724.badge=GOOGLE PLAY • ჯანმრთელობა\\nproj.item.gp-nutuk.title=NUTUK 1919-1927 (აუდიოწიგნი, ლექსიკონი და ვიქტორინა)\\nproj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • მუსტაფა ქემალ ათათურქის ისტორიული ნაშრომი 20+ ენაზე\\nproj.item.gp-nutuk.badge=GOOGLE PLAY • ისტორია და კულტურა\\nproj.item.gp-trivia.title=BELGESELSEMO TRIVIA — ონლაინ მრავალმოთამაშიანი ვიქტორინა\\nproj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 კატეგორია, 18+ ენა და რეალური დროის დუელები\\nproj.item.gp-trivia.badge=GOOGLE PLAY • შემეცნებითი თამაში\\nproj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\\nproj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — ყველაფერი ერთ აპლიკაციაში!\\nproj.item.upcoming-retro-emulator.badge=მალე • კროსპლატფორმული\\nproj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\\nproj.item.upcoming-economy.sub=ცოცხალი ვალუტა • კრიპტო • ძვირფასი ლითონები • საქონელი • კალკულატორები და ეკონომიკური სიახლეები\\nproj.item.upcoming-economy.badge=მალე • ANDROID",
+>> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — HD დოკუმენტური ფილმებისა და ვებ-ხელსაწყოების პორტალი\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.sub=ერთეული და სერიული დოკუმენტური არქივი • მეცნიერება, ისტორია, კოსმოსი, ბუნება და უფასო ხელსაწყოები\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.badge=აქტიური ვებ-პორტალი\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.title=BELGESELSEMO Learn & Explore (YouTube)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.sub=დოკუმენტური • აუდიოწიგნები • სასწავლო გაკვეთილები • მეცნიერება და ისტორია\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.badge=ოფიციალური YOUTUBE არხი\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.title=MATPAY — უმაღლესი მათემატიკის საუნივერსიტეტო ლექციები\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.sub=საბაკალავრო მათემატიკის კონსპექტები, თეორემების დამტკიცება და აკადემიური რესურსები\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.badge=აკადემიური არქივი\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — კომპიუტერული მედია და ხელსაწყოების ცენტრი\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.sub=Tauri 2-ზე დაფუძნებული კროსპლატფორმული დოკუმენტური, Live TV და ხელსაწყოების აპლიკაცია\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (EPG ტელეპროგრამა)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • თავსებადია Android ტელეფონებთან, პლანშეტებთან და Android TV პულტთან\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.badge=GOOGLE PLAY • 1 000+ ჩამოტვირთვა\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.title=BELGESELSEMO — HD დოკუმენტური ფილმები და 20+ ყოველდღიური ხელსაწყო\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1 000 ფილმი + 20-ზე მეტი პრაქტიკული ხელსაწყო ერთ აპლიკაციაში\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.title=მორიგე აფთიაქები 24/7 TR-KKTC\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.sub=com.belgeselsemo.nb724 • 24/7 მორიგე აფთიაქები და GPS მარშრუტი\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.badge=GOOGLE PLAY • ჯანმრთელობა\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.title=NUTUK 1919-1927 (აუდიოწიგნი, ლექსიკონი და ვიქტორინა)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • მუსტაფა ქემალ ათათურქის ისტორიული ნაშრომი 20+ ენაზე\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.badge=GOOGLE PLAY • ისტორია და კულტურა\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.title=BELGESELSEMO TRIVIA — ონლაინ მრავალმოთამაშიანი ვიქტორინა\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 კატეგორია, 18+ ენა და რეალური დროის დუელები\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.badge=GOOGLE PLAY • შემეცნებითი თამაში\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — ყველაფერი ერთ აპლიკაციაში!\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.badge=მალე • კროსპლატფორმული\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.sub=ცოცხალი ვალუტა • კრიპტო • ძვირფასი ლითონები • საქონელი • კალკულატორები და ეკონომიკური სიახლეები\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.badge=მალე • ANDROID\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo         // ky
->> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — HD Даректүү Тасмалар жана Онлайн Куралдар Порталы\\nproj.item.belgeselsemo-web.sub=Жалгыз жана Сериялуу Даректүү Тасмалар • Илим, Тарых, Космос, Жаратылыш жана Веб Куралдар\\nproj.item.belgeselsemo-web.badge=АКТИВДҮҮ ВЕБ ПОРТАЛ\\nproj.item.youtube-learn-explore.title=BELGESELSEMO Learn ^& Explore (YouTube)\\nproj.item.youtube-learn-explore.sub=Даректүү Тасмалар • Аудиокитептер • Билим Берүү Сабактары • Илим жана Тарых\\nproj.item.youtube-learn-explore.badge=РАСМИЙ YOUTUBE КАНАЛ\\nproj.item.matpay.title=MATPAY — Жогорку Математика Лекция Конспекттери\\nproj.item.matpay.sub=Университет Деңгээлиндеги Математика Конспекттери, Теорема Далилдери жана Булактар\\nproj.item.matpay.badge=АКАДЕМИЯЛЫК АРХИВ\\nproj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — Компьютердик Медиа жана Куралдар Борбору\\nproj.item.belgeselsemoflix.sub=Tauri 2 Негизиндеги Кроссплатформалуу Даректүү Тасмалар, Түз ТВ жана Куралдар\\nproj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\\nproj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (EPG Телепрограмма)\\nproj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Android Телефон, Планшет жана Android TV Пультуна Ылайыктуу\\nproj.item.gp-epgviewer.badge=GOOGLE PLAY • 1 000+ ЖҮКТӨӨ\\nproj.item.gp-belgeselsemo.title=BELGESELSEMO — HD Даректүү Тасмалар жана 20+ Күнүмдүк Куралдар\\nproj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1 000 Даректүү Тасма + 20дан Ашык Пайдалуу Курал Бир Тиркемеде\\nproj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\\nproj.item.gp-nb724.title=НӨӨМӨТЧҮ ДАРЫКАНАЛАР 24/7 TR-KKTC\\nproj.item.gp-nb724.sub=com.belgeselsemo.nb724 • Түркия (81 Аймак) жана Түндүк Кипр Күнү-Түнү Дарыканалар жана GPS\\nproj.item.gp-nb724.badge=GOOGLE PLAY • САЛАМАТТЫК\\nproj.item.gp-nutuk.title=НУТУК 1919-1927 (Аудиокитеп, Сөздүк жана Викторина)\\nproj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • Мустафа Кемал Ататүрктүн Тарыхый Чыгармасы 20+ Тилде\\nproj.item.gp-nutuk.badge=GOOGLE PLAY • ТАРЫХ ЖАНА МАДАНИЯТ\\nproj.item.gp-trivia.title=BELGESELSEMO TRIVIA — Онлайн Билим Мелдеши\\nproj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 Категория, 18+ Тил жана Чыныгы Убакыттагы Онлайн Таймаш\\nproj.item.gp-trivia.badge=GOOGLE PLAY • БИЛИМ ОЮНУ\\nproj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\\nproj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — Баары Бир Тиркемеде!\\nproj.item.upcoming-retro-emulator.badge=ЖАКЫНДА • КРОССПЛАТФОРМА\\nproj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\\nproj.item.upcoming-economy.sub=Жандуу Валюта • Криптовалюта • Баалуу Металлдар • Товарлар • Эсептегич ^& Экономика Жаңылыктары\\nproj.item.upcoming-economy.badge=ЖАКЫНДА • ANDROID",
+>> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — HD Даректүү Тасмалар жана Онлайн Куралдар Порталы\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.sub=Жалгыз жана Сериялуу Даректүү Тасмалар • Илим, Тарых, Космос, Жаратылыш жана Веб Куралдар\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.badge=АКТИВДҮҮ ВЕБ ПОРТАЛ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.title=BELGESELSEMO Learn & Explore (YouTube)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.sub=Даректүү Тасмалар • Аудиокитептер • Билим Берүү Сабактары • Илим жана Тарых\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.badge=РАСМИЙ YOUTUBE КАНАЛ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.title=MATPAY — Жогорку Математика Лекция Конспекттери\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.sub=Университет Деңгээлиндеги Математика Конспекттери, Теорема Далилдери жана Булактар\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.badge=АКАДЕМИЯЛЫК АРХИВ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — Компьютердик Медиа жана Куралдар Борбору\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.sub=Tauri 2 Негизиндеги Кроссплатформалуу Даректүү Тасмалар, Түз ТВ жана Куралдар\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (EPG Телепрограмма)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Android Телефон, Планшет жана Android TV Пультуна Ылайыктуу\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.badge=GOOGLE PLAY • 1 000+ ЖҮКТӨӨ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.title=BELGESELSEMO — HD Даректүү Тасмалар жана 20+ Күнүмдүк Куралдар\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1 000 Даректүү Тасма + 20дан Ашык Пайдалуу Курал Бир Тиркемеде\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.title=НӨӨМӨТЧҮ ДАРЫКАНАЛАР 24/7 TR-KKTC\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.sub=com.belgeselsemo.nb724 • Түркия (81 Аймак) жана Түндүк Кипр Күнү-Түнү Дарыканалар жана GPS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.badge=GOOGLE PLAY • САЛАМАТТЫК\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.title=НУТУК 1919-1927 (Аудиокитеп, Сөздүк жана Викторина)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • Мустафа Кемал Ататүрктүн Тарыхый Чыгармасы 20+ Тилде\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.badge=GOOGLE PLAY • ТАРЫХ ЖАНА МАДАНИЯТ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.title=BELGESELSEMO TRIVIA — Онлайн Билим Мелдеши\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 Категория, 18+ Тил жана Чыныгы Убакыттагы Онлайн Таймаш\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.badge=GOOGLE PLAY • БИЛИМ ОЮНУ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — Баары Бир Тиркемеде!\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.badge=ЖАКЫНДА • КРОССПЛАТФОРМА\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.sub=Жандуу Валюта • Криптовалюта • Баалуу Металлдар • Товарлар • Эсептегич & Экономика Жаңылыктары\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.badge=ЖАКЫНДА • ANDROID\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo         // nl
->> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — HD-documentaires ^& Online Tools Portaal\\nproj.item.belgeselsemo-web.sub=Enkele ^& Seriedocumentaires • Wetenschap, Geschiedenis, Ruimte, Natuur ^& Webtools\\nproj.item.belgeselsemo-web.badge=ACTIEF WEBPORTAAL\\nproj.item.youtube-learn-explore.title=BELGESELSEMO Learn ^& Explore (YouTube)\\nproj.item.youtube-learn-explore.sub=Documentaires • Luisterboeken • Educatieve Lessen • Wetenschap ^& Geschiedenis\\nproj.item.youtube-learn-explore.badge=OFFICIEEL YOUTUBE-KANAAL\\nproj.item.matpay.title=MATPAY — Universitaire Wiskunde-collegedictaten\\nproj.item.matpay.sub=Wiskundedictaten op bachelorniveau, Stellingbewijzen ^& Academische Bronnen\\nproj.item.matpay.badge=ACADEMISCH ARCHIEF\\nproj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — Cross-platform Desktop Media- ^& Toolcentrum\\nproj.item.belgeselsemoflix.sub=Op Tauri 2 gebaseerde Desktop Documentairehub, Live-tv ^& Ingebouwde Hulpmiddelen\\nproj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\\nproj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (EPG)\\nproj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Geschikt voor Android-telefoons, tablets ^& Android TV-afstandsbediening\\nproj.item.gp-epgviewer.badge=GOOGLE PLAY • 1.000+ DOWNLOADS\\nproj.item.gp-belgeselsemo.title=BELGESELSEMO — HD-documentaires ^& 20+ Dagelijkse Tools\\nproj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1.000 Documentaires + Meer dan 20 Praktische Tools in Één App\\nproj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\\nproj.item.gp-nb724.title=DIENSTAPOTHEKEN 24/7 TR-TRNC\\nproj.item.gp-nb724.sub=com.belgeselsemo.nb724 • Live 24/7 Dienstapotheken ^& GPS-routebeschrijving\\nproj.item.gp-nb724.badge=GOOGLE PLAY • GEZONDHEID\\nproj.item.gp-nutuk.title=NUTUK 1919-1927 (Luisterboek, Woordenboek ^& Quiz)\\nproj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • Het Historische Werk van Mustafa Kemal Atatürk in 20+ Talen\\nproj.item.gp-nutuk.badge=GOOGLE PLAY • GESCHIEDENIS ^& CULTUUR\\nproj.item.gp-trivia.title=BELGESELSEMO TRIVIA — Online Multiplayer Quiz\\nproj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 Categorieën, 18+ Talen ^& Realtime Duels\\nproj.item.gp-trivia.badge=GOOGLE PLAY • EDUCATIEF SPEL\\nproj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\\nproj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — Alles in Één App!\\nproj.item.upcoming-retro-emulator.badge=BINNENKORT • CROSS-PLATFORM\\nproj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\\nproj.item.upcoming-economy.sub=Live Valuta • Crypto • Edelmetalen • Grondstoffen • Rekenhulpen ^& Economisch Nieuws\\nproj.item.upcoming-economy.badge=BINNENKORT • ANDROID",
+>> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — HD-documentaires & Online Tools Portaal\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.sub=Enkele & Seriedocumentaires • Wetenschap, Geschiedenis, Ruimte, Natuur & Webtools\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.badge=ACTIEF WEBPORTAAL\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.title=BELGESELSEMO Learn & Explore (YouTube)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.sub=Documentaires • Luisterboeken • Educatieve Lessen • Wetenschap & Geschiedenis\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.badge=OFFICIEEL YOUTUBE-KANAAL\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.title=MATPAY — Universitaire Wiskunde-collegedictaten\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.sub=Wiskundedictaten op bachelorniveau, Stellingbewijzen & Academische Bronnen\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.badge=ACADEMISCH ARCHIEF\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — Cross-platform Desktop Media- & Toolcentrum\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.sub=Op Tauri 2 gebaseerde Desktop Documentairehub, Live-tv & Ingebouwde Hulpmiddelen\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (EPG)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Geschikt voor Android-telefoons, tablets & Android TV-afstandsbediening\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.badge=GOOGLE PLAY • 1.000+ DOWNLOADS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.title=BELGESELSEMO — HD-documentaires & 20+ Dagelijkse Tools\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1.000 Documentaires + Meer dan 20 Praktische Tools in Één App\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.title=DIENSTAPOTHEKEN 24/7 TR-TRNC\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.sub=com.belgeselsemo.nb724 • Live 24/7 Dienstapotheken & GPS-routebeschrijving\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.badge=GOOGLE PLAY • GEZONDHEID\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.title=NUTUK 1919-1927 (Luisterboek, Woordenboek & Quiz)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • Het Historische Werk van Mustafa Kemal Atatürk in 20+ Talen\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.badge=GOOGLE PLAY • GESCHIEDENIS & CULTUUR\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.title=BELGESELSEMO TRIVIA — Online Multiplayer Quiz\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 Categorieën, 18+ Talen & Realtime Duels\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.badge=GOOGLE PLAY • EDUCATIEF SPEL\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — Alles in Één App!\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.badge=BINNENKORT • CROSS-PLATFORM\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.sub=Live Valuta • Crypto • Edelmetalen • Grondstoffen • Rekenhulpen & Economisch Nieuws\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.badge=BINNENKORT • ANDROID\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo         // pt
->> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — Portal de Documentários HD ^& Ferramentas Online\\nproj.item.belgeselsemo-web.sub=Documentários Únicos ^& Séries • Ciência, História, Espaço, Natureza ^& Utilitários Web\\nproj.item.belgeselsemo-web.badge=PORTAL WEB ATIVO\\nproj.item.youtube-learn-explore.title=BELGESELSEMO Learn ^& Explore (YouTube)\\nproj.item.youtube-learn-explore.sub=Documentários • Audiolivros • Aulas Educativas • Ciência ^& História\\nproj.item.youtube-learn-explore.badge=CANAL OFICIAL NO YOUTUBE\\nproj.item.matpay.title=MATPAY — Notas de Aula de Matemática Universitária\\nproj.item.matpay.sub=Notas de Graduação em Matemática, Demonstrações de Teoremas ^& Recursos Acadêmicos\\nproj.item.matpay.badge=ARQUIVO ACADÊMICO\\nproj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — Central Multimídia ^& Ferramentas para Desktop\\nproj.item.belgeselsemoflix.sub=App Multiplataforma Tauri 2 de Documentários, TV ao Vivo ^& Utilitários Integrados\\nproj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\\nproj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (Guia EPG)\\nproj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Compatível com Celulares, Tablets ^& Controle Remoto Android TV\\nproj.item.gp-epgviewer.badge=GOOGLE PLAY • 1.000+ DOWNLOADS\\nproj.item.gp-belgeselsemo.title=BELGESELSEMO — Documentários HD ^& 20+ Ferramentas Diárias\\nproj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1.000 Documentários + Mais de 20 Ferramentas Práticas em Um Só App\\nproj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\\nproj.item.gp-nb724.title=FARMÁCIAS DE PLANTÃO 24/7 TR-RTCN\\nproj.item.gp-nb724.sub=com.belgeselsemo.nb724 • Farmácias de Plantão em Tempo Real ^& Rotas GPS\\nproj.item.gp-nb724.badge=GOOGLE PLAY • SAÚDE\\nproj.item.gp-nutuk.title=NUTUK 1919-1927 (Audiolivro, Dicionário ^& Quiz)\\nproj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • A Obra Histórica de Mustafa Kemal Atatürk em 20+ Idiomas\\nproj.item.gp-nutuk.badge=GOOGLE PLAY • HISTÓRIA ^& CULTURA\\nproj.item.gp-trivia.title=BELGESELSEMO TRIVIA — Quiz Multiplayer Online\\nproj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 Categorias, 18+ Idiomas ^& Duelos em Tempo Real\\nproj.item.gp-trivia.badge=GOOGLE PLAY • JOGO EDUCATIVO\\nproj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\\nproj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — Tudo em Um Só App!\\nproj.item.upcoming-retro-emulator.badge=EM BREVE • MULTIPLATAFORMA\\nproj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\\nproj.item.upcoming-economy.sub=Câmbio ao Vivo • Cripto • Metais Preciosos • Commodities • Calculadoras ^& Notícias\\nproj.item.upcoming-economy.badge=EM BREVE • ANDROID",
+>> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — Portal de Documentários HD & Ferramentas Online\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.sub=Documentários Únicos & Séries • Ciência, História, Espaço, Natureza & Utilitários Web\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.badge=PORTAL WEB ATIVO\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.title=BELGESELSEMO Learn & Explore (YouTube)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.sub=Documentários • Audiolivros • Aulas Educativas • Ciência & História\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.badge=CANAL OFICIAL NO YOUTUBE\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.title=MATPAY — Notas de Aula de Matemática Universitária\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.sub=Notas de Graduação em Matemática, Demonstrações de Teoremas & Recursos Acadêmicos\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.badge=ARQUIVO ACADÊMICO\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — Central Multimídia & Ferramentas para Desktop\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.sub=App Multiplataforma Tauri 2 de Documentários, TV ao Vivo & Utilitários Integrados\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (Guia EPG)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Compatível com Celulares, Tablets & Controle Remoto Android TV\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.badge=GOOGLE PLAY • 1.000+ DOWNLOADS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.title=BELGESELSEMO — Documentários HD & 20+ Ferramentas Diárias\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1.000 Documentários + Mais de 20 Ferramentas Práticas em Um Só App\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.title=FARMÁCIAS DE PLANTÃO 24/7 TR-RTCN\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.sub=com.belgeselsemo.nb724 • Farmácias de Plantão em Tempo Real & Rotas GPS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.badge=GOOGLE PLAY • SAÚDE\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.title=NUTUK 1919-1927 (Audiolivro, Dicionário & Quiz)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • A Obra Histórica de Mustafa Kemal Atatürk em 20+ Idiomas\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.badge=GOOGLE PLAY • HISTÓRIA & CULTURA\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.title=BELGESELSEMO TRIVIA — Quiz Multiplayer Online\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 Categorias, 18+ Idiomas & Duelos em Tempo Real\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.badge=GOOGLE PLAY • JOGO EDUCATIVO\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — Tudo em Um Só App!\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.badge=EM BREVE • MULTIPLATAFORMA\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.sub=Câmbio ao Vivo • Cripto • Metais Preciosos • Commodities • Calculadoras & Notícias\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.badge=EM BREVE • ANDROID\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo         // ro
->> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — Portal de Documentare HD ^& Instrumente Online\\nproj.item.belgeselsemo-web.sub=Arhivă de Documentare Individuale ^& Serii • Știință, Istorie, Spațiu, Natură ^& Utilitare Web\\nproj.item.belgeselsemo-web.badge=PORTAL WEB ACTIV\\nproj.item.youtube-learn-explore.title=BELGESELSEMO Learn ^& Explore (YouTube)\\nproj.item.youtube-learn-explore.sub=Documentare • Cărți Audio • Lecții Educaționale • Știință ^& Istorie\\nproj.item.youtube-learn-explore.badge=CANAL YOUTUBE OFICIAL\\nproj.item.matpay.title=MATPAY — Note de Curs de Matematică Universitară\\nproj.item.matpay.sub=Cursuri de Licență în Matematică, Demonstrații de Teoreme ^& Resurse Academice\\nproj.item.matpay.badge=ARHIVĂ ACADEMICĂ\\nproj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — Centru Multimedia ^& Instrumente Desktop\\nproj.item.belgeselsemoflix.sub=Aplicație Multiplatformă Tauri 2 pentru Documentare, TV Live ^& Utilitare Integrate\\nproj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\\nproj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (Ghid Program EPG)\\nproj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Compatibil cu Telefoane, Tablete ^& Telecomenzi Android TV\\nproj.item.gp-epgviewer.badge=GOOGLE PLAY • 1.000+ DESCĂRCĂRI\\nproj.item.gp-belgeselsemo.title=BELGESELSEMO — Documentare HD ^& 20+ Instrumente Zilnice\\nproj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1.000 de Documentare + Peste 20 de Utilitare Practice într-o Singură Aplicație\\nproj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\\nproj.item.gp-nb724.title=FARMACII DE GARDĂ 24/7 TR-RTCN\\nproj.item.gp-nb724.sub=com.belgeselsemo.nb724 • Farmacii de Gardă în Timp Real ^& Navigație GPS\\nproj.item.gp-nb724.badge=GOOGLE PLAY • SĂNĂTATE\\nproj.item.gp-nutuk.title=NUTUK 1919-1927 (Carte Audio, Dicționar ^& Chestionar Istoric)\\nproj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • Opera Istorică a lui Mustafa Kemal Atatürk în 20+ Limbi\\nproj.item.gp-nutuk.badge=GOOGLE PLAY • ISTORIE ^& CULTURĂ\\nproj.item.gp-trivia.title=BELGESELSEMO TRIVIA — Concurs Online de Cultură Generală\\nproj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 Categorii, 18+ Limbi ^& Dueluri în Timp Real\\nproj.item.gp-trivia.badge=GOOGLE PLAY • JOC EDUCATIV\\nproj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\\nproj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — Toate într-o Singură Aplicație!\\nproj.item.upcoming-retro-emulator.badge=ÎN CURÂND • MULTIPLATFORMĂ\\nproj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\\nproj.item.upcoming-economy.sub=Valute Live • Cripto • Metale Prețioase • Mărfuri • Calculatoare ^& Știri Economice\\nproj.item.upcoming-economy.badge=ÎN CURÂND • ANDROID",
+>> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — Portal de Documentare HD & Instrumente Online\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.sub=Arhivă de Documentare Individuale & Serii • Știință, Istorie, Spațiu, Natură & Utilitare Web\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.badge=PORTAL WEB ACTIV\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.title=BELGESELSEMO Learn & Explore (YouTube)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.sub=Documentare • Cărți Audio • Lecții Educaționale • Știință & Istorie\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.badge=CANAL YOUTUBE OFICIAL\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.title=MATPAY — Note de Curs de Matematică Universitară\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.sub=Cursuri de Licență în Matematică, Demonstrații de Teoreme & Resurse Academice\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.badge=ARHIVĂ ACADEMICĂ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — Centru Multimedia & Instrumente Desktop\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.sub=Aplicație Multiplatformă Tauri 2 pentru Documentare, TV Live & Utilitare Integrate\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (Ghid Program EPG)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Compatibil cu Telefoane, Tablete & Telecomenzi Android TV\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.badge=GOOGLE PLAY • 1.000+ DESCĂRCĂRI\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.title=BELGESELSEMO — Documentare HD & 20+ Instrumente Zilnice\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1.000 de Documentare + Peste 20 de Utilitare Practice într-o Singură Aplicație\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.title=FARMACII DE GARDĂ 24/7 TR-RTCN\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.sub=com.belgeselsemo.nb724 • Farmacii de Gardă în Timp Real & Navigație GPS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.badge=GOOGLE PLAY • SĂNĂTATE\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.title=NUTUK 1919-1927 (Carte Audio, Dicționar & Chestionar Istoric)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • Opera Istorică a lui Mustafa Kemal Atatürk în 20+ Limbi\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.badge=GOOGLE PLAY • ISTORIE & CULTURĂ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.title=BELGESELSEMO TRIVIA — Concurs Online de Cultură Generală\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 Categorii, 18+ Limbi & Dueluri în Timp Real\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.badge=GOOGLE PLAY • JOC EDUCATIV\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — Toate într-o Singură Aplicație!\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.badge=ÎN CURÂND • MULTIPLATFORMĂ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.sub=Valute Live • Cripto • Metale Prețioase • Mărfuri • Calculatoare & Știri Economice\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.badge=ÎN CURÂND • ANDROID\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo         // ru
->> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — Портал HD-документалистики и веб-инструментов\\nproj.item.belgeselsemo-web.sub=Одиночные и серийные документальные фильмы • Наука, история, космос, природа и инструменты\\nproj.item.belgeselsemo-web.badge=АКТИВНЫЙ ВЕБ-ПОРТАЛ\\nproj.item.youtube-learn-explore.title=BELGESELSEMO Learn ^& Explore (YouTube)\\nproj.item.youtube-learn-explore.sub=Документальные фильмы • Аудиокниги • Обучающие лекции • Наука и история\\nproj.item.youtube-learn-explore.badge=ОФИЦИАЛЬНЫЙ КАНАЛ YOUTUBE\\nproj.item.matpay.title=MATPAY — Университетские конспекты по высшей математике\\nproj.item.matpay.sub=Лекции университетского уровня, доказательства теорем и академические материалы\\nproj.item.matpay.badge=АКАДЕМИЧЕСКИЙ АРХИВ\\nproj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — Настольный медиацентр и набор инструментов\\nproj.item.belgeselsemoflix.sub=Кроссплатформенное приложение на базе Tauri 2: документалистика, ТВ и утилиты\\nproj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\\nproj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (EPG)\\nproj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Для смартфонов, планшетов и пультов Android TV\\nproj.item.gp-epgviewer.badge=GOOGLE PLAY • 1 000+ СКАЧИВАНИЙ\\nproj.item.gp-belgeselsemo.title=BELGESELSEMO — HD-документалистика и 20+ инструментов\\nproj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1 000 документальных фильмов + более 20 полезных утилит\\nproj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\\nproj.item.gp-nb724.title=ДЕЖУРНЫЕ АПТЕКИ 24/7 TR-KKTC\\nproj.item.gp-nb724.sub=com.belgeselsemo.nb724 • Круглосуточные дежурные аптеки и GPS-маршруты (Турция и Северный Кипр)\\nproj.item.gp-nb724.badge=GOOGLE PLAY • ЗДОРОВЬЕ\\nproj.item.gp-nutuk.title=НУТУК 1919-1927 (Аудиокнига, словарь и викторина)\\nproj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • Исторический труд Мустафы Кемаля Ататюрка на 20+ языках\\nproj.item.gp-nutuk.badge=GOOGLE PLAY • ИСТОРИЯ И КУЛЬТУРА\\nproj.item.gp-trivia.title=BELGESELSEMO TRIVIA — Онлайн-викторина\\nproj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 категории, 18+ языков и дуэли в реальном времени\\nproj.item.gp-trivia.badge=GOOGLE PLAY • ОБУЧАЮЩАЯ ИГРА\\nproj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\\nproj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — Всё в одном приложении!\\nproj.item.upcoming-retro-emulator.badge=СКОРО • КРОССПЛАТФОРМА\\nproj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\\nproj.item.upcoming-economy.sub=Курсы валют • Криптовалюты • Драгметаллы • Сырьё • Калькуляторы и новости экономики\\nproj.item.upcoming-economy.badge=СКОРО • ANDROID",
+>> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — Портал HD-документалистики и веб-инструментов\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.sub=Одиночные и серийные документальные фильмы • Наука, история, космос, природа и инструменты\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.badge=АКТИВНЫЙ ВЕБ-ПОРТАЛ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.title=BELGESELSEMO Learn & Explore (YouTube)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.sub=Документальные фильмы • Аудиокниги • Обучающие лекции • Наука и история\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.badge=ОФИЦИАЛЬНЫЙ КАНАЛ YOUTUBE\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.title=MATPAY — Университетские конспекты по высшей математике\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.sub=Лекции университетского уровня, доказательства теорем и академические материалы\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.badge=АКАДЕМИЧЕСКИЙ АРХИВ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — Настольный медиацентр и набор инструментов\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.sub=Кроссплатформенное приложение на базе Tauri 2: документалистика, ТВ и утилиты\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (EPG)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Для смартфонов, планшетов и пультов Android TV\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.badge=GOOGLE PLAY • 1 000+ СКАЧИВАНИЙ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.title=BELGESELSEMO — HD-документалистика и 20+ инструментов\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1 000 документальных фильмов + более 20 полезных утилит\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.title=ДЕЖУРНЫЕ АПТЕКИ 24/7 TR-KKTC\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.sub=com.belgeselsemo.nb724 • Круглосуточные дежурные аптеки и GPS-маршруты (Турция и Северный Кипр)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.badge=GOOGLE PLAY • ЗДОРОВЬЕ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.title=НУТУК 1919-1927 (Аудиокнига, словарь и викторина)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • Исторический труд Мустафы Кемаля Ататюрка на 20+ языках\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.badge=GOOGLE PLAY • ИСТОРИЯ И КУЛЬТУРА\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.title=BELGESELSEMO TRIVIA — Онлайн-викторина\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 категории, 18+ языков и дуэли в реальном времени\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.badge=GOOGLE PLAY • ОБУЧАЮЩАЯ ИГРА\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — Всё в одном приложении!\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.badge=СКОРО • КРОССПЛАТФОРМА\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.sub=Курсы валют • Криптовалюты • Драгметаллы • Сырьё • Калькуляторы и новости экономики\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.badge=СКОРО • ANDROID\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo         // vi
->> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — Cổng Phim Tài Liệu HD ^& Công Cụ Web Miễn Phí\\nproj.item.belgeselsemo-web.sub=Kho Phim Tài Liệu Lẻ ^& Dài Tập • Khoa Học, Lịch Sử, Vũ Trụ, Thiên Nhiên ^& Tiện Ích\\nproj.item.belgeselsemo-web.badge=CỔNG WEB ĐANG HOẠT ĐỘNG\\nproj.item.youtube-learn-explore.title=BELGESELSEMO Learn ^& Explore (YouTube)\\nproj.item.youtube-learn-explore.sub=Phim Tài Liệu • Sách Nói • Bài Giảng Giáo Dục • Khám Phá Khoa Học ^& Lịch Sử\\nproj.item.youtube-learn-explore.badge=KÊNH YOUTUBE CHÍNH THỨC\\nproj.item.matpay.title=MATPAY — Giáo Trình ^& Chứng Minh Toán Đại Học\\nproj.item.matpay.sub=Bài Giảng Toán Bậc Cử Nhân, Chứng Minh Định Lý ^& Tài Liệu Học Thuật\\nproj.item.matpay.badge=KHO HỌC THUẬT\\nproj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — Trung Tâm Đa Phương Tiện ^& Công Cụ Máy Tính\\nproj.item.belgeselsemoflix.sub=Ứng Dụng Đa Nền Tảng Tauri 2 Cho Phim Tài Liệu, Truyền Hình ^& Tiện Ích Tích Hợp\\nproj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\\nproj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (Lịch Phát Sóng EPG)\\nproj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Tương Thích Điện Thoại, Máy Tính Bảng ^& Điều Khiển Android TV\\nproj.item.gp-epgviewer.badge=GOOGLE PLAY • 1.000+ LƯỢT TẢI\\nproj.item.gp-belgeselsemo.title=BELGESELSEMO — Phim Tài Liệu HD ^& 20+ Công Cụ Hằng Ngày\\nproj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1.000 Phim Tài Liệu + Hơn 20 Tiện Ích Thiết Thực Trong Một Ứng Dụng\\nproj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\\nproj.item.gp-nb724.title=NHÀ THUỐC TRỰC ĐÊM 24/7 TR-KKTC\\nproj.item.gp-nb724.sub=com.belgeselsemo.nb724 • Danh Sách Nhà Thuốc Trực 24/7 ^& Chỉ Đường GPS\\nproj.item.gp-nb724.badge=GOOGLE PLAY • SỨC KHỎE\\nproj.item.gp-nutuk.title=NUTUK 1919-1927 (Sách Nói, Từ Điển ^& Đố Vui Lịch Sử)\\nproj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • Tác Phẩm Lịch Sử Của Mustafa Kemal Atatürk Bằng 20+ Ngôn Ngữ\\nproj.item.gp-nutuk.badge=GOOGLE PLAY • LỊCH SỬ ^& VĂN HÓA\\nproj.item.gp-trivia.title=BELGESELSEMO TRIVIA — Đấu Trí Trực Tuyến Nhiều Người Chơi\\nproj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 Chủ Đề, 18+ Ngôn Ngữ ^& Đấu Tay Đôi Thời Gian Thực\\nproj.item.gp-trivia.badge=GOOGLE PLAY • TRÒ CHƠI GIÁO DỤC\\nproj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\\nproj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — Tất Cả Trong Một!\\nproj.item.upcoming-retro-emulator.badge=SẮP RA MẮT • ĐA NỀN TẢNG\\nproj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\\nproj.item.upcoming-economy.sub=Tỷ Giá Trực Tiếp • Tiền Mã Hóa • Kim Loại Quý • Hàng Hóa • Công Cụ Tính ^& Tin Kinh Tế\\nproj.item.upcoming-economy.badge=SẮP RA MẮT • ANDROID",
+>> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — Cổng Phim Tài Liệu HD & Công Cụ Web Miễn Phí\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.sub=Kho Phim Tài Liệu Lẻ & Dài Tập • Khoa Học, Lịch Sử, Vũ Trụ, Thiên Nhiên & Tiện Ích\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.badge=CỔNG WEB ĐANG HOẠT ĐỘNG\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.title=BELGESELSEMO Learn & Explore (YouTube)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.sub=Phim Tài Liệu • Sách Nói • Bài Giảng Giáo Dục • Khám Phá Khoa Học & Lịch Sử\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.badge=KÊNH YOUTUBE CHÍNH THỨC\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.title=MATPAY — Giáo Trình & Chứng Minh Toán Đại Học\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.sub=Bài Giảng Toán Bậc Cử Nhân, Chứng Minh Định Lý & Tài Liệu Học Thuật\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.badge=KHO HỌC THUẬT\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — Trung Tâm Đa Phương Tiện & Công Cụ Máy Tính\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.sub=Ứng Dụng Đa Nền Tảng Tauri 2 Cho Phim Tài Liệu, Truyền Hình & Tiện Ích Tích Hợp\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (Lịch Phát Sóng EPG)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • Tương Thích Điện Thoại, Máy Tính Bảng & Điều Khiển Android TV\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.badge=GOOGLE PLAY • 1.000+ LƯỢT TẢI\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.title=BELGESELSEMO — Phim Tài Liệu HD & 20+ Công Cụ Hằng Ngày\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1.000 Phim Tài Liệu + Hơn 20 Tiện Ích Thiết Thực Trong Một Ứng Dụng\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.title=NHÀ THUỐC TRỰC ĐÊM 24/7 TR-KKTC\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.sub=com.belgeselsemo.nb724 • Danh Sách Nhà Thuốc Trực 24/7 & Chỉ Đường GPS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.badge=GOOGLE PLAY • SỨC KHỎE\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.title=NUTUK 1919-1927 (Sách Nói, Từ Điển & Đố Vui Lịch Sử)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • Tác Phẩm Lịch Sử Của Mustafa Kemal Atatürk Bằng 20+ Ngôn Ngữ\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.badge=GOOGLE PLAY • LỊCH SỬ & VĂN HÓA\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.title=BELGESELSEMO TRIVIA — Đấu Trí Trực Tuyến Nhiều Người Chơi\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 Chủ Đề, 18+ Ngôn Ngữ & Đấu Tay Đôi Thời Gian Thực\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.badge=GOOGLE PLAY • TRÒ CHƠI GIÁO DỤC\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — Tất Cả Trong Một!\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.badge=SẮP RA MẮT • ĐA NỀN TẢNG\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.title=BELGESELSEMO ECONOMY\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.sub=Tỷ Giá Trực Tiếp • Tiền Mã Hóa • Kim Loại Quý • Hàng Hóa • Công Cụ Tính & Tin Kinh Tế\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.badge=SẮP RA MẮT • ANDROID\n",
 >> "%SEMO_WORK%\setup_gui.cs" echo         // zh
->> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — 高清纪录片与在线工具门户\\nproj.item.belgeselsemo-web.sub=单集与系列纪录片库 • 科学、历史、太空、自然与免费在线工具\\nproj.item.belgeselsemo-web.badge=在线门户网站\\nproj.item.youtube-learn-explore.title=BELGESELSEMO Learn ^& Explore (YouTube)\\nproj.item.youtube-learn-explore.sub=纪录片 • 有声书 • 教育课程 • 科学与历史探索\\nproj.item.youtube-learn-explore.badge=官方 YOUTUBE 频道\\nproj.item.matpay.title=MATPAY — 大学本科数学讲义与证明库\\nproj.item.matpay.sub=高等数学课程笔记、定理严格证明与学术学习资料\\nproj.item.matpay.badge=学术开放档案\\nproj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — 跨平台桌面媒体与工具中心\\nproj.item.belgeselsemoflix.sub=基于 Tauri 2 的跨平台纪录片中心、电视入口与集成工具箱\\nproj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\\nproj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (EPG 电视节目指南)\\nproj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • 全面适配安卓手机、平板与 Android TV 遥控器\\nproj.item.gp-epgviewer.badge=GOOGLE PLAY • 1,000+ 下载\\nproj.item.gp-belgeselsemo.title=BELGESELSEMO — 高清纪录片与 20+ 日常工具箱\\nproj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1,000 部纪录片 + 20 余款实用工具合二为一\\nproj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\\nproj.item.gp-nb724.title=24/7 全天候值班药房查询 (土耳其与北塞浦路斯)\\nproj.item.gp-nb724.sub=com.belgeselsemo.nb724 • 实时值班药房列表与 GPS 一键导航\\nproj.item.gp-nb724.badge=GOOGLE PLAY • 医疗健康\\nproj.item.gp-nutuk.title=NUTUK 1919-1927（有声书、历史词典与知识问答）\\nproj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • 凯末尔历史巨著《演说集》支持 20+ 种语言\\nproj.item.gp-nutuk.badge=GOOGLE PLAY • 历史与文化\\nproj.item.gp-trivia.title=BELGESELSEMO TRIVIA — 在线多人知识竞答\\nproj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 大分类、18+ 种语言与实时在线对战\\nproj.item.gp-trivia.badge=GOOGLE PLAY • 益智问答\\nproj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR (全能复古模拟器)\\nproj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — 五合一跨平台怀旧中心！\\nproj.item.upcoming-retro-emulator.badge=即将推出 • 跨平台\\nproj.item.upcoming-economy.title=BELGESELSEMO ECONOMY (全球金融与经济助手)\\nproj.item.upcoming-economy.sub=实时外汇 • 加密货币 • 贵金属 • 大宗商品 • 换算工具与财经资讯\\nproj.item.upcoming-economy.badge=即将推出 • ANDROID"
+>> "%SEMO_WORK%\setup_gui.cs" echo         "proj.item.belgeselsemo-web.title=BELGESELSEMO — 高清纪录片与在线工具门户\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.sub=单集与系列纪录片库 • 科学、历史、太空、自然与免费在线工具\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemo-web.badge=在线门户网站\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.title=BELGESELSEMO Learn & Explore (YouTube)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.sub=纪录片 • 有声书 • 教育课程 • 科学与历史探索\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.youtube-learn-explore.badge=官方 YOUTUBE 频道\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.title=MATPAY — 大学本科数学讲义与证明库\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.sub=高等数学课程笔记、定理严格证明与学术学习资料\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.matpay.badge=学术开放档案\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.title=BELGESELSEMOFLIX — 跨平台桌面媒体与工具中心\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.sub=基于 Tauri 2 的跨平台纪录片中心、电视入口与集成工具箱\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.belgeselsemoflix.badge=LINUX • WINDOWS • MACOS\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.title=BELGESELSEMO TV GUIDE (EPG 电视节目指南)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.sub=com.belgeselsemo.epgviewer • 全面适配安卓手机、平板与 Android TV 遥控器\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-epgviewer.badge=GOOGLE PLAY • 1,000+ 下载\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.title=BELGESELSEMO — 高清纪录片与 20+ 日常工具箱\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.sub=com.belgeselsemo.tr • 1,000 部纪录片 + 20 余款实用工具合二为一\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-belgeselsemo.badge=GOOGLE PLAY • 500+ • 5.0 ★\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.title=24/7 全天候值班药房查询 (土耳其与北塞浦路斯)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.sub=com.belgeselsemo.nb724 • 实时值班药房列表与 GPS 一键导航\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nb724.badge=GOOGLE PLAY • 医疗健康\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.title=NUTUK 1919-1927（有声书、历史词典与知识问答）\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.sub=com.belgeselsemo.nutuk • 凯末尔历史巨著《演说集》支持 20+ 种语言\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-nutuk.badge=GOOGLE PLAY • 历史与文化\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.title=BELGESELSEMO TRIVIA — 在线多人知识竞答\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.sub=com.belgeselsemo.trivia • 24 大分类、18+ 种语言与实时在线对战\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.gp-trivia.badge=GOOGLE PLAY • 益智问答\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.title=BELGESELSEMO RETRO EMULATOR (全能复古模拟器)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.sub=MOPHUN (.mpn) • J2ME (.jar) • NES • SNES • GAMEBOY — 五合一跨平台怀旧中心！\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-retro-emulator.badge=即将推出 • 跨平台\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.title=BELGESELSEMO ECONOMY (全球金融与经济助手)\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.sub=实时外汇 • 加密货币 • 贵金属 • 大宗商品 • 换算工具与财经资讯\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "proj.item.upcoming-economy.badge=即将推出 • ANDROID\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo     };
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo     static Image ImgFromB64(string key)
@@ -1043,48 +1703,48 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo     // ---- ekstra i18n: adim etiketleri + butonlar (20 dil, tek blok) ----
 >> "%SEMO_WORK%\setup_gui.cs" echo     static string STEPS_SRC =
->> "%SEMO_WORK%\setup_gui.cs" echo         "tr=Hazırlık^|Çıkarma^|Derleme^|Tamam\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "en=Prepare^|Extract^|Compile^|Done\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "ar=تحضير^|استخراج^|ترجمة^|تم\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "az=Hazırlıq^|Çıxarma^|Derləmə^|Hazır\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "de=Vorbereiten^|Entpacken^|Kompilieren^|Fertig\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "el=Προετοιμασία^|Εξαγωγή^|Μεταγλώττιση^|Έτοιμο\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "fa=آماده‌سازی^|استخراج^|کامپایل^|پایان\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "fr=Préparation^|Extraction^|Compilation^|Terminé\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "hi=तैयारी^|निकालना^|कंपाइल^|पूर्ण\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "id=Siapkan^|Ekstrak^|Kompilasi^|Selesai\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "it=Preparazione^|Estrazione^|Compilazione^|Fatto\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "ja=準備^|展開^|コンパイル^|完了\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "ka=მომზადება^|ამოღება^|კომპილაცია^|მზადაა\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "ky=Даярдоо^|Чыгаруу^|Компиляция^|Бүттү\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "nl=Voorbereiden^|Uitpakken^|Compileren^|Klaar\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "pt=Preparar^|Extrair^|Compilar^|Concluído\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "ro=Pregătire^|Extragere^|Compilare^|Gata\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "ru=Подготовка^|Распаковка^|Компиляция^|Готово\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "vi=Chuẩn bị^|Giải nén^|Biên dịch^|Xong\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "zh=准备^|解压^|编译^|完成\n";
+>> "%SEMO_WORK%\setup_gui.cs" echo         "tr=Hazırlık|Çıkarma|Derleme|Tamam\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "en=Prepare|Extract|Compile|Done\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ar=تحضير|استخراج|ترجمة|تم\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "az=Hazırlıq|Çıxarma|Derləmə|Hazır\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "de=Vorbereiten|Entpacken|Kompilieren|Fertig\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "el=Προετοιμασία|Εξαγωγή|Μεταγλώττιση|Έτοιμο\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "fa=آماده‌سازی|استخراج|کامپایل|پایان\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "fr=Préparation|Extraction|Compilation|Terminé\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "hi=तैयारी|निकालना|कंपाइल|पूर्ण\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "id=Siapkan|Ekstrak|Kompilasi|Selesai\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "it=Preparazione|Estrazione|Compilazione|Fatto\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ja=準備|展開|コンパイル|完了\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ka=მომზადება|ამოღება|კომპილაცია|მზადაა\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ky=Даярдоо|Чыгаруу|Компиляция|Бүттү\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "nl=Voorbereiden|Uitpakken|Compileren|Klaar\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "pt=Preparar|Extrair|Compilar|Concluído\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ro=Pregătire|Extragere|Compilare|Gata\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ru=Подготовка|Распаковка|Компиляция|Готово\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "vi=Chuẩn bị|Giải nén|Biên dịch|Xong\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "zh=准备|解压|编译|完成\n";
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo     static string MISC_SRC =
->> "%SEMO_WORK%\setup_gui.cs" echo         "tr=İptal^|Kapat^|Kurulum günlüğü^|Gizle^|Paneli Aç\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "en=Cancel^|Close^|Setup log^|Hide^|Open Panel\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "ar=إلغاء^|إغلاق^|سجل التثبيت^|إخفاء^|فتح اللوحة\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "az=Ləğv et^|Bağla^|Quraşdırma jurnalı^|Gizlət^|Paneli Aç\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "de=Abbrechen^|Schließen^|Setup-Protokoll^|Ausblenden^|Panel öffnen\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "el=Ακύρωση^|Κλείσιμο^|Ημερολόγιο εγκατάστασης^|Απόκρυψη^|Άνοιγμα πίνακα\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "fa=لغو^|بستن^|گزارش نصب^|پنهان^|باز کردن پنل\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "fr=Annuler^|Fermer^|Journal d'installation^|Masquer^|Ouvrir le panneau\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "hi=रद्द करें^|बंद करें^|सेटअप लॉग^|छिपाएँ^|पैनल खोलें\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "id=Batal^|Tutup^|Log setup^|Sembunyikan^|Buka Panel\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "it=Annulla^|Chiudi^|Log di installazione^|Nascondi^|Apri pannello\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "ja=キャンセル^|閉じる^|セットアップログ^|隠す^|パネルを開く\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "ka=გაუქმება^|დახურვა^|დაყენების ჟურნალი^|დამალვა^|პანელის გახსნა\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "ky=Жокко чыгаруу^|Жабуу^|Орнотуу журналы^|Жашыруу^|Панелди ачуу\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "nl=Annuleren^|Sluiten^|Setup-logboek^|Verbergen^|Paneel openen\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "pt=Cancelar^|Fechar^|Log de instalação^|Ocultar^|Abrir painel\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "ro=Anulare^|Închidere^|Jurnal de instalare^|Ascunde^|Deschide panoul\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "ru=Отмена^|Закрыть^|Журнал установки^|Скрыть^|Открыть панель\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "vi=Hủy^|Đóng^|Nhật ký cài đặt^|Ẩn^|Mở bảng điều khiển\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "zh=取消^|关闭^|安装日志^|隐藏^|打开面板\n";
+>> "%SEMO_WORK%\setup_gui.cs" echo         "tr=İptal|Kapat|Kurulum günlüğü|Gizle|Paneli Aç\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "en=Cancel|Close|Setup log|Hide|Open Panel\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ar=إلغاء|إغلاق|سجل التثبيت|إخفاء|فتح اللوحة\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "az=Ləğv et|Bağla|Quraşdırma jurnalı|Gizlət|Paneli Aç\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "de=Abbrechen|Schließen|Setup-Protokoll|Ausblenden|Panel öffnen\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "el=Ακύρωση|Κλείσιμο|Ημερολόγιο εγκατάστασης|Απόκρυψη|Άνοιγμα πίνακα\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "fa=لغو|بستن|گزارش نصب|پنهان|باز کردن پنل\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "fr=Annuler|Fermer|Journal d'installation|Masquer|Ouvrir le panneau\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "hi=रद्द करें|बंद करें|सेटअप लॉग|छिपाएँ|पैनल खोलें\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "id=Batal|Tutup|Log setup|Sembunyikan|Buka Panel\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "it=Annulla|Chiudi|Log di installazione|Nascondi|Apri pannello\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ja=キャンセル|閉じる|セットアップログ|隠す|パネルを開く\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ka=გაუქმება|დახურვა|დაყენების ჟურნალი|დამალვა|პანელის გახსნა\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ky=Жокко чыгаруу|Жабуу|Орнотуу журналы|Жашыруу|Панелди ачуу\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "nl=Annuleren|Sluiten|Setup-logboek|Verbergen|Paneel openen\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "pt=Cancelar|Fechar|Log de instalação|Ocultar|Abrir painel\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ro=Anulare|Închidere|Jurnal de instalare|Ascunde|Deschide panoul\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "ru=Отмена|Закрыть|Журнал установки|Скрыть|Открыть панель\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "vi=Hủy|Đóng|Nhật ký cài đặt|Ẩn|Mở bảng điều khiển\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "zh=取消|关闭|安装日志|隐藏|打开面板\n";
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo     static string[] LangRow(string src)
 >> "%SEMO_WORK%\setup_gui.cs" echo     {
@@ -1253,11 +1913,11 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 >> "%SEMO_WORK%\setup_gui.cs" echo             e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 >> "%SEMO_WORK%\setup_gui.cs" echo             Rectangle r = new Rectangle(0, 0, this.Width - 1, this.Height - 1);
->> "%SEMO_WORK%\setup_gui.cs" echo             using (GraphicsPath gp = PillPath(r, r.Height / 2))
+>> "%SEMO_WORK%\setup_gui.cs" echo             using (GraphicsPath gp = PillPath(r, 7))
 >> "%SEMO_WORK%\setup_gui.cs" echo             {
 >> "%SEMO_WORK%\setup_gui.cs" echo                 if (Primary)
 >> "%SEMO_WORK%\setup_gui.cs" echo                 {
->> "%SEMO_WORK%\setup_gui.cs" echo                     using (GraphicsPath halo = PillPath(new Rectangle(r.X - 3, r.Y - 3, r.Width + 6, r.Height + 6), r.Height / 2))
+>> "%SEMO_WORK%\setup_gui.cs" echo                     using (GraphicsPath halo = PillPath(new Rectangle(r.X - 3, r.Y - 3, r.Width + 6, r.Height + 6), 7))
 >> "%SEMO_WORK%\setup_gui.cs" echo                         using (SolidBrush b = new SolidBrush(Color.FromArgb(_hover ? 70 : 38, CYAN)))
 >> "%SEMO_WORK%\setup_gui.cs" echo                             e.Graphics.FillPath(b, halo);
 >> "%SEMO_WORK%\setup_gui.cs" echo                     using (LinearGradientBrush b = new LinearGradientBrush(r, CYAN, GREEN, LinearGradientMode.Horizontal))
@@ -1275,7 +1935,7 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo                 }
 >> "%SEMO_WORK%\setup_gui.cs" echo             }
 >> "%SEMO_WORK%\setup_gui.cs" echo             int lift = _hover ? -1 : 0;
->> "%SEMO_WORK%\setup_gui.cs" echo             using (Font f = new Font(UFONT, Primary ? 9.75f : 9.25f, Primary ? FontStyle.Bold : FontStyle.Regular))
+>> "%SEMO_WORK%\setup_gui.cs" echo             using (Font f = new Font(UFONT, Primary ? 9.25f : 8.75f, Primary ? FontStyle.Bold : FontStyle.Regular))
 >> "%SEMO_WORK%\setup_gui.cs" echo                 using (SolidBrush b = new SolidBrush(Primary ? Color.White : FG))
 >> "%SEMO_WORK%\setup_gui.cs" echo                 {
 >> "%SEMO_WORK%\setup_gui.cs" echo                     SizeF sz = e.Graphics.MeasureString(this.Text, f);
@@ -1292,6 +1952,44 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo             gp.AddArc(r.X, r.Bottom - rad * 2, rad * 2, rad * 2, 90, 90);
 >> "%SEMO_WORK%\setup_gui.cs" echo             gp.CloseFigure();
 >> "%SEMO_WORK%\setup_gui.cs" echo             return gp;
+>> "%SEMO_WORK%\setup_gui.cs" echo         }
+>> "%SEMO_WORK%\setup_gui.cs" echo     }
+>> "%SEMO_WORK%\setup_gui.cs" echo.
+>> "%SEMO_WORK%\setup_gui.cs" echo     // v18: border'siz pencereyi kenar-koseden boyutlandirma (NCHITTEST) + drag
+>> "%SEMO_WORK%\setup_gui.cs" echo     class SetupForm : Form
+>> "%SEMO_WORK%\setup_gui.cs" echo     {
+>> "%SEMO_WORK%\setup_gui.cs" echo         [System.Runtime.InteropServices.DllImport("user32.dll")]
+>> "%SEMO_WORK%\setup_gui.cs" echo         static extern bool ReleaseCapture();
+>> "%SEMO_WORK%\setup_gui.cs" echo         [System.Runtime.InteropServices.DllImport("user32.dll")]
+>> "%SEMO_WORK%\setup_gui.cs" echo         static extern int SendMessage(IntPtr hWnd, int msg, int wp, int lp);
+>> "%SEMO_WORK%\setup_gui.cs" echo         public SetupForm()
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             this.MinimumSize = new Size(880, 620);
+>> "%SEMO_WORK%\setup_gui.cs" echo             this.MaximizeBox = true;
+>> "%SEMO_WORK%\setup_gui.cs" echo         }
+>> "%SEMO_WORK%\setup_gui.cs" echo         protected override void WndProc(ref Message m)
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             base.WndProc(ref m);
+>> "%SEMO_WORK%\setup_gui.cs" echo             try
+>> "%SEMO_WORK%\setup_gui.cs" echo             {
+>> "%SEMO_WORK%\setup_gui.cs" echo                 if (m.Msg == 0x84 ^&^& this.WindowState == FormWindowState.Normal)
+>> "%SEMO_WORK%\setup_gui.cs" echo                 {
+>> "%SEMO_WORK%\setup_gui.cs" echo                     Point p = this.PointToClient(new Point(m.LParam.ToInt32() ^& 0xffff, (m.LParam.ToInt32() ^>^> 16) ^& 0xffff));
+>> "%SEMO_WORK%\setup_gui.cs" echo                     int g = 12;
+>> "%SEMO_WORK%\setup_gui.cs" echo                     if (p.X ^>= this.ClientSize.Width - g ^&^& p.Y ^>= this.ClientSize.Height - g)
+>> "%SEMO_WORK%\setup_gui.cs" echo                         m.Result = (IntPtr)17;   // HTBOTTOMRIGHT
+>> "%SEMO_WORK%\setup_gui.cs" echo                 }
+>> "%SEMO_WORK%\setup_gui.cs" echo             }
+>> "%SEMO_WORK%\setup_gui.cs" echo             catch { }
+>> "%SEMO_WORK%\setup_gui.cs" echo         }
+>> "%SEMO_WORK%\setup_gui.cs" echo         public void DragWindow()
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             try
+>> "%SEMO_WORK%\setup_gui.cs" echo             {
+>> "%SEMO_WORK%\setup_gui.cs" echo                 ReleaseCapture();
+>> "%SEMO_WORK%\setup_gui.cs" echo                 SendMessage(this.Handle, 0xA1, 2, 0);
+>> "%SEMO_WORK%\setup_gui.cs" echo             }
+>> "%SEMO_WORK%\setup_gui.cs" echo             catch { }
 >> "%SEMO_WORK%\setup_gui.cs" echo         }
 >> "%SEMO_WORK%\setup_gui.cs" echo     }
 >> "%SEMO_WORK%\setup_gui.cs" echo.
@@ -1383,7 +2081,7 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo     class FeedItem
 >> "%SEMO_WORK%\setup_gui.cs" echo     {
 >> "%SEMO_WORK%\setup_gui.cs" echo         public Image Icon, Qr;
->> "%SEMO_WORK%\setup_gui.cs" echo         public string Title, Sub, Link, Url, Slug, ImgKey;
+>> "%SEMO_WORK%\setup_gui.cs" echo         public string Title, Sub, Link, Url, Slug, ImgKey, Badge;
 >> "%SEMO_WORK%\setup_gui.cs" echo         public Color Acc;
 >> "%SEMO_WORK%\setup_gui.cs" echo     }
 >> "%SEMO_WORK%\setup_gui.cs" echo.
@@ -1431,7 +2129,7 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo             float contentH = ih * Math.Max(1, _items.Count);
 >> "%SEMO_WORK%\setup_gui.cs" echo             float off = _flow %% contentH;
 >> "%SEMO_WORK%\setup_gui.cs" echo             if (off ^< 0) off += contentH;
->> "%SEMO_WORK%\setup_gui.cs" echo             for (int pass = 0; pass ^< 2; pass++)
+>> "%SEMO_WORK%\setup_gui.cs" echo             for (int pass = -1; pass ^<= 1; pass++)
 >> "%SEMO_WORK%\setup_gui.cs" echo             {
 >> "%SEMO_WORK%\setup_gui.cs" echo                 for (int i = 0; i ^< _items.Count; i++)
 >> "%SEMO_WORK%\setup_gui.cs" echo                 {
@@ -1468,7 +2166,7 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo             float contentH = ih * _items.Count;
 >> "%SEMO_WORK%\setup_gui.cs" echo             float off = _flow %% contentH;
 >> "%SEMO_WORK%\setup_gui.cs" echo             if (off ^< 0) off += contentH;
->> "%SEMO_WORK%\setup_gui.cs" echo             for (int pass = 0; pass ^< 2; pass++)
+>> "%SEMO_WORK%\setup_gui.cs" echo             for (int pass = -1; pass ^<= 1; pass++)
 >> "%SEMO_WORK%\setup_gui.cs" echo             {
 >> "%SEMO_WORK%\setup_gui.cs" echo                 for (int i = 0; i ^< _items.Count; i++)
 >> "%SEMO_WORK%\setup_gui.cs" echo                 {
@@ -1486,13 +2184,31 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         void DrawCard(Graphics g, FeedItem it, int y)
 >> "%SEMO_WORK%\setup_gui.cs" echo         {
 >> "%SEMO_WORK%\setup_gui.cs" echo             int w = this.Width - 8, x = 4;
->> "%SEMO_WORK%\setup_gui.cs" echo             using (GraphicsPath gp = FlatBtn.PillPath(new Rectangle(x, y, w, _cardH), 9))
+>> "%SEMO_WORK%\setup_gui.cs" echo             using (GraphicsPath gp = FlatBtn.PillPath(new Rectangle(x, y, w, _cardH), 7))
 >> "%SEMO_WORK%\setup_gui.cs" echo             {
 >> "%SEMO_WORK%\setup_gui.cs" echo                 using (SolidBrush b = new SolidBrush(Color.FromArgb(150, H("#131c31")))) g.FillPath(b, gp);
 >> "%SEMO_WORK%\setup_gui.cs" echo                 using (Pen p = new Pen(Color.FromArgb(46, Color.White), 1)) g.DrawPath(p, gp);
 >> "%SEMO_WORK%\setup_gui.cs" echo             }
 >> "%SEMO_WORK%\setup_gui.cs" echo             using (Pen hl = new Pen(Color.FromArgb(26, Color.White), 1))
 >> "%SEMO_WORK%\setup_gui.cs" echo                 g.DrawLine(hl, x + 3, y + 1, x + w - 3, y + 1);
+>> "%SEMO_WORK%\setup_gui.cs" echo             if (it.Badge != null ^&^& it.Badge.Length ^> 0)
+>> "%SEMO_WORK%\setup_gui.cs" echo             {
+>> "%SEMO_WORK%\setup_gui.cs" echo                 using (Font fb = new Font(UFONT, 6.25f, FontStyle.Bold))
+>> "%SEMO_WORK%\setup_gui.cs" echo                 {
+>> "%SEMO_WORK%\setup_gui.cs" echo                     float bwf = g.MeasureString(it.Badge, fb).Width + 10;
+>> "%SEMO_WORK%\setup_gui.cs" echo                     int bw = Math.Min((int)bwf, w - 84), bh = 13;
+>> "%SEMO_WORK%\setup_gui.cs" echo                     if (bw ^> 30)
+>> "%SEMO_WORK%\setup_gui.cs" echo                     {
+>> "%SEMO_WORK%\setup_gui.cs" echo                         int bx = x + w - bw - 9, by = y + 9;
+>> "%SEMO_WORK%\setup_gui.cs" echo                         using (GraphicsPath bp = FlatBtn.PillPath(new Rectangle(bx, by, bw, bh), 6))
+>> "%SEMO_WORK%\setup_gui.cs" echo                             using (SolidBrush bb = new SolidBrush(Color.FromArgb(190, it.Acc)))
+>> "%SEMO_WORK%\setup_gui.cs" echo                                 g.FillPath(bb, bp);
+>> "%SEMO_WORK%\setup_gui.cs" echo                         TextRenderer.DrawText(g, Trunc(g, it.Badge, fb, bw - 8), fb,
+>> "%SEMO_WORK%\setup_gui.cs" echo                             new Rectangle(bx, by - 1, bw, bh), Color.White,
+>> "%SEMO_WORK%\setup_gui.cs" echo                             TextFormatFlags.HorizontalCenter ^| TextFormatFlags.VerticalCenter ^| TextFormatFlags.NoPadding);
+>> "%SEMO_WORK%\setup_gui.cs" echo                     }
+>> "%SEMO_WORK%\setup_gui.cs" echo                 }
+>> "%SEMO_WORK%\setup_gui.cs" echo             }
 >> "%SEMO_WORK%\setup_gui.cs" echo             int cs = 44;
 >> "%SEMO_WORK%\setup_gui.cs" echo             int ix = x + w / 2 - cs - 4, qx = x + w / 2 + 4;
 >> "%SEMO_WORK%\setup_gui.cs" echo             using (SolidBrush b = new SolidBrush(Color.FromArgb(40, it.Acc)))
@@ -1610,7 +2326,7 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 >> "%SEMO_WORK%\setup_gui.cs" echo             e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 >> "%SEMO_WORK%\setup_gui.cs" echo             Rectangle r = new Rectangle(0, 0, this.Width - 1, this.Height - 1);
->> "%SEMO_WORK%\setup_gui.cs" echo             using (GraphicsPath gp = FlatBtn.PillPath(r, r.Height / 2))
+>> "%SEMO_WORK%\setup_gui.cs" echo             using (GraphicsPath gp = FlatBtn.PillPath(r, 6))
 >> "%SEMO_WORK%\setup_gui.cs" echo             {
 >> "%SEMO_WORK%\setup_gui.cs" echo                 using (SolidBrush b = new SolidBrush(_hover ? Color.FromArgb(60, CYAN) : Color.FromArgb(18, Color.White)))
 >> "%SEMO_WORK%\setup_gui.cs" echo                     e.Graphics.FillPath(b, gp);
@@ -1630,6 +2346,11 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo     static Stepper STEPS;
 >> "%SEMO_WORK%\setup_gui.cs" echo     static ModernBar BARC;
 >> "%SEMO_WORK%\setup_gui.cs" echo     static Label STAGE, PCT, INFO, PROJHEAD;
+>> "%SEMO_WORK%\setup_gui.cs" echo     static Label BIGSTAT;          // v18: buyuk "ISLEM BILGISI" durumu (log alani altinda)
+>> "%SEMO_WORK%\setup_gui.cs" echo     static Panel RIGHTP;           // v18: sag panel (adaptive)
+>> "%SEMO_WORK%\setup_gui.cs" echo     static Label PLANG;            // v18
+>> "%SEMO_WORK%\setup_gui.cs" echo     static GlassChip CHIP_SITE, CHIP_GIT;   // v18
+>> "%SEMO_WORK%\setup_gui.cs" echo     static Label HEROT, HEROS, HEROTIP;     // v18: hero metinleri (esnek genislik)
 >> "%SEMO_WORK%\setup_gui.cs" echo     static Panel LOGWRAP;
 >> "%SEMO_WORK%\setup_gui.cs" echo     static FlatBtn BTN_HIDE;   // v17: gunlugu gizle/goster
 >> "%SEMO_WORK%\setup_gui.cs" echo     static FlatBtn BTN_MAIN;
@@ -1637,6 +2358,46 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo     static int _countdown;
 >> "%SEMO_WORK%\setup_gui.cs" echo     static volatile bool _finished;
 >> "%SEMO_WORK%\setup_gui.cs" echo     static Feed FEED;
+>> "%SEMO_WORK%\setup_gui.cs" echo     // v18: pencere boyutuna tam adaptif yerlesim — hicbir oge baska bir ogeye girmenin
+>> "%SEMO_WORK%\setup_gui.cs" echo     // matematiksel olarak imkansiz oldugu tek hesap noktasi
+>> "%SEMO_WORK%\setup_gui.cs" echo     static void Relayout()
+>> "%SEMO_WORK%\setup_gui.cs" echo     {
+>> "%SEMO_WORK%\setup_gui.cs" echo         try
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             if (F == null ^|^| F.IsDisposed) return;
+>> "%SEMO_WORK%\setup_gui.cs" echo             int W = F.ClientSize.Width, H = F.ClientSize.Height;
+>> "%SEMO_WORK%\setup_gui.cs" echo             int rw = 196, rx = W - rw - 16;
+>> "%SEMO_WORK%\setup_gui.cs" echo             if (RIGHTP != null)
+>> "%SEMO_WORK%\setup_gui.cs" echo             {
+>> "%SEMO_WORK%\setup_gui.cs" echo                 RIGHTP.Bounds = new Rectangle(rx, 46, rw, H - 62);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 FEED.Bounds = new Rectangle(8, 50, rw - 16, RIGHTP.Height - 100);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 PLANG.Bounds = new Rectangle(10, RIGHTP.Height - 40, rw - 20, 36);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 RIGHTP.Invalidate();
+>> "%SEMO_WORK%\setup_gui.cs" echo             }
+>> "%SEMO_WORK%\setup_gui.cs" echo             int lw = Math.Max(320, rx - 22 - 26);
+>> "%SEMO_WORK%\setup_gui.cs" echo             if (HEROT != null)
+>> "%SEMO_WORK%\setup_gui.cs" echo             {
+>> "%SEMO_WORK%\setup_gui.cs" echo                 HEROT.Bounds = new Rectangle(104, 60, Math.Max(200, rx - 22 - 104), 38);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 HEROS.Bounds = new Rectangle(104, 100, Math.Max(240, rx - 22 - 104), 18);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 HEROTIP.Bounds = new Rectangle(104, 120, Math.Max(240, rx - 22 - 104), 16);
+>> "%SEMO_WORK%\setup_gui.cs" echo             }
+>> "%SEMO_WORK%\setup_gui.cs" echo             STEPS.Bounds = new Rectangle(26, 150, lw, 66);
+>> "%SEMO_WORK%\setup_gui.cs" echo             BARC.Bounds = new Rectangle(26, 238, lw - 68, 14);
+>> "%SEMO_WORK%\setup_gui.cs" echo             PCT.Bounds = new Rectangle(26 + lw - 62, 229, 62, 26);
+>> "%SEMO_WORK%\setup_gui.cs" echo             STAGE.Bounds = new Rectangle(26, 262, lw, 20);
+>> "%SEMO_WORK%\setup_gui.cs" echo             INFO.Bounds = new Rectangle(26, 286, lw, 17);
+>> "%SEMO_WORK%\setup_gui.cs" echo             LOGWRAP.Bounds = new Rectangle(26, 312, lw, Math.Max(120, H - 312 - 96));
+>> "%SEMO_WORK%\setup_gui.cs" echo             LOG.Bounds = new Rectangle(12, 8, LOGWRAP.Width - 24, LOGWRAP.Height - 16);
+>> "%SEMO_WORK%\setup_gui.cs" echo             BIGSTAT.Bounds = new Rectangle(26, H - 84, lw, 32);
+>> "%SEMO_WORK%\setup_gui.cs" echo             BTN_MAIN.Bounds = new Rectangle(W - 16 - 124, H - 46, 124, 34);
+>> "%SEMO_WORK%\setup_gui.cs" echo             BTN2.Bounds = new Rectangle(W - 16 - 124 - 158, H - 46, 150, 34);
+>> "%SEMO_WORK%\setup_gui.cs" echo             BTN_HIDE.Bounds = new Rectangle(W - 16 - 124 - 158 - 112, H - 46, 104, 34);
+>> "%SEMO_WORK%\setup_gui.cs" echo             CHIP_SITE.Bounds = new Rectangle(26, H - 42, CHIP_SITE.Width, 20);
+>> "%SEMO_WORK%\setup_gui.cs" echo             CHIP_GIT.Bounds = new Rectangle(26 + CHIP_SITE.Width + 8, H - 42, CHIP_GIT.Width, 20);
+>> "%SEMO_WORK%\setup_gui.cs" echo             if (LOGWRAP.Visible) LOGWRAP.Invalidate();
+>> "%SEMO_WORK%\setup_gui.cs" echo         }
+>> "%SEMO_WORK%\setup_gui.cs" echo         catch { }
+>> "%SEMO_WORK%\setup_gui.cs" echo     }
 >> "%SEMO_WORK%\setup_gui.cs" echo     static volatile bool _failed;
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo     static void StepSync(int pct)
@@ -1683,11 +2444,16 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo                 try
 >> "%SEMO_WORK%\setup_gui.cs" echo                 {
 >> "%SEMO_WORK%\setup_gui.cs" echo                     BARC.Set(pct);
->> "%SEMO_WORK%\setup_gui.cs" echo                     PCT.Text = pct.ToString() + "%%";
->> "%SEMO_WORK%\setup_gui.cs" echo                     if (txt != null) STAGE.Text = txt;
+>> "%SEMO_WORK%\setup_gui.cs" echo                     PCT.Text = pct.ToString() + "%";
+>> "%SEMO_WORK%\setup_gui.cs" echo                     if (txt != null)
+>> "%SEMO_WORK%\setup_gui.cs" echo                     {
+>> "%SEMO_WORK%\setup_gui.cs" echo                         STAGE.Text = txt;
+>> "%SEMO_WORK%\setup_gui.cs" echo                         BIGSTAT.Text = Tr("setup.infolabel") + "  ·  " + txt;
+>> "%SEMO_WORK%\setup_gui.cs" echo                         BIGSTAT.ForeColor = _stageColor;
+>> "%SEMO_WORK%\setup_gui.cs" echo                     }
 >> "%SEMO_WORK%\setup_gui.cs" echo                     StepSync(pct);
 >> "%SEMO_WORK%\setup_gui.cs" echo                     File.AppendAllText(Path.Combine(Path.GetTempPath(), "IDM_SEMO_setup.log"),
->> "%SEMO_WORK%\setup_gui.cs" echo                         DateTime.Now.ToString("HH:mm:ss") + " ^| " + pct + "%% ^| " + txt + Environment.NewLine, Encoding.UTF8);
+>> "%SEMO_WORK%\setup_gui.cs" echo                         DateTime.Now.ToString("HH:mm:ss") + " | " + pct + "% | " + txt + Environment.NewLine, Encoding.UTF8);
 >> "%SEMO_WORK%\setup_gui.cs" echo                 }
 >> "%SEMO_WORK%\setup_gui.cs" echo                 catch { }
 >> "%SEMO_WORK%\setup_gui.cs" echo             });
@@ -1703,7 +2469,7 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         try
 >> "%SEMO_WORK%\setup_gui.cs" echo         {
 >> "%SEMO_WORK%\setup_gui.cs" echo             File.AppendAllText(Path.Combine(Path.GetTempPath(), "IDM_SEMO_setup.log"),
->> "%SEMO_WORK%\setup_gui.cs" echo                 DateTime.Now.ToString() + " ^| setup error ^| " + ex + Environment.NewLine, Encoding.UTF8);
+>> "%SEMO_WORK%\setup_gui.cs" echo                 DateTime.Now.ToString() + " | setup error | " + ex + Environment.NewLine, Encoding.UTF8);
 >> "%SEMO_WORK%\setup_gui.cs" echo         }
 >> "%SEMO_WORK%\setup_gui.cs" echo         catch { }
 >> "%SEMO_WORK%\setup_gui.cs" echo         try
@@ -1713,6 +2479,8 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo                 _stageColor = RED;
 >> "%SEMO_WORK%\setup_gui.cs" echo                 try { LOGWRAP.Invalidate(); } catch { }
 >> "%SEMO_WORK%\setup_gui.cs" echo                 STAGE.Text = Tr("setup.err") + " " + ex.Message;
+>> "%SEMO_WORK%\setup_gui.cs" echo                 BIGSTAT.Text = Tr("setup.infolabel") + "  ·  " + Tr("setup.err") + " " + ex.Message;
+>> "%SEMO_WORK%\setup_gui.cs" echo                 BIGSTAT.ForeColor = RED;
 >> "%SEMO_WORK%\setup_gui.cs" echo                 PCT.Text = "!";
 >> "%SEMO_WORK%\setup_gui.cs" echo                 STEPS.SetErr();
 >> "%SEMO_WORK%\setup_gui.cs" echo                 LOG.Visible = true;
@@ -1850,7 +2618,7 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo                     {
 >> "%SEMO_WORK%\setup_gui.cs" echo                         string s1 = bls[i].Trim();
 >> "%SEMO_WORK%\setup_gui.cs" echo                         if (s1.Length == 0) continue;
->> "%SEMO_WORK%\setup_gui.cs" echo                         Log("csc^> " + s1, RED);
+>> "%SEMO_WORK%\setup_gui.cs" echo                         Log("csc> " + s1, RED);
 >> "%SEMO_WORK%\setup_gui.cs" echo                         shown++;
 >> "%SEMO_WORK%\setup_gui.cs" echo                     }
 >> "%SEMO_WORK%\setup_gui.cs" echo                 }
@@ -1902,7 +2670,7 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         _finished = true;
 >> "%SEMO_WORK%\setup_gui.cs" echo         try { BARC.Set(100); } catch { }
 >> "%SEMO_WORK%\setup_gui.cs" echo         try { STAGE.Text = Tr2("setup.finish", "16"); } catch { }
->> "%SEMO_WORK%\setup_gui.cs" echo         try { _stageColor = GREEN; LOGWRAP.Invalidate(); } catch { }
+>> "%SEMO_WORK%\setup_gui.cs" echo         try { _stageColor = GREEN; BIGSTAT.ForeColor = GREEN; LOGWRAP.Invalidate(); } catch { }
 >> "%SEMO_WORK%\setup_gui.cs" echo         try
 >> "%SEMO_WORK%\setup_gui.cs" echo         {
 >> "%SEMO_WORK%\setup_gui.cs" echo             string[] m = LangRow(MISC_SRC);
@@ -2060,14 +2828,14 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "Dim ws, fso, lnk, lnk2, pm\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "Set ws = CreateObject(\"WScript.Shell\")\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "Set fso = CreateObject(\"Scripting.FileSystemObject\")\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "Set lnk = ws.CreateShortcut(ws.SpecialFolders(\"Desktop\") ^& \"\\IDM SEMO.lnk\")\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "Set lnk = ws.CreateShortcut(ws.SpecialFolders(\"Desktop\") & \"\\IDM SEMO.lnk\")\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "lnk.TargetPath = \"" + INST + "\\IDM-SEMO.exe\"\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "lnk.WorkingDirectory = \"" + INST + "\"\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "lnk.IconLocation = \"" + INST + "\\IDM-SEMO.exe, 0\"\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "lnk.Save\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "pm = ws.SpecialFolders(\"StartMenu\") ^& \"\\Programs\"\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "If Not fso.FolderExists(pm ^& \"\\IDM-SEMO\") Then fso.CreateFolder(pm ^& \"\\IDM-SEMO\")\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "Set lnk2 = ws.CreateShortcut(pm ^& \"\\IDM-SEMO\\IDM SEMO.lnk\")\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "pm = ws.SpecialFolders(\"StartMenu\") & \"\\Programs\"\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "If Not fso.FolderExists(pm & \"\\IDM-SEMO\") Then fso.CreateFolder(pm & \"\\IDM-SEMO\")\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "Set lnk2 = ws.CreateShortcut(pm & \"\\IDM-SEMO\\IDM SEMO.lnk\")\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "lnk2.TargetPath = \"" + INST + "\\IDM-SEMO.exe\"\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "lnk2.WorkingDirectory = \"" + INST + "\"\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "lnk2.IconLocation = \"" + INST + "\\IDM-SEMO.exe, 0\"\n"
@@ -2081,7 +2849,7 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "Dim ws, fso, sh, fld, itm, v, desk, ql, pinned\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "Set ws = CreateObject(\"WScript.Shell\")\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "Set fso = CreateObject(\"Scripting.FileSystemObject\")\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "desk = ws.SpecialFolders(\"Desktop\") ^& \"\\IDM SEMO.lnk\"\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "desk = ws.SpecialFolders(\"Desktop\") & \"\\IDM SEMO.lnk\"\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "pinned = False\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "Set sh = CreateObject(\"Shell.Application\")\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "Set fld = sh.Namespace(fso.GetParentFolderName(desk))\n"
@@ -2089,7 +2857,7 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "  Set itm = fld.ParseName(\"IDM SEMO.lnk\")\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "  If Not itm Is Nothing Then\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "    For Each v In itm.Verbs\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "      If Not pinned And InStr(1, LCase(v.Name), \"taskbar\", 1) ^> 0 And InStr(1, LCase(v.Name), \"unpin\", 1) = 0 Then\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "      If Not pinned And InStr(1, LCase(v.Name), \"taskbar\", 1) > 0 And InStr(1, LCase(v.Name), \"unpin\", 1) = 0 Then\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "        v.DoIt\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "        If Err.Number = 0 Then pinned = True\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "        Err.Clear\n"
@@ -2098,8 +2866,8 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "  End If\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "End If\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "If Not pinned Then\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "  ql = ws.ExpandEnvironmentStrings(\"%%APPDATA%%\") ^& \"\\Microsoft\\Internet Explorer\\Quick Launch\\User Pinned\\TaskBar\"\n"
->> "%SEMO_WORK%\setup_gui.cs" echo         + "  If fso.FolderExists(ql) Then fso.CopyFile desk, ql ^& \"\\IDM SEMO.lnk\", True\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "  ql = ws.ExpandEnvironmentStrings(\"%%APPDATA%%\") & \"\\Microsoft\\Internet Explorer\\Quick Launch\\User Pinned\\TaskBar\"\n"
+>> "%SEMO_WORK%\setup_gui.cs" echo         + "  If fso.FolderExists(ql) Then fso.CopyFile desk, ql & \"\\IDM SEMO.lnk\", True\n"
 >> "%SEMO_WORK%\setup_gui.cs" echo         + "End If\n";
 >> "%SEMO_WORK%\setup_gui.cs" echo     }
 >> "%SEMO_WORK%\setup_gui.cs" echo.
@@ -2126,10 +2894,14 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo                 it.Icon = ImgFromB64(PROJECTS[i][2]);
 >> "%SEMO_WORK%\setup_gui.cs" echo                 it.Qr = ImgFromB64(PROJECTS[i][3]);
 >> "%SEMO_WORK%\setup_gui.cs" echo                 it.ImgKey = PROJECTS[i][3];
+>> "%SEMO_WORK%\setup_gui.cs" echo                 it.Badge = Tr(pre + "badge");
 >> "%SEMO_WORK%\setup_gui.cs" echo                 FEED.Add(it);
 >> "%SEMO_WORK%\setup_gui.cs" echo             }
 >> "%SEMO_WORK%\setup_gui.cs" echo         }
->> "%SEMO_WORK%\setup_gui.cs" echo         catch { }
+>> "%SEMO_WORK%\setup_gui.cs" echo         catch (Exception fex)
+>> "%SEMO_WORK%\setup_gui.cs" echo         {
+>> "%SEMO_WORK%\setup_gui.cs" echo             Log("feed> " + fex.Message, RED);
+>> "%SEMO_WORK%\setup_gui.cs" echo         }
 >> "%SEMO_WORK%\setup_gui.cs" echo     }
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo     static string HostOf(string url)
@@ -2196,14 +2968,15 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo     static void BuildUi()
 >> "%SEMO_WORK%\setup_gui.cs" echo     {
->> "%SEMO_WORK%\setup_gui.cs" echo         F = new Form();
+>> "%SEMO_WORK%\setup_gui.cs" echo         F = new SetupForm();
 >> "%SEMO_WORK%\setup_gui.cs" echo         F.Text = Tr("setup.title");
 >> "%SEMO_WORK%\setup_gui.cs" echo         F.FormBorderStyle = FormBorderStyle.None;
 >> "%SEMO_WORK%\setup_gui.cs" echo         F.ClientSize = new Size(880, 640);
 >> "%SEMO_WORK%\setup_gui.cs" echo         F.StartPosition = FormStartPosition.CenterScreen;
 >> "%SEMO_WORK%\setup_gui.cs" echo         F.BackColor = BG_ROOT;
 >> "%SEMO_WORK%\setup_gui.cs" echo         F.Font = new Font(UFONT, 9f);
->> "%SEMO_WORK%\setup_gui.cs" echo         F.MaximizeBox = false;
+>> "%SEMO_WORK%\setup_gui.cs" echo         F.MaximizeBox = true;
+>> "%SEMO_WORK%\setup_gui.cs" echo         F.Resize += new EventHandler(delegate(object s2, EventArgs e2) { Relayout(); });
 >> "%SEMO_WORK%\setup_gui.cs" echo         F.MinimizeBox = false;
 >> "%SEMO_WORK%\setup_gui.cs" echo         F.TopMost = true;
 >> "%SEMO_WORK%\setup_gui.cs" echo.
@@ -2217,20 +2990,20 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         hico.Bounds = new Rectangle(26, 66, 64, 64);
 >> "%SEMO_WORK%\setup_gui.cs" echo         hico.Image = ImgFromB64("idm_icon_128.png");
 >> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(hico);
->> "%SEMO_WORK%\setup_gui.cs" echo         Label heroT = new Label();
->> "%SEMO_WORK%\setup_gui.cs" echo         heroT.Text = "IDM SEMO";
+>> "%SEMO_WORK%\setup_gui.cs" echo         HEROT = new Label();
+>> "%SEMO_WORK%\setup_gui.cs" echo         Label heroT = HEROT;
 >> "%SEMO_WORK%\setup_gui.cs" echo         heroT.ForeColor = FG;
 >> "%SEMO_WORK%\setup_gui.cs" echo         heroT.Font = new Font(UFONT, 19f, FontStyle.Bold);
 >> "%SEMO_WORK%\setup_gui.cs" echo         heroT.Bounds = new Rectangle(104, 60, 380, 38);
 >> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(heroT);
->> "%SEMO_WORK%\setup_gui.cs" echo         Label heroS = new Label();
->> "%SEMO_WORK%\setup_gui.cs" echo         heroS.Text = Tr("setup.sub");
+>> "%SEMO_WORK%\setup_gui.cs" echo         HEROS = new Label();
+>> "%SEMO_WORK%\setup_gui.cs" echo         Label heroS = HEROS;
 >> "%SEMO_WORK%\setup_gui.cs" echo         heroS.ForeColor = MUT;
 >> "%SEMO_WORK%\setup_gui.cs" echo         heroS.Font = new Font(UFONT, 8.5f);
 >> "%SEMO_WORK%\setup_gui.cs" echo         heroS.Bounds = new Rectangle(104, 100, 520, 18);
 >> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(heroS);
->> "%SEMO_WORK%\setup_gui.cs" echo         Label heroTip = new Label();
->> "%SEMO_WORK%\setup_gui.cs" echo         heroTip.Text = Tr("setup.smartscreen");
+>> "%SEMO_WORK%\setup_gui.cs" echo         HEROTIP = new Label();
+>> "%SEMO_WORK%\setup_gui.cs" echo         Label heroTip = HEROTIP;
 >> "%SEMO_WORK%\setup_gui.cs" echo         heroTip.ForeColor = DIM;
 >> "%SEMO_WORK%\setup_gui.cs" echo         heroTip.Font = new Font(UFONT, 7.5f);
 >> "%SEMO_WORK%\setup_gui.cs" echo         heroTip.Bounds = new Rectangle(104, 120, 520, 16);
@@ -2248,7 +3021,7 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         BARC.Bounds = new Rectangle(26, 238, 552, 14);
 >> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(BARC);
 >> "%SEMO_WORK%\setup_gui.cs" echo         PCT = new Label();
->> "%SEMO_WORK%\setup_gui.cs" echo         PCT.Text = "0%%";
+>> "%SEMO_WORK%\setup_gui.cs" echo         PCT.Text = "0%";
 >> "%SEMO_WORK%\setup_gui.cs" echo         PCT.ForeColor = CYAN;
 >> "%SEMO_WORK%\setup_gui.cs" echo         PCT.Font = new Font(UFONT, 12.5f, FontStyle.Bold);
 >> "%SEMO_WORK%\setup_gui.cs" echo         PCT.Bounds = new Rectangle(584, 229, 62, 26);
@@ -2268,10 +3041,19 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         INFO.AutoEllipsis = true;
 >> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(INFO);
 >> "%SEMO_WORK%\setup_gui.cs" echo.
+>> "%SEMO_WORK%\setup_gui.cs" echo         // v18: buyuk durum yazisi — log ciktilarinin altinda
+>> "%SEMO_WORK%\setup_gui.cs" echo         BIGSTAT = new Label();
+>> "%SEMO_WORK%\setup_gui.cs" echo         BIGSTAT.Text = Tr("setup.infolabel") + "  ·  " + Tr("setup.stage1");
+>> "%SEMO_WORK%\setup_gui.cs" echo         BIGSTAT.ForeColor = _stageColor;
+>> "%SEMO_WORK%\setup_gui.cs" echo         BIGSTAT.Font = new Font(UFONT, 12.5f, FontStyle.Bold);
+>> "%SEMO_WORK%\setup_gui.cs" echo         BIGSTAT.Bounds = new Rectangle(26, 556, 620, 32);
+>> "%SEMO_WORK%\setup_gui.cs" echo         BIGSTAT.AutoEllipsis = true;
+>> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(BIGSTAT);
+>> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo         // ---- kurulum gunlugu (gizle/goster) ----
 >> "%SEMO_WORK%\setup_gui.cs" echo         LOGWRAP = new Panel();
 >> "%SEMO_WORK%\setup_gui.cs" echo         LOGWRAP.BackColor = CONSOLE;
->> "%SEMO_WORK%\setup_gui.cs" echo         LOGWRAP.Bounds = new Rectangle(26, 312, 620, 236);
+>> "%SEMO_WORK%\setup_gui.cs" echo         LOGWRAP.Bounds = new Rectangle(26, 312, 620, 196);
 >> "%SEMO_WORK%\setup_gui.cs" echo         LOGWRAP.Paint += new PaintEventHandler(delegate(object s2, PaintEventArgs e2)
 >> "%SEMO_WORK%\setup_gui.cs" echo         {
 >> "%SEMO_WORK%\setup_gui.cs" echo             using (SolidBrush b = new SolidBrush(Color.FromArgb(200, _stageColor)))
@@ -2286,12 +3068,12 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         LOG.ForeColor = FG;
 >> "%SEMO_WORK%\setup_gui.cs" echo         LOG.BorderStyle = BorderStyle.None;
 >> "%SEMO_WORK%\setup_gui.cs" echo         LOG.Font = new Font(UMONO, 8.5f);
->> "%SEMO_WORK%\setup_gui.cs" echo         LOG.Bounds = new Rectangle(12, 8, 596, 220);
+>> "%SEMO_WORK%\setup_gui.cs" echo         LOG.Bounds = new Rectangle(12, 8, 596, 180);
 >> "%SEMO_WORK%\setup_gui.cs" echo         LOGWRAP.Controls.Add(LOG);
 >> "%SEMO_WORK%\setup_gui.cs" echo         BTN_HIDE = new FlatBtn();
 >> "%SEMO_WORK%\setup_gui.cs" echo         BTN_HIDE.Primary = false;
 >> "%SEMO_WORK%\setup_gui.cs" echo         BTN_HIDE.Text = LangRow(MISC_SRC)[3];
->> "%SEMO_WORK%\setup_gui.cs" echo         BTN_HIDE.Bounds = new Rectangle(420, 556, 100, 40);
+>> "%SEMO_WORK%\setup_gui.cs" echo         BTN_HIDE.Bounds = new Rectangle(470, 594, 104, 34);
 >> "%SEMO_WORK%\setup_gui.cs" echo         BTN_HIDE.Click += new EventHandler(delegate(object s2, EventArgs e2)
 >> "%SEMO_WORK%\setup_gui.cs" echo         {
 >> "%SEMO_WORK%\setup_gui.cs" echo             LOGWRAP.Visible = !LOGWRAP.Visible;
@@ -2302,18 +3084,20 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo         // v17: alt bilgi cam chip'leri — site + GitHub
->> "%SEMO_WORK%\setup_gui.cs" echo         GlassChip lnkSite = new GlassChip("belgeselsemo.com.tr", "https://belgeselsemo.com.tr");
->> "%SEMO_WORK%\setup_gui.cs" echo         lnkSite.Location = new Point(26, 566);
+>> "%SEMO_WORK%\setup_gui.cs" echo         CHIP_SITE = new GlassChip("belgeselsemo.com.tr", "https://belgeselsemo.com.tr");
+>> "%SEMO_WORK%\setup_gui.cs" echo         GlassChip lnkSite = CHIP_SITE;
+>> "%SEMO_WORK%\setup_gui.cs" echo         lnkSite.Location = new Point(26, 598);
 >> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(lnkSite);
->> "%SEMO_WORK%\setup_gui.cs" echo         GlassChip lnkGit = new GlassChip("github.com/vesvese55x/IDM-LINUX", "https://github.com/vesvese55x/IDM-LINUX");
->> "%SEMO_WORK%\setup_gui.cs" echo         lnkGit.Location = new Point(26 + lnkSite.Width + 8, 566);
+>> "%SEMO_WORK%\setup_gui.cs" echo         CHIP_GIT = new GlassChip("GitHub · IDM-LINUX", "https://github.com/vesvese55x/IDM-LINUX");
+>> "%SEMO_WORK%\setup_gui.cs" echo         GlassChip lnkGit = CHIP_GIT;
+>> "%SEMO_WORK%\setup_gui.cs" echo         lnkGit.Location = new Point(26 + lnkSite.Width + 8, 598);
 >> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(lnkGit);
 >> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(lnkGit);
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo         BTN_MAIN = new FlatBtn();
 >> "%SEMO_WORK%\setup_gui.cs" echo         BTN_MAIN.Primary = false;
 >> "%SEMO_WORK%\setup_gui.cs" echo         BTN_MAIN.Text = LangRow(MISC_SRC)[0];
->> "%SEMO_WORK%\setup_gui.cs" echo         BTN_MAIN.Bounds = new Rectangle(526, 556, 120, 40);
+>> "%SEMO_WORK%\setup_gui.cs" echo         BTN_MAIN.Bounds = new Rectangle(740, 594, 124, 34);
 >> "%SEMO_WORK%\setup_gui.cs" echo         BTN_MAIN.Click += new EventHandler(delegate(object s2, EventArgs e2) { CloseFade(); });
 >> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(BTN_MAIN);
 >> "%SEMO_WORK%\setup_gui.cs" echo.
@@ -2321,7 +3105,7 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         BTN2 = new FlatBtn();
 >> "%SEMO_WORK%\setup_gui.cs" echo         BTN2.Primary = true;
 >> "%SEMO_WORK%\setup_gui.cs" echo         BTN2.Text = LangRow(MISC_SRC)[4];
->> "%SEMO_WORK%\setup_gui.cs" echo         BTN2.Bounds = new Rectangle(352, 556, 150, 40);
+>> "%SEMO_WORK%\setup_gui.cs" echo         BTN2.Bounds = new Rectangle(582, 594, 150, 34);
 >> "%SEMO_WORK%\setup_gui.cs" echo         BTN2.Visible = false;
 >> "%SEMO_WORK%\setup_gui.cs" echo         BTN2.Click += new EventHandler(delegate(object s2, EventArgs e2)
 >> "%SEMO_WORK%\setup_gui.cs" echo         {
@@ -2331,7 +3115,8 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(BTN2);
 >> "%SEMO_WORK%\setup_gui.cs" echo.
 >> "%SEMO_WORK%\setup_gui.cs" echo         // ---- sag panel: proje kartlari karuseli (v16: inceltildi 400-^>364) ----
->> "%SEMO_WORK%\setup_gui.cs" echo         Panel right = new Panel();
+>> "%SEMO_WORK%\setup_gui.cs" echo         RIGHTP = new Panel();
+>> "%SEMO_WORK%\setup_gui.cs" echo         Panel right = RIGHTP;
 >> "%SEMO_WORK%\setup_gui.cs" echo         right.BackColor = BG_CARD;
 >> "%SEMO_WORK%\setup_gui.cs" echo         right.Bounds = new Rectangle(668, 46, 196, 594);
 >> "%SEMO_WORK%\setup_gui.cs" echo         right.Paint += new PaintEventHandler(delegate(object s2, PaintEventArgs e2)
@@ -2340,7 +3125,7 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo             using (SolidBrush b = new SolidBrush(Color.FromArgb(8, Color.White)))
 >> "%SEMO_WORK%\setup_gui.cs" echo                 e2.Graphics.FillRectangle(b, 0, 0, right.Width, 46);
 >> "%SEMO_WORK%\setup_gui.cs" echo             using (Pen p = new Pen(H("#1e2d47"))) e2.Graphics.DrawLine(p, 0, 46, right.Width, 46);
->> "%SEMO_WORK%\setup_gui.cs" echo             using (Pen p2 = new Pen(Color.FromArgb(16, Color.White))) e2.Graphics.DrawLine(p2, 10, 546, right.Width - 10, 546);
+>> "%SEMO_WORK%\setup_gui.cs" echo             using (Pen p2 = new Pen(Color.FromArgb(16, Color.White))) e2.Graphics.DrawLine(p2, 10, right.Height - 44, right.Width - 10, right.Height - 44);
 >> "%SEMO_WORK%\setup_gui.cs" echo             using (Pen p = new Pen(H("#1e2d47"))) e2.Graphics.DrawLine(p, 0, 0, 0, right.Height);
 >> "%SEMO_WORK%\setup_gui.cs" echo         });
 >> "%SEMO_WORK%\setup_gui.cs" echo         F.Controls.Add(right);
@@ -2382,13 +3167,15 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo         LoadProjectFeed();
 >> "%SEMO_WORK%\setup_gui.cs" echo         FEED.Start();
 >> "%SEMO_WORK%\setup_gui.cs" echo.
->> "%SEMO_WORK%\setup_gui.cs" echo         Label plang = new Label();
+>> "%SEMO_WORK%\setup_gui.cs" echo         PLANG = new Label();
+>> "%SEMO_WORK%\setup_gui.cs" echo         Label plang = PLANG;
 >> "%SEMO_WORK%\setup_gui.cs" echo         plang.Text = Tr("setup.panel_lang");
 >> "%SEMO_WORK%\setup_gui.cs" echo         plang.ForeColor = DIM;
 >> "%SEMO_WORK%\setup_gui.cs" echo         plang.Font = new Font(UFONT, 7.5f);
 >> "%SEMO_WORK%\setup_gui.cs" echo         plang.Bounds = new Rectangle(10, 548, 176, 40);
 >> "%SEMO_WORK%\setup_gui.cs" echo         right.Controls.Add(plang);
 >> "%SEMO_WORK%\setup_gui.cs" echo.
+>> "%SEMO_WORK%\setup_gui.cs" echo         Relayout();
 >> "%SEMO_WORK%\setup_gui.cs" echo         F.Shown += new EventHandler(delegate(object s2, EventArgs e2)
 >> "%SEMO_WORK%\setup_gui.cs" echo         {
 >> "%SEMO_WORK%\setup_gui.cs" echo             // v15: fade-in acilis (modern his) + arka planda kurulum
@@ -2432,7 +3219,7 @@ exit /b 0
 >> "%SEMO_WORK%\setup_gui.cs" echo     {
 >> "%SEMO_WORK%\setup_gui.cs" echo         try
 >> "%SEMO_WORK%\setup_gui.cs" echo         {
->> "%SEMO_WORK%\setup_gui.cs" echo             try { File.AppendAllText(ErrLogPath(), DateTime.Now + " ^| SETUP GUI: " + ex + Environment.NewLine, Encoding.UTF8); } catch { }
+>> "%SEMO_WORK%\setup_gui.cs" echo             try { File.AppendAllText(ErrLogPath(), DateTime.Now + " | SETUP GUI: " + ex + Environment.NewLine, Encoding.UTF8); } catch { }
 >> "%SEMO_WORK%\setup_gui.cs" echo             try { MessageBox.Show("IDM SEMO kurulum sihirbazi hata verdi." + Environment.NewLine + Environment.NewLine + ex.Message + Environment.NewLine + Environment.NewLine + "Kurulum gunlugu:" + Environment.NewLine + ErrLogPath(), "BELGESELSEMO IDM SEMO", MessageBoxButtons.OK, MessageBoxIcon.Error); } catch { }
 >> "%SEMO_WORK%\setup_gui.cs" echo         }
 >> "%SEMO_WORK%\setup_gui.cs" echo         catch { }
@@ -2497,55 +3284,55 @@ exit /b 0
 start "" mshta "%TEMP%\semo_wait.hta"
 exit /b 0
 ___SEMO_PAYLOAD___
-TVNDRgAAAACqhqsBAAAAACwAAAAAAAAAAwEBAGEAAAAAAAAA7AoAAAAEAQBTaAAAAAAAAAAAYV0L
-tQAASURNX1NFTU9fRWQyay5jcwCwLwAAU2gAAAAAYV0LtQAASURNX1NFTU9fRWQya1NyYy5jcwDl
-YgAAA5gAAAAAYV0LtQAASURNX1NFTU9fRW5naW5lcy5jcwDmHAAA6PoAAAAAYV0LtQAASURNX1NF
-TU9fSTE4bi5jcwDDfgAAzhcBAAAAYV0LtQAASURNX1NFTU9fTWFpbi5jcwBGsQAAkZYBAAAAYV0L
-tQAASURNX1NFTU9fUGFnZXNBLmNzANSMAADXRwIAAABhXQu1AABJRE1fU0VNT19QYWdlc0IuY3MA
-htgAAKvUAgAAAGFdC7UAAElETV9TRU1PX1BhZ2VzQy5jcwBgTAAAMa0DAAAAYV0LtQAASURNX1NF
-TU9fUGFnZXNELmNzAOAuAACR+QMAAABhXQu1AABJRE1fU0VNT19VaS5jcwC2BgAAcSgEAAAAYV0L
-tQAAT0tVQkVOSS50eHQARSIAACcvBAAAAGFdC7UAAGFwcF9iZWxnZXNlbHNlbW8ucG5nAMEbAABs
-UQQAAABhXQu1AABhcHBfZXBnLnBuZwBeHAAALW0EAAAAYV0LtQAAYXBwX25iNzI0LnBuZwDsGwAA
-i4kEAAAAYV0LtQAAYXBwX251dHVrLnBuZwA9KgAAd6UEAAAAYV0LtQAAYXBwX3RyaXZpYS5wbmcA
-qMIAALTPBAAAAGFdC7UAAGFyLnR4dAAAnEkAXJIFAAAAYV0LtQAAYXJpYTJjLmV4ZQDQpgAAXC5P
-AAAAYV0LtQAAYXoudHh0AB4HAAAs1U8AAABhXQu1AABiYWRnZV9jcm93bi5wbmcAUgkAAErcTwAA
-AGFdC7UAAGJhZGdlX2NyeXB0by5wbmcAOQYAAJzlTwAAAGFdC7UAAGJhZGdlX2hlYXJ0LnBuZwBn
-BgAA1etPAAAAYV0LtQAAYmFkZ2VfeXQucG5nALEEAAA88k8AAABhXQu1AABidWxsZXRfZW1lcmFs
-ZC5wbmcAWAQAAO32TwAAAGFdC7UAAGJ1bGxldF9nb2xkLnBuZwAxoAAARftPAAAAYV0LtQAAZGUu
-dHh0AIfgAAB2m1AAAABhXQu1AABlbC50eHQAR5kAAP17UQAAAGFdC7UAAGVuLnR4dAAayQAARBVS
-AAAAYV0LtQAAZmEudHh0AIEDAABe3lIAAABhXQu1AABmbGFnX2FyLnBuZwCABAAA3+FSAAAAYV0L
-tQAAZmxhZ19hei5wbmcARgIAAF/mUgAAAGFdC7UAAGZsYWdfZGUucG5nALQEAACl6FIAAABhXQu1
-AABmbGFnX2VsLnBuZwAGCwAAWe1SAAAAYV0LtQAAZmxhZ19lbi5wbmcACQQAAF/4UgAAAGFdC7UA
-AGZsYWdfZmEucG5nAM4CAABo/FIAAABhXQu1AABmbGFnX2ZyLnBuZwAvBAAANv9SAAAAYV0LtQAA
-ZmxhZ19oaS5wbmcA1QEAAGUDUwAAAGFdC7UAAGZsYWdfaWQucG5nAJ0CAAA6BVMAAABhXQu1AABm
-bGFnX2l0LnBuZwDxAwAA1wdTAAAAYV0LtQAAZmxhZ19qYS5wbmcA4AMAAMgLUwAAAGFdC7UAAGZs
-YWdfa2EucG5nAPcEAACoD1MAAABhXQu1AABmbGFnX2t5LnBuZwDCAgAAnxRTAAAAYV0LtQAAZmxh
-Z19ubC5wbmcA7AMAAGEXUwAAAGFdC7UAAGZsYWdfcHQucG5nAJgCAABNG1MAAABhXQu1AABmbGFn
-X3JvLnBuZwBdAgAA5R1TAAAAYV0LtQAAZmxhZ19ydS5wbmcAnQUAAEIgUwAAAGFdC7UAAGZsYWdf
-dHIucG5nANQDAADfJVMAAABhXQu1AABmbGFnX3ZpLnBuZwA2BAAAsylTAAAAYV0LtQAAZmxhZ196
-aC5wbmcA/KMAAOktUwAAAGFdC7UAAGZyLnR4dACnCQEA5dFTAAAAYV0LtQAAaGkudHh0AICYAACM
-21QAAABhXQu1AABpZC50eHQALq8FAAx0VQAAAGFdC7UAAGlkbV9pY29uLmljbwDiWQAAOiNbAAAA
-YV0LtQAAaWRtX2ljb25fMTI4LnBuZwBfFQAAHH1bAAAAYV0LtQAAaWRtX2ljb25fNDgucG5nACCb
-AAB7klsAAABhXQu1AABpdC50eHQARrMAAJstXAAAAGFdC7UAAGphLnR4dADHIAEA4eBcAAAAYV0L
-tQAAa2EudHh0ALHcAACoAV4AAABhXQu1AABreS50eHQArwIAAFneXgAAAGFdC7UAAG5hdl8wLnBu
-ZwD1AQAACOFeAAAAYV0LtQAAbmF2XzEucG5nACoDAAD94l4AAABhXQu1AABuYXZfMi5wbmcA1wIA
-ACfmXgAAAGFdC7UAAG5hdl8zLnBuZwDfAgAA/uheAAAAYV0LtQAAbmF2XzQucG5nANACAADd614A
-AABhXQu1AABuYXZfNS5wbmcAQwIAAK3uXgAAAGFdC7UAAG5hdl82LnBuZwAGBAAA8PBeAAAAYV0L
-tQAAbmF2XzcucG5nADsCAAD29F4AAABhXQu1AABuYXZfOC5wbmcABwMAADH3XgAAAGFdC7UAAG5h
-dl85LnBuZwChmgAAOPpeAAAAYV0LtQAAbmwudHh0AKshAADZlF8AAABhXQu1AABwcm9qX2JlbGdl
-c2Vsc2Vtb2ZsaXgucG5nAHgUAACEtl8AAABhXQu1AABwcm9qX2Vjb25vbXkucG5nAHcYAAD8yl8A
-AABhXQu1AABwcm9qX21hdHBheS5wbmcAaSAEAHPjXwAAAGFdC7UAAHByb2pfcmV0cm9fYmFubmVy
-LnBuZwDSMQAA3ANkAAAAYV0LtQAAcHJval9yZXRyb19pY29uLnBuZwCYDwAArjVkAAAAYV0LtQAA
-cHJval95b3V0dWJlLnBuZwCOnQAARkVkAAAAYV0LtQAAcHQudHh0AIYFAADU4mQAAABhXQu1AABx
-cl9kb24ucG5nAEAGAABa6GQAAABhXQu1AABxcl9lcGcucG5nAH8FAACa7mQAAABhXQu1AABxcl9m
-bGl4LnBuZwCKBQAAGfRkAAAAYV0LtQAAcXJfZ3AucG5nAEQGAACj+WQAAABhXQu1AABxcl9ncGFw
-cC5wbmcA0AMAAOf/ZAAAAGFdC7UAAHFyX21hdHBheS5wbmcASQYAALcDZQAAAGFdC7UAAHFyX25i
-LnBuZwBSBgAAAAplAAAAYV0LtQAAcXJfbnV0dWsucG5nAH8FAABSEGUAAABhXQu1AABxcl9wb3Mu
-cG5nAHMFAADRFWUAAABhXQu1AABxcl9wcmVtLnBuZwBaBgAARBtlAAAAYV0LtQAAcXJfdHJpdmlh
-LnBuZwCrBAAAniFlAAAAYV0LtQAAcXJfd2ViLnBuZwCcBAAASSZlAAAAYV0LtQAAcXJfeXQucG5n
-AO2gAADlKmUAAABhXQu1AAByby50eHQA99oAANLLZQAAAGFdC7UAAHJ1LnR4dAAwpgAAyaZmAAAA
-YV0LtQAAdHIudHh0ADSxAAD5TGcAAABhXQu1AAB2aS50eHQA29Z6AC3+ZwAAAGFdC7UAAHlvdXR1
-YmUtZGwuZXhlAOgXHAEI1eIAAABhXQu1AAB5dC1kbHAuZXhlAGGVAADw7P4BAABhXQu1AAB6aC50
+TVNDRgAAAACqhqsBAAAAACwAAAAAAAAAAwEBAGEAAAAAAAAA7AoAAAAEAQBTaAAAAAAAAAAAYV3V
+uAAASURNX1NFTU9fRWQyay5jcwCwLwAAU2gAAAAAYV3VuAAASURNX1NFTU9fRWQya1NyYy5jcwDl
+YgAAA5gAAAAAYV3VuAAASURNX1NFTU9fRW5naW5lcy5jcwDmHAAA6PoAAAAAYV3VuAAASURNX1NF
+TU9fSTE4bi5jcwDDfgAAzhcBAAAAYV3VuAAASURNX1NFTU9fTWFpbi5jcwBGsQAAkZYBAAAAYV3V
+uAAASURNX1NFTU9fUGFnZXNBLmNzANSMAADXRwIAAABhXdW4AABJRE1fU0VNT19QYWdlc0IuY3MA
+htgAAKvUAgAAAGFd1bgAAElETV9TRU1PX1BhZ2VzQy5jcwBgTAAAMa0DAAAAYV3VuAAASURNX1NF
+TU9fUGFnZXNELmNzAOAuAACR+QMAAABhXdW4AABJRE1fU0VNT19VaS5jcwC2BgAAcSgEAAAAYV3V
+uAAAT0tVQkVOSS50eHQARSIAACcvBAAAAGFd1bgAAGFwcF9iZWxnZXNlbHNlbW8ucG5nAMEbAABs
+UQQAAABhXdW4AABhcHBfZXBnLnBuZwBeHAAALW0EAAAAYV3VuAAAYXBwX25iNzI0LnBuZwDsGwAA
+i4kEAAAAYV3VuAAAYXBwX251dHVrLnBuZwA9KgAAd6UEAAAAYV3VuAAAYXBwX3RyaXZpYS5wbmcA
+qMIAALTPBAAAAGFd1bgAAGFyLnR4dAAAnEkAXJIFAAAAYV3VuAAAYXJpYTJjLmV4ZQDQpgAAXC5P
+AAAAYV3VuAAAYXoudHh0AB4HAAAs1U8AAABhXdW4AABiYWRnZV9jcm93bi5wbmcAUgkAAErcTwAA
+AGFd1bgAAGJhZGdlX2NyeXB0by5wbmcAOQYAAJzlTwAAAGFd1bgAAGJhZGdlX2hlYXJ0LnBuZwBn
+BgAA1etPAAAAYV3VuAAAYmFkZ2VfeXQucG5nALEEAAA88k8AAABhXdW4AABidWxsZXRfZW1lcmFs
+ZC5wbmcAWAQAAO32TwAAAGFd1bgAAGJ1bGxldF9nb2xkLnBuZwAxoAAARftPAAAAYV3VuAAAZGUu
+dHh0AIfgAAB2m1AAAABhXdW4AABlbC50eHQAR5kAAP17UQAAAGFd1bgAAGVuLnR4dAAayQAARBVS
+AAAAYV3VuAAAZmEudHh0AIEDAABe3lIAAABhXdW4AABmbGFnX2FyLnBuZwCABAAA3+FSAAAAYV3V
+uAAAZmxhZ19hei5wbmcARgIAAF/mUgAAAGFd1bgAAGZsYWdfZGUucG5nALQEAACl6FIAAABhXdW4
+AABmbGFnX2VsLnBuZwAGCwAAWe1SAAAAYV3VuAAAZmxhZ19lbi5wbmcACQQAAF/4UgAAAGFd1bgA
+AGZsYWdfZmEucG5nAM4CAABo/FIAAABhXdW4AABmbGFnX2ZyLnBuZwAvBAAANv9SAAAAYV3VuAAA
+ZmxhZ19oaS5wbmcA1QEAAGUDUwAAAGFd1bgAAGZsYWdfaWQucG5nAJ0CAAA6BVMAAABhXdW4AABm
+bGFnX2l0LnBuZwDxAwAA1wdTAAAAYV3VuAAAZmxhZ19qYS5wbmcA4AMAAMgLUwAAAGFd1bgAAGZs
+YWdfa2EucG5nAPcEAACoD1MAAABhXdW4AABmbGFnX2t5LnBuZwDCAgAAnxRTAAAAYV3VuAAAZmxh
+Z19ubC5wbmcA7AMAAGEXUwAAAGFd1bgAAGZsYWdfcHQucG5nAJgCAABNG1MAAABhXdW4AABmbGFn
+X3JvLnBuZwBdAgAA5R1TAAAAYV3VuAAAZmxhZ19ydS5wbmcAnQUAAEIgUwAAAGFd1bgAAGZsYWdf
+dHIucG5nANQDAADfJVMAAABhXdW4AABmbGFnX3ZpLnBuZwA2BAAAsylTAAAAYV3VuAAAZmxhZ196
+aC5wbmcA/KMAAOktUwAAAGFd1bgAAGZyLnR4dACnCQEA5dFTAAAAYV3VuAAAaGkudHh0AICYAACM
+21QAAABhXdW4AABpZC50eHQALq8FAAx0VQAAAGFd1bgAAGlkbV9pY29uLmljbwDiWQAAOiNbAAAA
+YV3VuAAAaWRtX2ljb25fMTI4LnBuZwBfFQAAHH1bAAAAYV3VuAAAaWRtX2ljb25fNDgucG5nACCb
+AAB7klsAAABhXdW4AABpdC50eHQARrMAAJstXAAAAGFd1bgAAGphLnR4dADHIAEA4eBcAAAAYV3V
+uAAAa2EudHh0ALHcAACoAV4AAABhXdW4AABreS50eHQArwIAAFneXgAAAGFd1bgAAG5hdl8wLnBu
+ZwD1AQAACOFeAAAAYV3VuAAAbmF2XzEucG5nACoDAAD94l4AAABhXdW4AABuYXZfMi5wbmcA1wIA
+ACfmXgAAAGFd1bgAAG5hdl8zLnBuZwDfAgAA/uheAAAAYV3VuAAAbmF2XzQucG5nANACAADd614A
+AABhXdW4AABuYXZfNS5wbmcAQwIAAK3uXgAAAGFd1bgAAG5hdl82LnBuZwAGBAAA8PBeAAAAYV3V
+uAAAbmF2XzcucG5nADsCAAD29F4AAABhXdW4AABuYXZfOC5wbmcABwMAADH3XgAAAGFd1bgAAG5h
+dl85LnBuZwChmgAAOPpeAAAAYV3VuAAAbmwudHh0AKshAADZlF8AAABhXdW4AABwcm9qX2JlbGdl
+c2Vsc2Vtb2ZsaXgucG5nAHgUAACEtl8AAABhXdW4AABwcm9qX2Vjb25vbXkucG5nAHcYAAD8yl8A
+AABhXdW4AABwcm9qX21hdHBheS5wbmcAaSAEAHPjXwAAAGFd1bgAAHByb2pfcmV0cm9fYmFubmVy
+LnBuZwDSMQAA3ANkAAAAYV3VuAAAcHJval9yZXRyb19pY29uLnBuZwCYDwAArjVkAAAAYV3VuAAA
+cHJval95b3V0dWJlLnBuZwCOnQAARkVkAAAAYV3VuAAAcHQudHh0AIYFAADU4mQAAABhXdW4AABx
+cl9kb24ucG5nAEAGAABa6GQAAABhXdW4AABxcl9lcGcucG5nAH8FAACa7mQAAABhXdW4AABxcl9m
+bGl4LnBuZwCKBQAAGfRkAAAAYV3VuAAAcXJfZ3AucG5nAEQGAACj+WQAAABhXdW4AABxcl9ncGFw
+cC5wbmcA0AMAAOf/ZAAAAGFd1bgAAHFyX21hdHBheS5wbmcASQYAALcDZQAAAGFd1bgAAHFyX25i
+LnBuZwBSBgAAAAplAAAAYV3VuAAAcXJfbnV0dWsucG5nAH8FAABSEGUAAABhXdW4AABxcl9wb3Mu
+cG5nAHMFAADRFWUAAABhXdW4AABxcl9wcmVtLnBuZwBaBgAARBtlAAAAYV3VuAAAcXJfdHJpdmlh
+LnBuZwCrBAAAniFlAAAAYV3VuAAAcXJfd2ViLnBuZwCcBAAASSZlAAAAYV3VuAAAcXJfeXQucG5n
+AO2gAADlKmUAAABhXdW4AAByby50eHQA99oAANLLZQAAAGFd1bgAAHJ1LnR4dAAwpgAAyaZmAAAA
+YV3VuAAAdHIudHh0ADSxAAD5TGcAAABhXdW4AAB2aS50eHQA29Z6AC3+ZwAAAGFd1bgAAHlvdXR1
+YmUtZGwuZXhlAOgXHAEI1eIAAABhXdW4AAB5dC1kbHAuZXhlAGGVAADw7P4BAABhXdW4AAB6aC50
 eHQAFZlbW9EZAIBDS9U923LbuJLv/gqMt84MuVYUiZLli5LMSRx74jq5le2cechmXZQIWVxTpIak
 HHkSb+1H7Bful2w3LiRIAiSlZGZnUzVjEgQafUMD6G5Ajx+T85dvyOXpm3fkf/7rvwl96fyD0PDG
 D+kxefNy2CHUc27J3E3mCU07JPDDW7J048QPbzokofEdjbsLmmZlO48fi2JiXZ28J8PRqG8TN/TI
