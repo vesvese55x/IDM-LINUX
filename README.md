@@ -30,12 +30,19 @@
 >
 > `curl -fsSL https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/belgeselsemo-idm-linux-installer | sh`
 
+> [!NOTE]
+> **⊞ IDM SEMO — Windows için IDM kontrol merkezi**  
+> IDM entegrasyonu, video araçları ve kullanıcı onaylı torrent/eD2K kuyruğunu yerel Windows GUI’sinde birleştirir.  
+> Kategorili `Downloads\IDM-SEMO` hedefleri, tek Başlat/Duraklat kontrolü ve komut penceresiz EXE kurulumu sunar.  
+> [**Windows x64 EXE indir**](https://github.com/vesvese55x/IDM-LINUX/releases/download/v1.0.0/IDM-SEMO-1.0.0-x86_64.exe) · [BAT alternatifi](belgeselsemo-idm-windows-installer.bat) · [Tanıtım ve ekranlar](promo/promo.html#windows)  
+> **Not:** EXE .NET Framework gerektirir; paketin tamamı Windows XP uyumlu değildir.
+
 ## IDM deneyimi Linux'ta
 
 <p align="justify">IDM LINUX; Wine üzerinde koşan gerçek IDM motorunu, Linux tarafında hafif bir Python kontrol paneliyle buluşturur. Kurulum sihirbazı Wine ortamını ve resmî IDM kurulumunu otomatik hazırlar; Genel Bakış ekranı köprü durumunu, video motorunu ve hızlı indirme araçlarını tek ekranda gösterir. Hızlı bağlantı kutusuna URL, magnet veya yerel .torrent dosyası bırakmanız yeterli — gerisini IDM LINUX halleder.</p>
 
 <p align="center">
-  <img src="promo/assets/screens/overview.png" alt="IDM LINUX Genel Bakış & Canlı Kontrol Paneli" width="88%">
+  <img src="promo/assets/screens/idm-linux/overview.png" alt="IDM LINUX Genel Bakış & Canlı Kontrol Paneli" width="88%">
 </p>
 
 ## İndirme katmanları
@@ -48,8 +55,8 @@
 📜 <strong>Oynatma listesi</strong> — YouTube/Dailymotion vb. liste bağlantısını yapıştırın; videolar listelenir, seçilenler sırayla indirilir.
 
 <p align="center">
-  <img src="promo/assets/screens/browsers.png" alt="IDM LINUX Tarayıcı & Eklentiler" width="48%">
-  <img src="promo/assets/screens/installer.png" alt="IDM LINUX Kurulum & Güncelleme Sihirbazı" width="48%">
+  <img src="promo/assets/screens/idm-linux/browsers.png" alt="IDM LINUX Tarayıcı & Eklentiler" width="48%">
+  <img src="promo/assets/screens/idm-linux/installer.png" alt="IDM LINUX Kurulum & Güncelleme Sihirbazı" width="48%">
 </p>
 
 ## Sistem Doktoru ve canlı günlükler
@@ -57,7 +64,7 @@
 <p align="justify">Sorun anında kaynağı tahmin etmeye gerek yok: 6 adımlı otomatik teşhis ve tamir doktoru köprüyü, video motorunu ve tarayıcı bağlantılarını tek tıkla onarır. daemon.log ve native_host.log canlı günlükleri aynı ekranda akar; uzak log gönderimiyle destek ekibine tek tıkla paylaşılır. "İptal = tam dur" ilkesi sayesinde herhangi bir indirmeyi iptal ettiğinizde arka planda hiçbir motor devam etmez.</p>
 
 <p align="center">
-  <img src="promo/assets/screens/doctor.png" alt="IDM LINUX Sistem Doktoru & Canlı Günlükler" width="88%">
+  <img src="promo/assets/screens/idm-linux/doctor.png" alt="IDM LINUX Sistem Doktoru & Canlı Günlükler" width="88%">
 </p>
 
 ## Python paket testleri — kalite kapısı
@@ -71,8 +78,8 @@
 <p align="justify">IDM LINUX, BELGESELSEMO evreninin masaüstü parçasıdır: web portalları, YouTube kanalı, Google Play uygulamaları ve yardımcı araçlar aynı ekosistemi paylaşır. Arayüz 20 dilde çalışır (varsayılan Türkçe); destek sayfasından YouTube aboneliği, Google Play puanı veya bağış yollarıyla projelere katkı verilebilir.</p>
 
 <p align="center">
-  <img src="promo/assets/screens/projects.png" alt="IDM LINUX Diğer Projeler & Uygulama Ekosistemi" width="48%">
-  <img src="promo/assets/screens/support.png" alt="IDM LINUX Teşekkür Et & Destekle" width="48%">
+  <img src="promo/assets/screens/idm-linux/projects.png" alt="IDM LINUX Diğer Projeler & Uygulama Ekosistemi" width="48%">
+  <img src="promo/assets/screens/idm-linux/support.png" alt="IDM LINUX Teşekkür Et & Destekle" width="48%">
 </p>
 
 ## Kişiselleştirme ve ayarlar
@@ -80,7 +87,7 @@
 <p align="justify">Köprü portları, indirme klasörü, Wine önek konumu, arayüz dili ve tarayıcı yakalama davranışı tek ekrandan yönetilir. `--no-sandbox` gerektiren ortamlar dinamik olarak algılanır; kurulum sırasında ve tarayıcı açılışlarında gerekli parametre otomatik eklenir; `--no-sandbox` engeli kökten kaldırılır.</p>
 
 <p align="center">
-  <img src="promo/assets/screens/settings.png" alt="IDM LINUX Yakalama & Wine Ayarları" width="88%">
+  <img src="promo/assets/screens/idm-linux/settings.png" alt="IDM LINUX Yakalama & Wine Ayarları" width="88%">
 </p>
 
 ## Platform paketleri ve kurulum komutları
@@ -206,7 +213,7 @@
 
 <p align="justify"><strong>IDM LINUX</strong> brings the full power of Tonec Inc.'s legendary download manager <strong>Internet Download Manager</strong> to Linux as an independent integration layer. Browser capture, video sites, torrent and live-stream DVR layers come together in a single lightweight control panel; downloads run at maximum speed on the real IDM engine. The setup wizard prepares the Wine environment and the official IDM installation automatically; the Overview screen shows bridge status, video engine and quick-download tools in one place.</p>
 
-<p align="center"><img src="promo/assets/screens/overview.png" alt="IDM LINUX Overview" width="88%"></p>
+<p align="center"><img src="promo/assets/screens/idm-linux/overview.png" alt="IDM LINUX Overview" width="88%"></p>
 
 <h2>Download layers</h2>
 
@@ -263,7 +270,7 @@
 
 <p align="justify"><strong>IDM LINUX</strong> bringt die volle Kraft von Tonec Inc.' legendärem Download-Manager <strong>Internet Download Manager</strong> als unabhängige Integrationsschicht auf Linux. Browser-Erfassung, Videoseiten, Torrent- und Live-Stream-DVR-Ebenen vereinen sich in einem einzigen schlanken Kontrollzentrum; Downloads laufen mit maximaler Geschwindigkeit über die echte IDM-Engine. Der Installationsassistent bereitet die Wine-Umgebung und die offizielle IDM-Installation automatisch vor.</p>
 
-<p align="center"><img src="promo/assets/screens/overview.png" alt="IDM LINUX Übersicht" width="88%"></p>
+<p align="center"><img src="promo/assets/screens/idm-linux/overview.png" alt="IDM LINUX Übersicht" width="88%"></p>
 
 <h2>Download-Ebenen</h2>
 
@@ -316,7 +323,7 @@
 
 <p align="justify"><strong>IDM LINUX</strong> переносит всю мощь легендарного менеджера загрузок <strong>Internet Download Manager</strong> от Tonec Inc. на Linux в виде независимого интеграционного слоя. Захват из браузера, видеосайты, torrent- и DVR-слои live-трансляций объединяются в единой лёгкой панели управления; загрузки идут на максимальной скорости через настоящий движок IDM. Мастер установки автоматически подготавливает среду Wine и официальную установку IDM.</p>
 
-<p align="center"><img src="promo/assets/screens/overview.png" alt="IDM LINUX Обзор" width="88%"></p>
+<p align="center"><img src="promo/assets/screens/idm-linux/overview.png" alt="IDM LINUX Обзор" width="88%"></p>
 
 <h2>Слои загрузки</h2>
 
@@ -369,7 +376,7 @@
 
 <p align="justify"><strong>IDM LINUX</strong>, Tonec Inc. के प्रसिद्ध डाउनलोड मैनेजर <strong>Internet Download Manager</strong> की पूरी ताक़त को एक स्वतंत्र एकीकरण परत के रूप में Linux पर लाता है। ब्राउज़र कैप्चर, वीडियो साइटें, torrent और लाइव-स्ट्रीम DVR परतें एक हल्के नियंत्रण केंद्र में एकजुट होती हैं; डाउनलोड असली IDM इंजन से अधिकतम गति पर चलते हैं। सेटअप विज़ार्ड Wine वातावरण और आधिकारिक IDM इंस्टॉलेशन को स्वतः तैयार करता है।</p>
 
-<p align="center"><img src="promo/assets/screens/overview.png" alt="IDM LINUX अवलोकन" width="88%"></p>
+<p align="center"><img src="promo/assets/screens/idm-linux/overview.png" alt="IDM LINUX अवलोकन" width="88%"></p>
 
 <h2>डाउनलोड परतें</h2>
 

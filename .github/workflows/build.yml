@@ -1,22 +1,60 @@
-name: "IDM-LINUX-1.0.0 Building (İnşa Ediliyor)"
-
-# Yeni depo düzenine göre 4'lü paket derlemesi:
-#   AppImage + deb + rpm + Arch zst → mevcut IDM-LINUX-1.0.0 (v1.0.0) release'ine
-#   AYNI dosya adlarıyla yüklenir (--clobber; sürüm numaraları DEĞİŞMEZ).
+name: "IDM LINUX + IDM SEMO — Build"
 on:
   workflow_dispatch:
+    inputs:
+      build_linux:
+        description: Build the four existing Linux packages
+        type: boolean
+        default: true
+      build_windows:
+        description: Build the no-console Windows EXE and native screenshots
+        type: boolean
+        default: true
   push:
     branches: [main]
-
 concurrency:
   group: idm-linux-build
   cancel-in-progress: true
-
 permissions:
   contents: write
-
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      linux: ${{ steps.paths.outputs.linux }}
+      windows: ${{ steps.paths.outputs.windows }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - id: paths
+        shell: python
+        env:
+          EVENT: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+          LINUX: ${{ inputs.build_linux }}
+          WINDOWS: ${{ inputs.build_windows }}
+        run: |
+          import os, subprocess
+          if os.environ['EVENT'] == 'workflow_dispatch':
+              linux = os.environ['LINUX'] == 'true'
+              windows = os.environ['WINDOWS'] == 'true'
+          else:
+              before = os.environ['BEFORE']
+              if not before or set(before) == {'0'}:
+                  paths = subprocess.check_output(['git','ls-files'],text=True).splitlines()
+              else:
+                  subprocess.run(['git','fetch','--no-tags','--depth=1','origin',before],check=True)
+                  paths = subprocess.check_output(['git','diff','--name-only',before,'HEAD'],text=True).splitlines()
+              linux = any(p.startswith('src/') or p in ['pyproject.toml','belgeselsemo-idm-linux-installer'] or (p.startswith('packaging/') and not p.startswith('packaging/windows/')) for p in paths)
+              windows = any(p == 'belgeselsemo-idm-windows-installer.bat' or p.startswith('packaging/windows/') or p == '.github/workflows/build.yml' for p in paths)
+          with open(os.environ['GITHUB_OUTPUT'],'a') as output:
+              output.write('linux='+str(linux).lower()+'\nwindows='+str(windows).lower()+'\n')
+          print('Linux:',linux,'Windows:',windows)
+
   build:
+    needs: changes
+    if: needs.changes.outputs.linux == 'true'
     name: 4'lü Paket Derleme (AppImage/deb/rpm/zst)
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -86,3 +124,64 @@ jobs:
             --clobber --repo "${GITHUB_REPOSITORY}"
           echo "Release asset'leri (yeni build):"
           gh release view v1.0.0 --repo "${GITHUB_REPOSITORY}" --json assets -q '.assets[] | .name + "  " + (.size|tostring) + " bayt"'
+
+  windows:
+    name: IDM SEMO x64 EXE + real Windows GUI screenshots
+    needs: changes
+    if: needs.changes.outputs.windows == 'true'
+    runs-on: windows-2022
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build from the authoritative BAT (GUI subsystem, custom icon)
+        shell: powershell
+        run: ./packaging/windows/build.ps1
+      - name: Native browser layout tests and ten real GUI pages
+        shell: powershell
+        run: ./packaging/windows/capture.ps1
+      - name: Verify no visible CMD or PowerShell window during EXE startup
+        shell: powershell
+        run: ./packaging/windows/smoke.ps1
+      - name: Keep build, screenshots and verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: IDM-SEMO-1.0.0-x86_64
+          path: |
+            artifacts/windows/IDM-SEMO-1.0.0-x86_64.exe
+            artifacts/windows/*manifest.json
+            artifacts/windows/*smoke.json
+            artifacts/windows/*.log
+            promo/assets/screens/idm-semo/
+      - name: Add Windows EXE without deleting any existing release asset
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $ErrorActionPreference='Stop'
+          $file='artifacts/windows/IDM-SEMO-1.0.0-x86_64.exe'
+          $name=Split-Path $file -Leaf
+          $release=gh release view v1.0.0 --repo $env:GITHUB_REPOSITORY --json assets | ConvertFrom-Json
+          if($LASTEXITCODE -ne 0){throw 'Existing v1.0.0 release not accessible'}
+          if($release.assets.name -contains $name){
+            # Immutable release assets: preserve the original; publish a uniquely named rebuild.
+            $suffix=$env:GITHUB_SHA.Substring(0,8)+'-'+$env:GITHUB_RUN_ID
+            $name='IDM-SEMO-1.0.0-x86_64-'+$suffix+'.exe'
+            $new=Join-Path (Split-Path $file) $name
+            Copy-Item $file $new
+            $file=$new
+          }
+          gh release upload v1.0.0 $file --repo $env:GITHUB_REPOSITORY
+          if($LASTEXITCODE -ne 0){throw 'Windows asset upload failed; no assets were removed'}
+          Write-Host "Published $name without --clobber or delete"
+      - name: Publish native Windows screenshots only
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add promo/assets/screens/idm-semo
+          if ! git diff --cached --quiet; then
+            git commit -m 'docs: refresh native Windows SEMO screenshots [skip ci]'
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
