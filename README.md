@@ -1,4 +1,4 @@
-# 🚀 IDM LINUX (BELGESELSEMO)
+# 🚀 IDM LINUX & IDM SEMO
 
 <p align="center">
   🌐 <strong>Türkçe</strong> ·
