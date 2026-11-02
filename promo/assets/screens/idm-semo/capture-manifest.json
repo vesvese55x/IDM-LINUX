@@ -1,0 +1,59 @@
+﻿{
+    "renderer":  "Real Windows WinForms controls, DrawToBitmap; no synthetic UI",
+    "runner":  "Windows",
+    "images":  [
+                   {
+                       "sha256":  "1dea01437a06827182c943fb644dedb93cfe4dd3305f599a2a36da7a65018450",
+                       "name":  "about.png",
+                       "bytes":  116162
+                   },
+                   {
+                       "sha256":  "3e935804b171cf72577c2e8fe681111c14a8b527f5884664c416baa17ddb08b5",
+                       "name":  "browsers.png",
+                       "bytes":  71344
+                   },
+                   {
+                       "sha256":  "b53de6be00e485196d0e1696f695cb02d57deca4cee5df5a505996245a835279",
+                       "name":  "doctor.png",
+                       "bytes":  51541
+                   },
+                   {
+                       "sha256":  "94afdfb3fc7359092ebc11bc3879c5b4157a19f1f0dd7389293f79ac211fc346",
+                       "name":  "installer.png",
+                       "bytes":  66281
+                   },
+                   {
+                       "sha256":  "4ee88923fe3dca5018710220e2eed51c9fb4bb01536b801cb2015fe1290396f2",
+                       "name":  "language.png",
+                       "bytes":  63244
+                   },
+                   {
+                       "sha256":  "fb75dc55a903dcf6bb981f88458efcac3045f4350da644bf43564caf615341ad",
+                       "name":  "overview.png",
+                       "bytes":  78442
+                   },
+                   {
+                       "sha256":  "7987441efde905aebe8c45bb9fac79a966ec4aa3065bd4422d2b8d6f73fbc92f",
+                       "name":  "projects.png",
+                       "bytes":  109127
+                   },
+                   {
+                       "sha256":  "0cd8d82a7f1ce3afbce5b98158bbad12e56ddcaa85f05e078cc60a0af487e412",
+                       "name":  "settings.png",
+                       "bytes":  67304
+                   },
+                   {
+                       "sha256":  "6f395e49d4b98c1b620618f1c95c3e1f1fdcfcadc7ee770865fbacaf93779e02",
+                       "name":  "support.png",
+                       "bytes":  87649
+                   },
+                   {
+                       "sha256":  "d878ea86f251f72b1c9ec1f2df0958d60135d7d44a35d1a6deaa63c0c7ab264d",
+                       "name":  "torrent-ed2k.png",
+                       "bytes":  54506
+                   }
+               ],
+    "platform":  "Microsoft Windows NT 10.0.20348.0",
+    "source_commit":  "1ff66b16bfe6e8012b180267b932b94df1128f62",
+    "capture_utc":  "2026-11-02T18:29:50.0060862Z"
+}
