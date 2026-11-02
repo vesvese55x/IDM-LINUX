@@ -8,6 +8,39 @@
   <a href="#hindi">हिन्दी</a>
 </p>
 
+<!-- IDM SEMO card: ordinary selectable text, blue SVG accents on BOTH sides. -->
+<table>
+<tr>
+<td width="10" align="center"><img src="promo/assets/readme/blue-rail.svg" width="6" height="190" alt=""></td>
+<td>
+<p><img align="right" src="promo/assets/idm-semo-icon.png" width="54" height="54" alt="IDM SEMO"><strong>⊞ IDM SEMO — Windows için IDM kontrol merkezi</strong><br><sub>WINDOWS x64 · YEREL WINFORMS GUI · BAT + EXE + CMD</sub></p>
+<p align="justify">IDM entegrasyonu, video araçları ve kullanıcı onaylı torrent/eD2K kuyruğu tek panelde. Kategorili <code>Downloads\IDM-SEMO</code> hedefleri, tek Başlat/Duraklat kontrolü ve komut penceresiz EXE kurulumu.</p>
+<p align="center"><a href="https://github.com/vesvese55x/IDM-LINUX/releases/download/v1.0.0/IDM-SEMO-1.0.0-x86_64.exe"><strong>⬇ Windows EXE indir</strong></a> · <a href="README-SEMO.md"><strong>⊞ SEMO rehberini aç</strong></a> · <a href="#windows-cmd-kurulum">⌨ CMD ile kur</a> · <a href="https://rawgit.loltek.net/https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/promo/promo.html">↗ Tanıtım</a></p>
+<p align="justify"><sub>Bağımsız bir entegrasyon/kontrol katmanıdır; IDM lisansı sağlamaz. EXE .NET Framework gerektirir. Paket genelinde %100 Windows XP uyumu yoktur.</sub></p>
+</td>
+<td width="10" align="center"><img src="promo/assets/readme/blue-rail.svg" width="6" height="190" alt=""></td>
+</tr>
+</table>
+
+<table align="center"><tr><td align="center"><strong>🔵 🐧 IDM LINUX · Linux</strong></td><td align="center"><a href="README-SEMO.md"><strong>⊞ IDM SEMO · Windows →</strong></a></td></tr></table>
+<p align="center"><sub>GitHub uyumlu bağlantılı ürün sekmeleri / Linked product tabs: Linux · Windows</sub></p>
+
+<a id="windows-cmd-kurulum"></a>
+<details>
+<summary><strong>⌨ Windows CMD ile tek satırda IDM SEMO kurulumu / One-line CMD install</strong></summary>
+
+<p align="justify">Windows’ta <strong>Komut İstemi’ni (CMD)</strong> açın, aşağıdaki komutu tek satır olarak yapıştırıp Enter’a basın. Komut, resmî repodaki güncel BAT’ı <code>%TEMP%\idm.bat</code> yoluna indirip çalıştırır.</p>
+
+```cmd
+echo Set x=CreateObject("MSXML2.XMLHTTP"):x.Open "GET","https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/main/belgeselsemo-idm-windows-installer.bat",0:x.Send:Set s=CreateObject("ADODB.Stream"):s.Open:s.Type=1:s.Write x.responseBody:s.SaveToFile "%TEMP%\idm.bat",2 > "%TEMP%\d.vbs" & echo. & echo [i] Indiriliyor... / Downloading... & cscript //nologo "%TEMP%\d.vbs" & echo [+] Tamamlandi! / Completed! & call "%TEMP%\idm.bat"
+```
+
+<p align="justify"><strong>Gereksinim:</strong> Windows Script Host / VBScript, MSXML ve ADODB.Stream erişimi. VBScript/WSH bazı güncel veya kurum tarafından yönetilen sistemlerde kapalı olabilir; bu durumda EXE’yi kullanın. Bu CMD alternatifi komut penceresi gösterir; <strong>komut penceresiz açılış için EXE</strong> önerilir.</p>
+<p align="justify"><strong>Güven:</strong> Bu komut internetten indirdiği betiği doğrudan çalıştırır. Yalnızca resmî repoya güveniyorsanız kullanın. “Completed” satırı kurulumun başarılı olduğunu garanti etmez; indirme/WSH hatası varsa devam etmeyin ve eski <code>%TEMP%\idm.bat</code> dosyasına güvenmeyin.</p>
+
+</details>
+
+
 <p align="center">
   <img src="src/idm_linux/assets/idm-linux-icon.png" alt="IDM LINUX uygulama simgesi" width="128">&nbsp;&nbsp;<img src="src/idm_linux/assets/idm-classic-icon.png" alt="Orijinal IDM simgesi — aynı tasarımda" width="128">
 </p>
@@ -30,12 +63,6 @@
 >
 > `curl -fsSL https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/belgeselsemo-idm-linux-installer | sh`
 
-> [!NOTE]
-> **⊞ IDM SEMO — Windows için IDM kontrol merkezi**  
-> IDM entegrasyonu, video araçları ve kullanıcı onaylı torrent/eD2K kuyruğunu yerel Windows GUI’sinde birleştirir.  
-> Kategorili `Downloads\IDM-SEMO` hedefleri, tek Başlat/Duraklat kontrolü ve komut penceresiz EXE kurulumu sunar.  
-> [**Windows x64 EXE indir**](https://github.com/vesvese55x/IDM-LINUX/releases/download/v1.0.0/IDM-SEMO-1.0.0-x86_64.exe) · [BAT alternatifi](belgeselsemo-idm-windows-installer.bat) · [Tanıtım ve ekranlar](promo/promo.html#windows)  
-> **Not:** EXE .NET Framework gerektirir; paketin tamamı Windows XP uyumlu değildir.
 
 ## IDM deneyimi Linux'ta
 
