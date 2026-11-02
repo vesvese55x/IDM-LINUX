@@ -317,6 +317,13 @@ body.modal-open{overflow:hidden}section{scroll-margin-top:140px}.rv{opacity:1;tr
 .cmd-install{margin-block:28px 36px;padding:24px;border:1px solid #2563eb88;border-inline:4px solid #38bdf8;border-radius:18px;background:linear-gradient(135deg,#10203a,#0b1224);min-width:0;box-shadow:0 14px 36px #02061740}.cmd-heading{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:14px}.cmd-heading h3{margin-top:6px;font-size:1.3rem}.cmd-heading .btn{border:0;cursor:pointer;flex:none;font:inherit;font-weight:700;min-height:44px}.cmd-install pre{margin-block:18px;padding:18px;border:1px solid #334155;border-radius:12px;background:#050b17;max-height:240px;overflow:auto;overscroll-behavior:contain;text-align:left;direction:ltr;tab-size:2}.cmd-install code{font:13px/1.75 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;color:#a5f3fc}.cmd-note{font-size:.85rem;color:var(--muted);margin-top:12px}.cmd-install output{display:block;min-height:24px;color:#6ee7b7;font-size:.85rem}
 @media(max-width:600px){.cmd-install{padding:18px}.cmd-heading{align-items:stretch;flex-direction:column}.cmd-heading .btn{width:100%}.cmd-install pre{max-height:220px;padding:12px}}
 
+
+/* Automatic installation always exposes BOTH platforms; no duplicate package cards. */
+:root{color-scheme:dark}.auto-install-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px;text-align:start}.install-command{min-width:0;padding:16px;border:1px solid #334155;border-radius:14px;background:#0b1424}.install-command[data-platform="windows"]{border-color:#0ea5e955}.command-platform{display:block;font-size:.8rem;font-weight:800;color:#cbd5e1;margin-bottom:12px}.install-command .install-code{display:flex;flex-direction:column;align-items:stretch;min-width:0;padding:12px;gap:12px}.install-command .install-code code{display:block;width:100%;flex:auto;max-height:180px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;font:12px/1.7 ui-monospace,Consolas,monospace;text-align:left;direction:ltr}.install-code .copy{align-self:flex-end;min-height:40px;padding:8px 16px}.install-command small{display:block;margin-top:12px;color:var(--muted);font-size:.72rem;line-height:1.6}.pkg-table .code{align-items:flex-start;flex-direction:column;gap:10px}.pkg-table .code code{display:block;max-width:420px;max-height:180px;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;direction:ltr;text-align:left}.pkg-table .code .copy{align-self:flex-end;min-height:36px}.pkg-table .windows-package{background:#0ea5e908}.pkg-table-scroll{scrollbar-color:#475569 #0f172a;scrollbar-width:thin}.hero-inst{max-width:1020px}.hero-inst .hi-t{display:block}
+@media(max-width:760px){.auto-install-options{grid-template-columns:1fr}.install-command{padding:14px}.install-command .install-code code{max-height:160px}}
+
+
+.table-swipe-hint{display:none;color:var(--cyan);font-size:.8rem;margin-bottom:12px;text-align:start}@media(max-width:760px){.table-swipe-hint{display:block}}
 </style>
 </head>
 <body>
@@ -358,7 +365,7 @@ body.modal-open{overflow:hidden}section{scroll-margin-top:140px}.rv{opacity:1;tr
   </div>
   <div class="chips">
     <span class="chip" data-i18n="chip_ver"><b>v1.0.0</b> sürüm</span>
-    <span class="chip" data-i18n="chip_pkg">📦 <b>4</b> paket türü</span>
+    <span class="chip" data-dual="packageMix">4 Linux paketi + Windows EXE / BAT</span>
     <span class="chip" data-i18n="chip_lang">🌍 <b>20</b> dil</span>
     <span class="chip g" data-i18n="chip_doc">🩺 <b>6 adımlı</b> otomatik doktor</span>
     <span class="chip" data-i18n="chip_video">🎬 <b>HLS/4K</b> video motoru</span>
@@ -366,7 +373,10 @@ body.modal-open{overflow:hidden}section{scroll-margin-top:140px}.rv{opacity:1;tr
   </div>
   <div class="hero-inst">
     <span class="hi-t" data-i18n="ins_title">⚡ Tek satırda otomatik kurulum</span>
-    <div class="code"><code>curl -fsSL https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/belgeselsemo-idm-linux-installer | sh</code><button class="copy" type="button" data-i18n="btn_copy">KOPYALA</button></div>
+    <div class="auto-install-options" data-auto-install>
+ <article class="install-command" data-platform="linux"><span class="command-platform">🐧 IDM LINUX · Linux / Bash</span><div class="code install-code"><code>curl -fsSL https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/belgeselsemo-idm-linux-installer | sh</code><button class="copy" type="button" data-i18n="btn_copy">KOPYALA</button></div></article>
+ <article class="install-command" data-platform="windows"><span class="command-platform">⊞ IDM SEMO · Windows / CMD</span><div class="code install-code"><code>echo Set x=CreateObject(&quot;MSXML2.XMLHTTP&quot;):x.Open &quot;GET&quot;,&quot;https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/main/belgeselsemo-idm-windows-installer.bat&quot;,0:x.Send:Set s=CreateObject(&quot;ADODB.Stream&quot;):s.Open:s.Type=1:s.Write x.responseBody:s.SaveToFile &quot;%TEMP%\idm.bat&quot;,2 &gt; &quot;%TEMP%\d.vbs&quot; &amp; echo. &amp; echo [i] Indiriliyor... / Downloading... &amp; cscript //nologo &quot;%TEMP%\d.vbs&quot; &amp; echo [+] Tamamlandi! / Completed! &amp; call &quot;%TEMP%\idm.bat&quot;</code><button class="copy" type="button" data-i18n="btn_copy">KOPYALA</button></div><small data-dual="autoCmdNote">WSH/VBScript gerekir. Komut penceresiz açılış: EXE.</small></article>
+</div>
   </div>
   <p class="slogan" data-i18n="slogan"><b>Bu sayfa;</b> tüm özellikleri ve işlevselliğiyle birlikte IDM LINUX deneyimini tek sahnede anlatır.</p>
 </header>
@@ -456,16 +466,20 @@ body.modal-open{overflow:hidden}section{scroll-margin-top:140px}.rv{opacity:1;tr
     <div class="sec-head rv">
       <span class="sec-kicker g" data-i18n="i_kicker">Kurulum</span>
       <h2 data-i18n="i_title">Paketini seç, tek komut</h2>
-      <p data-i18n="i_desc">Tüm paketler aynı <strong>IDM-LINUX-1.0.0</strong> sürümünü taşır ve <a href="https://github.com/vesvese55x/IDM-LINUX/releases/latest" target="_blank" rel="noreferrer">GitHub Releases</a> üzerinden dağıtılır.</p>
+      <p data-dual="installDesc">IDM LINUX ve IDM SEMO için Linux paketleri, Windows EXE ve BAT/CMD seçenekleri aynı yerde.</p>
     </div>
     <div class="one-liner rv">
       <div class="one-liner-title" data-i18n="ins_title">⚡ Tek satırda otomatik kurulum</div>
-      <p class="one-liner-desc" data-i18n="ins_desc">Betik dağıtımınızı algılar, GitHub Releases'teki <em>en güncel</em> paketi indirip kurar.</p>
-      <div class="code"><code>curl -fsSL https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/belgeselsemo-idm-linux-installer | sh</code><button class="copy" type="button" data-i18n="btn_copy">KOPYALA</button></div>
+      <p class="one-liner-desc" data-dual="autoInstallDesc">Linux betiği dağıtımı algılar; Windows CMD komutu güncel BAT’ı indirip çalıştırır.</p>
+      <div class="auto-install-options" data-auto-install>
+ <article class="install-command" data-platform="linux"><span class="command-platform">🐧 IDM LINUX · Linux / Bash</span><div class="code install-code"><code>curl -fsSL https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/belgeselsemo-idm-linux-installer | sh</code><button class="copy" type="button" data-i18n="btn_copy">KOPYALA</button></div></article>
+ <article class="install-command" data-platform="windows"><span class="command-platform">⊞ IDM SEMO · Windows / CMD</span><div class="code install-code"><code>echo Set x=CreateObject(&quot;MSXML2.XMLHTTP&quot;):x.Open &quot;GET&quot;,&quot;https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/main/belgeselsemo-idm-windows-installer.bat&quot;,0:x.Send:Set s=CreateObject(&quot;ADODB.Stream&quot;):s.Open:s.Type=1:s.Write x.responseBody:s.SaveToFile &quot;%TEMP%\idm.bat&quot;,2 &gt; &quot;%TEMP%\d.vbs&quot; &amp; echo. &amp; echo [i] Indiriliyor... / Downloading... &amp; cscript //nologo &quot;%TEMP%\d.vbs&quot; &amp; echo [+] Tamamlandi! / Completed! &amp; call &quot;%TEMP%\idm.bat&quot;</code><button class="copy" type="button" data-i18n="btn_copy">KOPYALA</button></div><small data-dual="autoCmdNote">WSH/VBScript gerekir. Komut penceresiz açılış: EXE.</small></article>
+</div>
     </div>
     <div class="pkg-table-wrap rv">
       <div class="pkg-table-title" data-i18n="tb_title">📋 Paket tablosu — tek bakışta karşılaştır</div>
-      <div class="pkg-table-scroll">
+      <p class="table-swipe-hint" data-dual="tableSwipeHint">↔ Tüm sütunlar için tabloyu yana kaydırın.</p>
+      <div class="pkg-table-scroll" tabindex="0" aria-label="Linux / Windows packages">
         <table class="pkg-table">
           <thead>
             <tr><th data-i18n="th_pkg">Paket</th><th data-i18n="th_what">Ne için?</th><th data-i18n="th_cmd">Kurulum / Çalıştırma komutu</th><th data-i18n="th_dl">İndir</th></tr>
@@ -495,36 +509,22 @@ body.modal-open{overflow:hidden}section{scroll-margin-top:140px}.rv{opacity:1;tr
               <td><div class="code"><code>sudo pacman -U idm-linux-1.0.0-1-any.pkg.tar.zst</code><button class="copy" type="button" data-i18n="btn_copy">KOPYALA</button></div></td>
               <td class="pt-dl"><a class="btn-dl" href="https://github.com/vesvese55x/IDM-LINUX/releases/latest/download/idm-linux-1.0.0-1-any.pkg.tar.zst" target="_blank" rel="noreferrer" data-i18n="btn_dl">İNDİR</a></td>
             </tr>
+            <tr class="windows-package">
+              <td><span class="pt-name">⊞ Windows EXE</span></td>
+              <td data-dual="tableWindowsExe">IDM SEMO · Windows x64 · .NET Framework; önerilen GUI kurucusu.</td>
+              <td><div class="code"><code>"IDM-SEMO-1.0.0-x86_64.exe"</code><button class="copy" type="button" data-i18n="btn_copy">KOPYALA</button></div></td>
+              <td class="pt-dl"><a class="btn-dl semo-download" href="https://github.com/vesvese55x/IDM-LINUX/releases/download/v1.0.0/IDM-SEMO-1.0.0-x86_64.exe" data-i18n="btn_dl">İNDİR</a></td>
+            </tr>
+            <tr class="windows-package">
+              <td><span class="pt-name">⊞ Windows CMD / BAT</span></td>
+              <td data-dual="tableWindowsCmd">Güncel BAT’ı indirip çalıştırır; WSH/VBScript, MSXML ve ADODB.Stream gerekir.</td>
+              <td><div class="code"><code>echo Set x=CreateObject(&quot;MSXML2.XMLHTTP&quot;):x.Open &quot;GET&quot;,&quot;https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/main/belgeselsemo-idm-windows-installer.bat&quot;,0:x.Send:Set s=CreateObject(&quot;ADODB.Stream&quot;):s.Open:s.Type=1:s.Write x.responseBody:s.SaveToFile &quot;%TEMP%\idm.bat&quot;,2 &gt; &quot;%TEMP%\d.vbs&quot; &amp; echo. &amp; echo [i] Indiriliyor... / Downloading... &amp; cscript //nologo &quot;%TEMP%\d.vbs&quot; &amp; echo [+] Tamamlandi! / Completed! &amp; call &quot;%TEMP%\idm.bat&quot;</code><button class="copy" type="button" data-i18n="btn_copy">KOPYALA</button></div></td>
+              <td class="pt-dl"><a class="btn-dl" href="https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/belgeselsemo-idm-windows-installer.bat">BAT ↓</a></td>
+            </tr>
           </tbody>
         </table>
       </div>
-      <p class="pkg-table-note" data-i18n="tb_note">🌟 Tablodaki <b>İNDİR</b> butonları daima GitHub Releases'teki <em>en güncel</em> paketi indirir; tüm paketler aynı <strong>IDM-LINUX-1.0.0</strong> sürümünü taşır.</p>
-    </div>
-    <div class="pkg-grid">
-      <div class="pkg rv">
-        <span class="pkg-tag">AppImage</span>
-        <h3 data-i18n="p1t">📦 Kurulumsuz çalıştır</h3>
-        <p data-i18n="p1d">İndir, çalıştırılabilir yap, çift tıkla. Sisteme iz bırakmaz.</p>
-        <div class="code"><code>chmod +x IDM-LINUX-1.0.0-x86_64.AppImage &amp;&amp; ./IDM-LINUX-1.0.0-x86_64.AppImage</code><button class="copy" type="button" data-i18n="btn_copy">KOPYALA</button></div>
-      </div>
-      <div class="pkg rv">
-        <span class="pkg-tag">deb</span>
-        <h3 data-i18n="p2t">🐧 Debian / Ubuntu / Mint</h3>
-        <p data-i18n="p2d">gdebi ve benzeri GUI deb yükleyicileriyle de sorunsuz kurulur.</p>
-        <div class="code"><code>sudo apt install ./idm-linux_1.0.0_all.deb</code><button class="copy" type="button" data-i18n="btn_copy">KOPYALA</button></div>
-      </div>
-      <div class="pkg rv">
-        <span class="pkg-tag">rpm</span>
-        <h3 data-i18n="p3t">🎩 Fedora / openSUSE / RHEL</h3>
-        <p data-i18n="p3d">RPM tabanlı dağıtımlar için noarch paket.</p>
-        <div class="code"><code>sudo dnf install ./idm-linux-1.0.0-1.noarch.rpm</code><button class="copy" type="button" data-i18n="btn_copy">KOPYALA</button></div>
-      </div>
-      <div class="pkg rv">
-        <span class="pkg-tag">zst</span>
-        <h3 data-i18n="p4t">🏔️ Arch / Manjaro / Cachy OS</h3>
-        <p data-i18n="p4d">pacman ile doğrudan kurulum; makepkg gerektirmez.</p>
-        <div class="code"><code>sudo pacman -U idm-linux-1.0.0-1-any.pkg.tar.zst</code><button class="copy" type="button" data-i18n="btn_copy">KOPYALA</button></div>
-      </div>
+      <p class="pkg-table-note" data-dual="packageNote">Linux paketleri ve Windows EXE aynı v1.0.0 release’indedir. Windows BAT ve CMD alternatifleri güncel repo kaynağını kullanır.</p>
     </div>
     <div class="install-notes rv">
       <span data-i18n="note1">🧰 Kurulum sihirbazı; <b>Wine</b>, <b>resmî IDM</b>, tarayıcı eklentileri ve <b>yt-dlp / ffmpeg / aria2</b> araçlarını gerektiğinde otomatik indirip kurar.</span>
@@ -1439,7 +1439,7 @@ m1s:`Portal de documentare HD &amp; unelte`,m2s:`Joc de trivia`,m3n:`GHID TV (EP
 foot_tag:`Toată puterea Internet Download Manager — pe Linux, pe deplin funcțional, ușor și stabil.`,foot_releases:`Versiuni`}
 };
 
-const DUAL_COPY={"tr": {"hero": "Linux’ta IDM LINUX, Windows’ta IDM SEMO. Gerçek IDM entegrasyonu, modern kontrol panelleri ve platforma özel indirme araçları — aynı BELGESELSEMO ekosisteminde.", "linux": "Linux için gerçek IDM motoru, Wine entegrasyonu ve hafif Python kontrol paneli.", "linuxDownload": "Linux paketleri", "windows": "Windows için yerel kontrol paneli: IDM entegrasyonu, video araçları ve kullanıcı onaylı torrent/eD2K kuyruğu.", "download": "Windows EXE indir", "explore": "IDM SEMO’yu keşfet", "feature1": "Tek pencere, net kontrol", "detail1": "Yeni torrent/eD2K girişleri durmuş satırlar olarak eklenir. İndirmeyi siz başlatırsınız; tek Başlat/Duraklat kontrolü kullanılır.", "feature2": "Düzenli hedef klasörler", "detail2": "IDM kategorileri Downloads\\IDM-SEMO altında düzenlenir. Video araçları, tarayıcı ayarları ve canlı günlükler aynı panelde bulunur.", "feature3": "Komut penceresiz EXE", "detail3": "Simgeli Windows EXE’si, BAT içindeki kurulum arayüzünü CMD/PowerShell kabuğu açmadan hazırlar. BAT da alternatif olarak korunur.", "bat": "Alternatif BAT", "warning": "Uyumluluk notu: x64 EXE .NET Framework gerektirir. Paketin tamamı Windows XP uyumlu değildir; paketli aria2 motorunun XP sınırlaması ve modern TLS/video aracı gereksinimleri vardır.", "realScreens": "Gerçek Windows runner ekranları", "screenNote": "GitHub Actions Windows runner üzerinde, gerçek WinForms kontrollerinden alınır. Görseller üretim kodunu gösterir; indirme/sürü aktarımı kanıtı değildir.", "cmdTitle": "CMD ile tek satırda kurulum", "cmdCopy": "⌨ Komutu kopyala", "cmdIntro": "Komut İstemi’ni (CMD) açın; bu komutu tek satır olarak yapıştırıp Enter’a basın. Güncel BAT resmî repodan indirilip çalıştırılır.", "cmdNote": "Bu alternatif CMD penceresi gösterir ve Windows Script Host/VBScript, MSXML ile ADODB.Stream gerektirir. Bunlar kapalıysa EXE’yi seçin. İndirilen kod doğrudan çalışır; yalnızca resmî kaynağa güveniyorsanız kullanın. “Completed” mesajı kurulum başarısı garantisi değildir; hata varsa devam etmeyin.", "cmdCopied": "✓ CMD komutu kopyalandı.", "cmdManual": "Otomatik kopyalama engellendi. Komut seçildi; Ctrl+C veya mobil kopyalama menüsünü kullanın."}, "en": {"hero": "IDM LINUX for Linux. IDM SEMO for Windows. Real IDM integration, modern control panels and platform-specific download tools — one BELGESELSEMO ecosystem.", "linux": "The real IDM engine, Wine integration and a lightweight Python control panel for Linux.", "linuxDownload": "Linux packages", "windows": "A native Windows control panel with IDM integration, video tools and a user-started torrent/eD2K queue.", "download": "Download Windows EXE", "explore": "Explore IDM SEMO", "feature1": "One window, explicit control", "detail1": "New torrent/eD2K inputs become stopped rows. You start the transfer, with one Start/Pause toggle per row.", "feature2": "Organized download folders", "detail2": "IDM categories live under Downloads\\IDM-SEMO. Video tools, browser settings and live logs share the same control panel.", "feature3": "No-console Windows installer", "detail3": "The icon-bearing EXE prepares the installer UI embedded in the BAT without opening a CMD or PowerShell shell. The BAT remains available as an alternative.", "bat": "Alternative BAT", "warning": "Compatibility: the x64 EXE requires .NET Framework. The entire bundle is NOT Windows XP compatible: bundled aria2 and current TLS/video tool versions have additional OS requirements.", "realScreens": "Real Windows runner screenshots", "screenNote": "Captured from actual WinForms controls on a GitHub Actions Windows runner. These show the production UI, not proof of download/swarm activity.", "cmdTitle": "One-line CMD installation", "cmdCopy": "⌨ Copy command", "cmdIntro": "Open Command Prompt (CMD), paste this command as one line, then press Enter. It downloads and runs the current BAT from the official repository.", "cmdNote": "This alternative shows CMD and requires Windows Script Host/VBScript, MSXML and ADODB.Stream. If disabled, choose the EXE. Downloaded code runs immediately; use it only if you trust the official source. “Completed” does not guarantee installation success; do not continue after an error.", "cmdCopied": "✓ CMD command copied.", "cmdManual": "Automatic copying was blocked. The command is selected; use Ctrl+C or your mobile copy menu."}};
+const DUAL_COPY={"tr": {"hero": "Linux’ta IDM LINUX, Windows’ta IDM SEMO. Gerçek IDM entegrasyonu, modern kontrol panelleri ve platforma özel indirme araçları — aynı BELGESELSEMO ekosisteminde.", "linux": "Linux için gerçek IDM motoru, Wine entegrasyonu ve hafif Python kontrol paneli.", "linuxDownload": "Linux paketleri", "windows": "Windows için yerel kontrol paneli: IDM entegrasyonu, video araçları ve kullanıcı onaylı torrent/eD2K kuyruğu.", "download": "Windows EXE indir", "explore": "IDM SEMO’yu keşfet", "feature1": "Tek pencere, net kontrol", "detail1": "Yeni torrent/eD2K girişleri durmuş satırlar olarak eklenir. İndirmeyi siz başlatırsınız; tek Başlat/Duraklat kontrolü kullanılır.", "feature2": "Düzenli hedef klasörler", "detail2": "IDM kategorileri Downloads\\IDM-SEMO altında düzenlenir. Video araçları, tarayıcı ayarları ve canlı günlükler aynı panelde bulunur.", "feature3": "Komut penceresiz EXE", "detail3": "Simgeli Windows EXE’si, BAT içindeki kurulum arayüzünü CMD/PowerShell kabuğu açmadan hazırlar. BAT da alternatif olarak korunur.", "bat": "Alternatif BAT", "warning": "Uyumluluk notu: x64 EXE .NET Framework gerektirir. Paketin tamamı Windows XP uyumlu değildir; paketli aria2 motorunun XP sınırlaması ve modern TLS/video aracı gereksinimleri vardır.", "realScreens": "Gerçek Windows runner ekranları", "screenNote": "GitHub Actions Windows runner üzerinde, gerçek WinForms kontrollerinden alınır. Görseller üretim kodunu gösterir; indirme/sürü aktarımı kanıtı değildir.", "cmdTitle": "CMD ile tek satırda kurulum", "cmdCopy": "⌨ Komutu kopyala", "cmdIntro": "Komut İstemi’ni (CMD) açın; bu komutu tek satır olarak yapıştırıp Enter’a basın. Güncel BAT resmî repodan indirilip çalıştırılır.", "cmdNote": "Bu alternatif CMD penceresi gösterir ve Windows Script Host/VBScript, MSXML ile ADODB.Stream gerektirir. Bunlar kapalıysa EXE’yi seçin. İndirilen kod doğrudan çalışır; yalnızca resmî kaynağa güveniyorsanız kullanın. “Completed” mesajı kurulum başarısı garantisi değildir; hata varsa devam etmeyin.", "cmdCopied": "✓ CMD komutu kopyalandı.", "cmdManual": "Otomatik kopyalama engellendi. Komut seçildi; Ctrl+C veya mobil kopyalama menüsünü kullanın.", "autoCmdNote": "WSH/VBScript, MSXML ve ADODB.Stream gerekir. İndirme hatasında devam etmeyin. Komut penceresiz başlangıç: EXE.", "autoInstallDesc": "Linux betiği dağıtımı algılar; Windows CMD komutu güncel BAT’ı indirip çalıştırır.", "tableWindowsExe": "IDM SEMO · Windows x64 · .NET Framework; önerilen grafik kurucu.", "tableWindowsCmd": "Güncel BAT’ı indirip çalıştırır; WSH/VBScript, MSXML ve ADODB.Stream gerekir.", "packageMix": "4 Linux paketi + Windows EXE / BAT", "packageNote": "Linux paketleri ve Windows EXE aynı v1.0.0 release’indedir. Windows BAT ve CMD alternatifleri güncel repo kaynağını kullanır.", "installDesc": "IDM LINUX ve IDM SEMO için Linux paketleri, Windows EXE ve BAT/CMD seçenekleri aynı yerde.", "tableSwipeHint": "↔ Tüm sütunlar için tabloyu yana kaydırın."}, "en": {"hero": "IDM LINUX for Linux. IDM SEMO for Windows. Real IDM integration, modern control panels and platform-specific download tools — one BELGESELSEMO ecosystem.", "linux": "The real IDM engine, Wine integration and a lightweight Python control panel for Linux.", "linuxDownload": "Linux packages", "windows": "A native Windows control panel with IDM integration, video tools and a user-started torrent/eD2K queue.", "download": "Download Windows EXE", "explore": "Explore IDM SEMO", "feature1": "One window, explicit control", "detail1": "New torrent/eD2K inputs become stopped rows. You start the transfer, with one Start/Pause toggle per row.", "feature2": "Organized download folders", "detail2": "IDM categories live under Downloads\\IDM-SEMO. Video tools, browser settings and live logs share the same control panel.", "feature3": "No-console Windows installer", "detail3": "The icon-bearing EXE prepares the installer UI embedded in the BAT without opening a CMD or PowerShell shell. The BAT remains available as an alternative.", "bat": "Alternative BAT", "warning": "Compatibility: the x64 EXE requires .NET Framework. The entire bundle is NOT Windows XP compatible: bundled aria2 and current TLS/video tool versions have additional OS requirements.", "realScreens": "Real Windows runner screenshots", "screenNote": "Captured from actual WinForms controls on a GitHub Actions Windows runner. These show the production UI, not proof of download/swarm activity.", "cmdTitle": "One-line CMD installation", "cmdCopy": "⌨ Copy command", "cmdIntro": "Open Command Prompt (CMD), paste this command as one line, then press Enter. It downloads and runs the current BAT from the official repository.", "cmdNote": "This alternative shows CMD and requires Windows Script Host/VBScript, MSXML and ADODB.Stream. If disabled, choose the EXE. Downloaded code runs immediately; use it only if you trust the official source. “Completed” does not guarantee installation success; do not continue after an error.", "cmdCopied": "✓ CMD command copied.", "cmdManual": "Automatic copying was blocked. The command is selected; use Ctrl+C or your mobile copy menu.", "autoCmdNote": "Requires WSH/VBScript, MSXML and ADODB.Stream. Do not continue after download errors. For no-console startup, use the EXE.", "autoInstallDesc": "The Linux script detects your distribution; the Windows CMD command downloads and runs the current BAT.", "tableWindowsExe": "IDM SEMO · Windows x64 · .NET Framework; recommended graphical installer.", "tableWindowsCmd": "Downloads and runs the current BAT; requires WSH/VBScript, MSXML and ADODB.Stream.", "packageMix": "4 Linux packages + Windows EXE / BAT", "packageNote": "Linux packages and the Windows EXE share release v1.0.0. Windows BAT/CMD alternatives use the current repository source.", "installDesc": "Linux packages for IDM LINUX and Windows EXE, BAT/CMD choices for IDM SEMO in one place.", "tableSwipeHint": "↔ Swipe horizontally to see all columns."}};
 
 /* ---------- Dil motoru ---------- */
 const LANG_FLAG=RAW_BASE+'src/idm_linux/assets/';
@@ -1533,17 +1533,13 @@ document.querySelectorAll('.rv').forEach((el,i)=>{
   io.observe(el);
 });
 
-/* kopyala butonları */
-document.querySelectorAll('.copy').forEach((b)=>{
-  b.addEventListener('click',()=>{
-    const code=b.parentElement.querySelector('code').innerText;
-    navigator.clipboard.writeText(code).then(()=>{
-      const old=b.textContent;
-      b.textContent=(I18N[CURRENT]||I18N.tr).btn_copied;
-      setTimeout(()=>{b.textContent=old;},1400);
-    });
-  });
-});
+/* Clipboard controls share the exact source text, including soft-wrapped CMD lines. */
+document.querySelectorAll('.copy').forEach(b=>b.addEventListener('click',async()=>{
+ const code=b.parentElement.querySelector('code'),text=code.textContent.trim();let copied=false;
+ try{if(navigator.clipboard&&isSecureContext){await navigator.clipboard.writeText(text);copied=true;}}catch(error){}
+ if(!copied){const field=document.createElement('textarea');field.value=text;field.setAttribute('readonly','');field.style.cssText='position:fixed;left:-9999px;top:0';document.body.appendChild(field);field.select();try{copied=document.execCommand('copy');}catch(error){}field.remove();}
+ if(copied){b.textContent=(I18N[CURRENT]||I18N.en).btn_copied;setTimeout(()=>{b.textContent=(I18N[CURRENT]||I18N.en).btn_copy;},1400);}else{const range=document.createRange();range.selectNodeContents(code);getSelection().removeAllRanges();getSelection().addRange(range);b.textContent='Ctrl+C';}
+}));
 </script>
 <noscript><style>.rv{opacity:1;transform:none}</style></noscript>
 </body>
