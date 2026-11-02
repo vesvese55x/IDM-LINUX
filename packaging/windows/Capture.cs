@@ -18,14 +18,15 @@ class NativeCapture
     {
         using(Form host=new Form())
         {
+            // Explicit child canvas tests wide layouts even on a 1024px hosted-runner desktop.
             host.FormBorderStyle=FormBorderStyle.None;host.StartPosition=FormStartPosition.Manual;host.Location=Point.Empty;
-            BrowsersPage page=new BrowsersPage(null);page.Dock=DockStyle.Fill;host.Controls.Add(page);host.Show();
+            BrowsersPage page=new BrowsersPage(null);page.Dock=DockStyle.None;host.Controls.Add(page);host.Show();
             foreach(string language in new string[]{"tr","en","de","fr","ru","zh","ja","hi","ar","nl","fa","el","pt","vi","az","ky","it","id","ka","ro"})
             {
                 I18n.SetLanguage(language);page.ApplyLang();
                 foreach(int width in new int[]{450,650,1000,1600})
                 {
-                    host.ClientSize=new Size(width,900);page.Relayout();Pump(15);
+                    host.ClientSize=new Size(width,900);page.Bounds=new Rectangle(0,0,width,900);page.Relayout();Pump(15);
                     Check(page.Width==width,"test outer canvas width unexpectedly constrained: "+page.Width+" != "+width);
                     foreach(string name in new string[]{"_bChrome","_bFirefox","_bResync","_bOpenDir","_bCopyDir"})
                     {
@@ -53,7 +54,7 @@ class NativeCapture
             string output=args[0];Directory.CreateDirectory(output);
             MainForm main=new MainForm();main.ClientSize=new Size(1440,960);main.Show();I18n.SetLanguage("tr");main.ApplyLang();Pump(300);
             string[] names={"installer","overview","browsers","settings","doctor","projects","support","language","about","torrent-ed2k"};
-            for(int index=0;index<names.Length;index++){main.ShowPage(index);Pump(180);Capture(main,Path.Combine(output,names[index]+".png"));}
+            for(int index=0;index<names.Length;index++){Check(((SemPage[])Field(main,"_pages"))[index].GetType().Name!="ErrorPage","Production page construction failed: "+names[index]);main.ShowPage(index);Pump(180);Capture(main,Path.Combine(output,names[index]+".png"));}
             main.Hide();Console.WriteLine("NATIVE_BROWSER_CAPTURE_PASS assertions="+checks+" platform="+Environment.OSVersion+" renderer=WinForms-DrawToBitmap");
         }
         catch(Exception error){Console.Error.WriteLine(error);Environment.Exit(1);}
