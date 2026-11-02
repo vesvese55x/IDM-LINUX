@@ -26,7 +26,7 @@ class NativeCapture
                 foreach(int width in new int[]{450,650,1000,1600})
                 {
                     host.ClientSize=new Size(width,900);page.Relayout();Pump(15);
-                    Check(page.ClientSize.Width==width,"test canvas width unexpectedly constrained: "+page.ClientSize.Width+" != "+width);
+                    Check(page.Width==width,"test outer canvas width unexpectedly constrained: "+page.Width+" != "+width);
                     foreach(string name in new string[]{"_bChrome","_bFirefox","_bResync","_bOpenDir","_bCopyDir"})
                     {
                         Control button=(Control)Field(page,name);Control card=button.Parent;
