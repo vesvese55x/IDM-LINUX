@@ -9,7 +9,10 @@ $payload = Join-Path $BuildDirectory 'payload'
 Get-ChildItem $payload -File | Copy-Item -Destination $BuildDirectory -Force
 $sources = @(Get-ChildItem $payload -Filter 'IDM_SEMO_*.cs' | ForEach-Object { $_.FullName })
 $capture = Join-Path $BuildDirectory 'NativeCapture.exe'
-& $csc /nologo /target:exe /main:NativeCapture /codepage:65001 "/out:$capture" "/win32manifest:$PSScriptRoot/launcher.manifest" /r:System.dll /r:System.Drawing.dll /r:System.Windows.Forms.dll @sources "$PSScriptRoot/Capture.cs"
+$harnessSource = (Resolve-Path (Join-Path $PSScriptRoot 'Capture.cs')).Path
+$harnessManifest = (Resolve-Path (Join-Path $PSScriptRoot 'launcher.manifest')).Path
+Write-Host "Native harness source: $harnessSource"
+& $csc /nologo /target:exe /main:NativeCapture /codepage:65001 "/out:$capture" "/win32manifest:$harnessManifest" /r:System.dll /r:System.Drawing.dll /r:System.Windows.Forms.dll @sources $harnessSource
 if ($LASTEXITCODE -ne 0) { throw 'Native capture compilation failed' }
 & $capture $ScreenshotDirectory | Tee-Object (Join-Path $BuildDirectory 'native-capture.log')
 if ($LASTEXITCODE -ne 0) { throw 'Native GUI layout/capture failed' }

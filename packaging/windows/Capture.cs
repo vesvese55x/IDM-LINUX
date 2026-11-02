@@ -18,6 +18,7 @@ class NativeCapture
     {
         using(Form host=new Form())
         {
+            host.FormBorderStyle=FormBorderStyle.None;host.StartPosition=FormStartPosition.Manual;host.Location=Point.Empty;
             BrowsersPage page=new BrowsersPage(null);page.Dock=DockStyle.Fill;host.Controls.Add(page);host.Show();
             foreach(string language in new string[]{"tr","en","de","fr","ru","zh","ja","hi","ar","nl","fa","el","pt","vi","az","ky","it","id","ka","ro"})
             {
@@ -25,6 +26,7 @@ class NativeCapture
                 foreach(int width in new int[]{450,650,1000,1600})
                 {
                     host.ClientSize=new Size(width,900);page.Relayout();Pump(15);
+                    Check(page.ClientSize.Width==width,"test canvas width unexpectedly constrained: "+page.ClientSize.Width+" != "+width);
                     foreach(string name in new string[]{"_bChrome","_bFirefox","_bResync","_bOpenDir","_bCopyDir"})
                     {
                         Control button=(Control)Field(page,name);Control card=button.Parent;
