@@ -47,6 +47,11 @@ jobs:
           if-no-files-found: error
           retention-days: 14
   windows:
+    name: Windows user GUI (${{ matrix.bootstrap_mode }})
+    strategy:
+      fail-fast: false
+      matrix:
+        bootstrap_mode: [wait, click]
     runs-on: windows-2022
     timeout-minutes: 20
     steps:
@@ -68,6 +73,7 @@ jobs:
       - name: Record the actual published EXE using native desktop capture
         env:
           FILM_FUNCTIONAL: '1'
+          FILM_BOOTSTRAP_MODE: ${{ matrix.bootstrap_mode }}
         shell: powershell
         run: |
           python capture/native_probe.py windows
@@ -76,7 +82,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: film-windows-native-preflight
+          name: film-windows-native-preflight-${{ matrix.bootstrap_mode }}
           path: evidence/
           if-no-files-found: error
           retention-days: 14

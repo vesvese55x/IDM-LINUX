@@ -103,12 +103,29 @@ def tour_windows(exe):
  # Preseed only safe isolated test settings; later functional tests must enable capture/engines explicitly.
  settings=Path(os.environ['APPDATA'])/'IDM_SEMO/settings.ini';settings.parent.mkdir(parents=True,exist_ok=True);settings.write_text('lang=tr\nclipwatch=0\nwarm=0\n',encoding='utf-8');report['seeded_test_settings']={'lang':'tr','clipwatch':'0','warm':'0'}
  log=(OUT/'application.log').open('wb');loghandles.append(log);app=subprocess.Popen([str(exe)],env=app_env(),stdout=log,stderr=log,creationflags=flags)
+ bootstrap_start=time.time();bootstrap_mode=os.getenv('FILM_BOOTSTRAP_MODE','wait');bootstrap_trace=[];bootstrap_seen=set();bootstrap_clicked=False
+ report['bootstrap_mode']=bootstrap_mode
  deadline=time.monotonic()+120;main=None
  while time.monotonic()<deadline:
   wins=[w for w in Desktop(backend='win32').windows() if 'IDM SEMO' in w.window_text().upper() and 'WINDOWS SETUP' not in w.window_text().upper() and ('KONTROL MERKEZ' in w.window_text().upper() or 'CONTROL CENTER' in w.window_text().upper()) and w.rectangle().width()>800 and w.rectangle().height()>500]
   if wins:main=max(wins,key=lambda w:w.rectangle().width()*w.rectangle().height());break
-  time.sleep(.5)
+  for w in Desktop(backend='win32').windows():
+   if 'IDM SEMO' not in w.window_text().upper():continue
+   for c in w.descendants():
+    try:
+     from feature_cases import norm
+     text=c.window_text();label=norm(text)
+     if not c.is_visible() or not any(x in label for x in ['paneli ac','open panel']):continue
+     if text not in bootstrap_seen:
+      bootstrap_seen.add(text);bootstrap_trace.append({'text':text,'elapsed_seconds':time.time()-bootstrap_start,'video_offset_seconds':time.time()-report['record_wallclock_start']});report['bootstrap_countdown_trace']=bootstrap_trace;save()
+      if len(bootstrap_trace)==1:screenshot('bootstrap-countdown')
+     if bootstrap_mode=='click' and not bootstrap_clicked:
+      w.set_focus();c.click_input();bootstrap_clicked=True;report['bootstrap_button_clicked']=True;save()
+    except Exception:pass
+  time.sleep(.35)
  assert main is not None,'Released EXE main window unavailable on native desktop'
+ report['bootstrap_to_panel_elapsed_seconds']=time.time()-bootstrap_start
+ report.setdefault('functional_cases',[]).append({'id':'semo-bootstrap-'+bootstrap_mode,'status':'PASS' if bootstrap_trace and (bootstrap_mode!='click' or bootstrap_clicked) else 'BLOCKED','mode':bootstrap_mode,'button_clicked':bootstrap_clicked,'countdown_trace':bootstrap_trace,'note':'Intentional 16-second countdown is supported UI behavior, not an error.'})
  main.maximize();time.sleep(2)
  for dlg in Desktop(backend='win32').windows(class_name='#32770'):
   if 'IDM SEMO' not in dlg.window_text().upper():continue

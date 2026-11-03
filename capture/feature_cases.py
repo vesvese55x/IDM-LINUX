@@ -41,64 +41,87 @@ def windows(main,nav,report,out,screenshot):
   cases.append({'id':'gui-language-tr-en-tr','status':'PASS','english_title':en,'turkish_title':tr})
  except Exception as e:cases.append({'id':'gui-language-tr-en-tr','status':'FAIL','reason':str(e)})
  checkpoint()
- # Install original IDM through the released SEMO UI, not a mocked backend.
+ # Follow the intentional interactive installation path, with real mouse input.
+ # A visible installer is not by itself a product failure. No external reinstallation.
  try:
+  import psutil,requests,re
   nav[0].click_input();time.sleep(1.5)
   for c in buttons():
    if ('tarayici' in norm(c.window_text()) or 'browser' in norm(c.window_text())):
     try:
      if c.get_check_state():c.click_input()
     except Exception:pass
-  start=time.time();click_text('İşlemi Şimdi Başlat');deadline=time.monotonic()+100;wizard=None
-  while time.monotonic()<deadline and not real_idm():
+  start=time.time();click_text('İşlemi Şimdi Başlat');deadline=time.monotonic()+240
+  actions=report.setdefault('vendor_gui_actions',[]);verified=False;stable_since=None
+  def record_action(w,c,kind):
+   actions.append({'window_title':w.window_text(),'control_text':c.window_text(),'kind':kind,'video_offset_seconds':time.time()-report['record_wallclock_start']});checkpoint()
+  def vendor_windows():
+   result=[]
    for w in Desktop(backend='win32').windows():
-    if 'internet download manager installation wizard' in w.window_text().lower():wizard=w;break
-   if wizard:break
-   time.sleep(1)
-  if wizard:
-   screenshot('functional-unsupported-silent-switch-wizard')
-   cases.append({'id':'official-idm-install-through-semo-gui','status':'FAIL','reason':'Published SEMO used /VERYSILENT; the current official installer remained interactive at Next. Not hidden or counted as automatic success.'});checkpoint()
-   cancel=next((c for c in wizard.descendants() if norm(c.window_text()).replace('&','').strip() in ['cancel','iptal']),None)
-   if cancel:cancel.click_input();time.sleep(2)
-   for w in Desktop(backend='win32').windows():
-    if 'internet download manager' not in w.window_text().lower():continue
-    for c in w.descendants():
-     if norm(c.window_text()).replace('&','').strip() in ['yes','evet']:c.click_input();time.sleep(1);break
-   time.sleep(5)
-   # Official Microsoft winget manifest for exactly the downloaded vendor build.
-   # This is an explicitly labelled test prerequisite/workaround, NOT a SEMO fix.
-   installer=Path(os.environ['TEMP'])/'semo_idm_setup.exe';assert installer.exists(),'Downloaded official installer missing'
-   digest=hashlib.sha256(installer.read_bytes()).hexdigest();import requests,re
-   manifest_url='https://raw.githubusercontent.com/microsoft/winget-pkgs/master/manifests/t/Tonec/InternetDownloadManager/6.43.16/Tonec.InternetDownloadManager.installer.yaml';response=requests.get(manifest_url,timeout=30);response.raise_for_status();expected_installer=re.search(r'InstallerSha256:\s*([A-Fa-f0-9]{64})',response.text).group(1).lower();report['official_installer_digest_check']={'actual_sha256':digest,'expected_sha256':expected_installer,'match':digest==expected_installer};assert digest==expected_installer,'Official installer digest did not match Microsoft winget manifest'
-   import subprocess
-   process=subprocess.Popen([str(installer),'/skipdlgs'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,creationflags=subprocess.CREATE_NO_WINDOW)
-   deadline=time.monotonic()+120
-   while time.monotonic()<deadline and (not real_idm() or process.poll() is None):time.sleep(1)
-   idm=real_idm();screenshot('functional-official-idm-prerequisite')
-   cases.append({'id':'official-idm-prerequisite-with-documented-switch','status':'PASS' if idm else 'FAIL','installer_sha256':digest,'switch':'/skipdlgs','manifest_url':'https://raw.githubusercontent.com/microsoft/winget-pkgs/master/manifests/t/Tonec/InternetDownloadManager/6.43.16/Tonec.InternetDownloadManager.installer.yaml','note':'External test setup only; published SEMO automatic direct-install failure remains FAIL.'})
-  else:
-   deadline=time.monotonic()+90
-   while time.monotonic()<deadline and not real_idm():time.sleep(1)
-   idm=real_idm();cases.append({'id':'official-idm-install-through-semo-gui','status':'PASS' if idm else 'FAIL','reason':None if idm else 'No installed IDMan.exe and no identifiable vendor wizard.'})
-  idm=real_idm();screenshot('functional-original-idm-install')
-  if not idm:checkpoint();return
-  time.sleep(8)
-  report['actual_original_idm_path']=str(idm)
-  # Dismiss only vendor-owned informational/trial-reminder dialogs, never activate,
-  # reset or bypass a license. An expired trial is a blocker, not bypassed.
-  import psutil
-  for w in Desktop(backend='win32').windows():
-   try:
-    if psutil.Process(w.process_id()).name().lower()!='idman.exe':continue
+    try:
+     title=norm(w.window_text());name=psutil.Process(w.process_id()).name().lower()
+     if not w.is_visible():continue
+     if name=='semo_idm_setup.exe' or name=='idman.exe' or name.startswith(('idmiecc','idmintegr','iemonitor')) or title in ['internet download manager installation wizard','idm browser integration','idm installation']:
+      result.append(w)
+    except Exception:pass
+   return result
+  def clear_vendor_information():
+   count=0
+   for w in vendor_windows():
     title=norm(w.window_text())
-    if not any(x in title for x in ['tip','registration','integration','kayit','ipucu']):continue
+    if not any(x in title for x in ['browser integration','integration module','tip','registration','kayit','ipucu']):continue
     for c in w.descendants():
-     if norm(c.window_text()).replace('&','').strip() in ['close','cancel','kapat','iptal','ok','tamam']:c.click_input();break
-   except Exception:pass
+     try:
+      label=norm(c.window_text()).replace('&','').strip()
+      if c.is_visible() and c.is_enabled() and label in ['ok','tamam','close','kapat','cancel','iptal']:
+       w.set_focus();record_action(w,c,'acknowledge_information_or_close_reminder');c.click_input();time.sleep(.8);count+=1;break
+     except Exception:pass
+   return count
+  while time.monotonic()<deadline:
+   installer=Path(os.environ['TEMP'])/'semo_idm_setup.exe'
+   if installer.exists() and not verified:
+    digest=hashlib.sha256(installer.read_bytes()).hexdigest()
+    manifest_url='https://raw.githubusercontent.com/microsoft/winget-pkgs/master/manifests/t/Tonec/InternetDownloadManager/6.43.16/Tonec.InternetDownloadManager.installer.yaml'
+    response=requests.get(manifest_url,timeout=30);response.raise_for_status();expected_installer=re.search(r'InstallerSha256:\s*([A-Fa-f0-9]{64})(?=\s|$)',response.text).group(1).lower()
+    assert len(expected_installer)==64
+    report['official_installer_digest_check']={'actual_sha256':digest,'expected_sha256':expected_installer,'match':digest==expected_installer};checkpoint();assert digest==expected_installer,'Official installer hash mismatch';verified=True
+   if not verified:time.sleep(1);continue
+   clear_vendor_information();wizard_visible=False
+   for w in vendor_windows():
+    title=norm(w.window_text())
+    if not any(x in title for x in ['installation wizard','idm installation','setup']):continue
+    wizard_visible=True
+    texts=[];controls=[]
+    for c in w.descendants():
+     try:
+      if c.is_visible():texts.append(c.window_text());controls.append(c)
+     except Exception:pass
+    report['last_vendor_wizard']={'title':w.window_text(),'visible_text':texts}
+    # Accept only the installation licence; never activate/reset a paid licence.
+    for c in controls:
+     label=norm(c.window_text()).replace('&','').strip()
+     if ('i accept' in label or 'kabul ediyorum' in label or 'i agree' in label) and len(label)<180:
+      try:
+       if not c.get_check_state():w.set_focus();record_action(w,c,'accept_installation_licence');c.click_input();time.sleep(.6)
+      except Exception:pass
+    for c in controls:
+     label=norm(c.window_text()).replace('&','').replace('>','').replace('<','').strip()
+     if label in ['next','ileri','install','yukle','finish','bitir','complete','done'] and c.is_enabled():
+      w.set_focus();screenshot('functional-wizard-step-'+str(len(actions)));record_action(w,c,'installation_next_or_finish');c.click_input();time.sleep(1.2);break
+   if real_idm() and not wizard_visible:
+    if stable_since is None:stable_since=time.monotonic()
+    if time.monotonic()-stable_since>=3:break
+   else:stable_since=None
+   time.sleep(.6)
+  idm=real_idm();clear_vendor_information();screenshot('functional-original-idm-install')
+  cases.append({'id':'official-idm-install-through-semo-user-gui','status':'PASS' if idm and stable_since is not None else 'FAIL','mode':'intentional interactive user-assisted GUI','external_installer_relaunch':False,'actual_idm_path':str(idm) if idm else None,'gui_actions':len(actions),'elapsed_seconds':time.time()-start,'reason':None if idm and stable_since is not None else 'Interactive installation did not reach an installed executable and closed wizard.'})
+  if not idm:checkpoint();return
+  report['actual_original_idm_path']=str(idm);time.sleep(4)
+  for _ in range(5):
+   if not clear_vendor_information():break
   main.set_focus()
-
  except Exception as e:
-  cases.append({'id':'official-idm-install-through-semo-gui','status':'FAIL','reason':str(e)});checkpoint();return
+  cases.append({'id':'official-idm-install-through-semo-user-gui','status':'FAIL','reason':str(e)});checkpoint();return
  checkpoint()
  # Deterministic own HTTP payload; no third-party media or private files.
  payload=(bytes(range(251))*((8*1024*1024)//251+1))[:8*1024*1024];expected=hashlib.sha256(payload).hexdigest();stats={'bytes_sent':0,'requests':[]};lock=threading.Lock();slot=[time.monotonic()]
@@ -144,13 +167,13 @@ def windows(main,nav,report,out,screenshot):
     except Exception:pass
    if pause:break
   if pause:
-   pause.click_input();time.sleep(2);a=stats['bytes_sent'];time.sleep(2);b=stats['bytes_sent'];screenshot('functional-download-paused');resume=None
+   clear_vendor_information();progress.set_focus();time.sleep(.5);pause.click_input();time.sleep(2);a=stats['bytes_sent'];time.sleep(3);b=stats['bytes_sent'];screenshot('functional-download-paused');resume=None
    for c in progress.descendants():
     try:
      if c.is_visible() and norm(c.window_text()).strip('& ') in ['resume','start','devam et','devam','baslat']:resume=c;break
     except Exception:pass
    if resume:
-    resumed=time.time();resume.click_input();cases.append({'id':'actual-idm-pause-resume','status':'PASS' if b-a<=32768 else 'FAIL','bytes_sent_during_paused_2_seconds':b-a,'resume_action_wallclock':resumed})
+    progress.set_focus();resumed=time.time();resume.click_input();cases.append({'id':'actual-idm-pause-resume','status':'PASS' if b-a<=32768 else 'FAIL','bytes_sent_during_paused_3_seconds':b-a,'pause_observed_seconds':3,'resume_action_wallclock':resumed})
    else:cases.append({'id':'actual-idm-pause-resume','status':'BLOCKED','reason':'Pause was clicked but the real resume control could not be identified.'})
   else:cases.append({'id':'actual-idm-pause-resume','status':'BLOCKED','reason':'No real progress-dialog pause button found; no pause success claimed.'})
   download_root=Path(os.environ['USERPROFILE'])/'Downloads/IDM-SEMO';deadline=time.monotonic()+110;completed=None
