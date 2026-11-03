@@ -26,7 +26,7 @@ jobs:
       - name: Prepare desktop tools off camera, never the IDM package
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq xvfb xauth openbox xfdesktop4 xfce4-panel thunar dbus-x11 adwaita-icon-theme xclip xdotool wmctrl scrot ffmpeg python3-tk python3-venv python3-pil python3-gi gdebi xterm bsdutils libfuse2t64 fonts-dejavu-core fonts-dejavu-extra fonts-noto-core fonts-liberation locales feh xdg-utils curl
+          sudo apt-get install -y -qq xvfb xauth openbox xfdesktop4 xfce4-panel thunar dbus-x11 adwaita-icon-theme xclip xdotool wmctrl scrot ffmpeg python3-tk python3-venv python3-pil python3-gi python3-pyatspi at-spi2-core gdebi xterm bsdutils libfuse2t64 fonts-dejavu-core fonts-dejavu-extra fonts-noto-core fonts-liberation locales feh xdg-utils curl
           sudo locale-gen tr_TR.UTF-8
           sudo update-locale LANG=tr_TR.UTF-8
           sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg

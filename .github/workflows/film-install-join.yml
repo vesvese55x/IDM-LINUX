@@ -1,0 +1,67 @@
+name: Film — assemble completed chapters, explicitly partial
+on:
+  push:
+    branches: ['film-capture/**']
+    paths: ['film_edit/**', '.github/workflows/film-install-join.yml']
+permissions:
+  contents: read
+  actions: read
+jobs:
+  join:
+    if: contains(github.event.head_commit.message, '[install-join]')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: '41639863562'
+          name: film-linux-native-preflight
+          path: sources/promo
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: '41647401215'
+          name: film-install-native-one
+          path: sources/one
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: '41647401215'
+          name: film-install-native-apt
+          path: sources/apt
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: '41647401215'
+          name: film-install-native-gdebi
+          path: sources/gdebi
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: '41648445354'
+          name: film-install-native-app
+          path: sources/app
+      - name: Check provenance and join approved sources without re-encoding
+        run: |
+          command -v ffmpeg || (sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg)
+          python3 -m venv .join-venv
+          .join-venv/bin/pip install -q requests
+          .join-venv/bin/python -B film_edit/join_finished_lessons.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: film-joined-completed-chapters
+          path: joined/
+          retention-days: 14
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: film-joined-small-receipts
+          path: joined/receipts/
+          retention-days: 14
+          if-no-files-found: warn

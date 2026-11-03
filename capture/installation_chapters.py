@@ -14,6 +14,7 @@ def prepare(report,out,appimage):
  DOWNLOADS.mkdir(exist_ok=True);DOWNLOADS.chmod(0o755);HOME.chmod(HOME.stat().st_mode | 0o001);assert not package_status()['installed'],'Not a clean installation runner'
  report['installation_initial_package_status']=package_status();report['installation_mode']=MODE
  if MODE=='app':
+  subprocess.run(['gsettings','set','org.gnome.desktop.interface','toolkit-accessibility','true'],env=safe_env(),check=True)
   path=DOWNLOADS/Path(appimage).name;shutil.copyfile(appimage,path);path.chmod(0o644)
   report['installation_asset']={**report['release'],'local_path':str(path)}
  else:
@@ -127,8 +128,29 @@ def run(report,out,screenshot,guard):
    fields=line.split(None,8)
    if len(fields)>=9 and 'thunar' in fields[6].casefold():rows.append({'id':fields[0],'rect':[int(v) for v in fields[2:6]],'title':fields[8]})
   return rows
+ def select_real_appimage():
+  import pyatspi
+  wanted=Path(report['installation_asset']['local_path']).name;deadline=time.monotonic()+15
+  while time.monotonic()<deadline:
+   found=[];budget=[1600]
+   def walk(n,depth=0):
+    if depth>14 or budget[0]<=0:return
+    budget[0]-=1
+    try:
+     if (n.name or '')==wanted:
+      r=n.queryComponent().getExtents(pyatspi.DESKTOP_COORDS)
+      if r.width>10 and r.height>10 and r.x>=70 and r.x+r.width<1500 and r.y>100 and r.y+r.height<1000:found.append({'rect':[r.x,r.y,r.width,r.height],'name':n.name,'role':n.getRoleName()})
+     for child in n:walk(child,depth+1)
+    except Exception:pass
+   desktop=pyatspi.Registry.getDesktop(0)
+   for application in desktop:
+    if 'thunar' in (application.name or '').casefold():walk(application)
+   if found:
+    node=min(found,key=lambda n:n['rect'][2]*n['rect'][3]);report['appimage_native_accessibility_target']=node;click_widget(node,'Actual AppImage file icon from native AT-SPI');time.sleep(.5);return
+   time.sleep(.5)
+  raise RuntimeError('Actual AppImage icon was not discoverable in native accessibility tree')
  def properties():
-  before={w['id'] for w in thunar_windows()};pyautogui.hotkey('ctrl','i');deadline=time.monotonic()+10
+  before={w['id'] for w in thunar_windows()};pyautogui.hotkey('alt','enter');deadline=time.monotonic()+10
   while time.monotonic()<deadline:
    opened=[w for w in thunar_windows() if w['id'] not in before]
    if opened:report['appimage_real_properties_window']=opened[0];screenshot('appimage-properties');return
@@ -150,10 +172,10 @@ def run(report,out,screenshot,guard):
    terminal.execute(600);dpkg_verify();terminal.stage("dpkg-query -W -f='${Status} ${Version}\\n' idm-linux");terminal.execute(20);time.sleep(5);screenshot('installation-terminal-verified');terminal.close();terminal=None;open_gui()
    speak('one-03.mp3' if MODE=='one' else 'apt-02.mp3','GERÇEK PENCERE',['Paket kaydı doğrulandı','Motor/indirme testi ayrı'])
   elif MODE=='app':
-   path=Path(report['installation_asset']['local_path']);thunar=subprocess.Popen(['thunar',str(DOWNLOADS)],env=safe_env(),stdout=(out/'thunar.log').open('wb'),stderr=subprocess.STDOUT);time.sleep(3)
+   path=Path(report['installation_asset']['local_path']);thunar=subprocess.Popen(['thunar',str(DOWNLOADS)],env={**safe_env(),'GTK_MODULES':'atk-bridge','NO_AT_BRIDGE':'0','GTK_THEME':'Adwaita:dark'},stdout=(out/'thunar.log').open('wb'),stderr=subprocess.STDOUT);time.sleep(3)
    native=thunar_windows();assert native,'Real Thunar file manager did not open';file_window=max(native,key=lambda w:w['rect'][2]*w['rect'][3]);subprocess.run(['wmctrl','-ir',file_window['id'],'-e','0,70,100,1360,820'],check=True);subprocess.run(['wmctrl','-ia',file_window['id']],check=True);time.sleep(1)
    assert [p.name for p in DOWNLOADS.iterdir() if p.is_file()]==[path.name],'Fresh download directory must contain only the demonstrated AppImage'
-   pyautogui.hotkey('ctrl','l');pyautogui.write(str(DOWNLOADS));pyautogui.press('enter');time.sleep(1);pyautogui.press('home');report['appimage_real_file_manager_window']=file_window
+   pyautogui.hotkey('ctrl','l');pyautogui.write(str(DOWNLOADS));pyautogui.press('enter');time.sleep(1);pyautogui.press('esc');select_real_appimage();report['appimage_real_file_manager_window']=file_window
    speak('app-01.mp3','APPIMAGE İZNİ',['Dosya ≠ paket kaydı','chmod +x: çalıştırma izni'],actions=[(15,properties),(26,permissions)])
    pyautogui.hotkey('alt','f4');time.sleep(.5);pyautogui.hotkey('alt','f4');time.sleep(.8)
    terminal=Terminal(guard,out,MODE,events,epoch);terminal.stage('chmod +x '+path.name);time.sleep(7);terminal.execute(20);assert os.access(path,os.X_OK);screenshot('appimage-chmod-verified');terminal.close();terminal=None
