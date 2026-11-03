@@ -33,13 +33,19 @@ def run(report,out,screenshot,guard):
    except Exception:pass
    time.sleep(.4)
   raise RuntimeError('Stable real Tk control panel unavailable')
- def click(w,label,native=False):
+ def click(w,label,native=False,park=True):
   x,y,ww,hh=w['rect'];cx=x+ww/2;cy=y+hh/2;assert 0<cx<1920 and 0<cy<1032
   if not native:
    d=tree();wid=str(int(d['window_id'],16));subprocess.run(['xdotool','windowraise',wid],capture_output=True);subprocess.run(['xdotool','windowfocus',wid],capture_output=True)
   pyautogui.moveTo(cx,cy,duration=.45);at=time.time()-epoch;events.append({'action':'real_mouse_click','target':label,'x':cx,'y':cy,'video_offset_seconds':at,'source':'Read-only native Win32 geometry' if native else 'Actual released Tk widget tree'});pyautogui.click();
   if x>=8 and y>=80 and x+ww<1544 and y+hh<1024:report['runtime_marks'].append({'rect':w['rect'],'start':at-.2,'end':at+1.6,'color':'D29A12' if native else '68DAD1','source':events[-1]['source'],'target':label})
-  time.sleep(.8);pyautogui.moveTo(1500,960,duration=.2)
+  time.sleep(.8)
+  if park:pyautogui.moveTo(1500,960,duration=.2)
+ def set_entry(w,value,label):
+  click(w,label,park=False);d=tree();report.setdefault('real_entry_focus_checks',[]).append({'target':w['path'],'actual_focus':d.get('focus_path'),'before':next((n.get('value') for n in d['widgets'] if n['path']==w['path']),None)})
+  pyautogui.press('home');pyautogui.keyDown('shift');pyautogui.press('end');pyautogui.keyUp('shift');pyautogui.press('backspace');pyautogui.write(value,interval=.02);time.sleep(.6)
+  actual=next(n.get('value') for n in tree()['widgets'] if n['path']==w['path']);assert actual==value,'Actual keyboard input did not set the intended field: '+str(actual)
+  pyautogui.moveTo(1500,960,duration=.2)
  def choose(part,classes=('Button','TButton')):
   candidates=[w for w in tree()['widgets'] if norm(part) in norm(w.get('text','')) and w['class'] in classes and w.get('state')!='disabled'];assert candidates,'Actual GUI control missing: '+part;click(candidates[0],part);return candidates[0]
  def speak(name,title,body,actions=None):
@@ -78,7 +84,7 @@ def run(report,out,screenshot,guard):
   app=subprocess.Popen(['idm-linux','gui'],env=env,stdout=(out/'engine-panel.log').open('wb'),stderr=subprocess.STDOUT);tree();time.sleep(1);choose('Kurulum')
   speak('engine-01.mp3','PANEL ≠ MOTOR',['Wine araçları önceden hazır','Motor kurulumu şimdi yapılır'])
   widgets=tree()['widgets'];entries=[w for w in widgets if w['class'] in ['Entry','TEntry'] and w['rect'][2]>300];assert entries
-  target=HOME/'Downloads/IDM-LINUX';target.mkdir(parents=True,exist_ok=True);entry=min(entries,key=lambda w:w['rect'][1]);click(entry,'Actual installation download-folder input');pyautogui.hotkey('ctrl','a');pyautogui.write(str(target),interval=.02)
+  target=HOME/'Downloads/IDM-LINUX';target.mkdir(parents=True,exist_ok=True);entry=min(entries,key=lambda w:w['rect'][1]);set_entry(entry,str(target),'Actual installation download-folder input')
   for w in tree()['widgets']:
    if w['class']=='TCheckbutton' and w.get('checked') and any(k in norm(w['text']) for k in ['tarayici','browser']):click(w,'Disable automatic browser opening for this lesson')
   speak('engine-02.mp3','İKİ AYRI YOL',['Wine ortamı ≠ dosya hedefi','Tarayıcı onayı ayrı ders'])
@@ -88,7 +94,12 @@ def run(report,out,screenshot,guard):
    if idm and any(w.get('text','').strip()=='100%' for w in d['widgets']):complete=True;break
    if any('kurulum sirasinda hata' in norm(w.get('text','')) for w in d['widgets']):break
    time.sleep(1.5)
-  assert complete,'Actual motor GUI installation failed';assert Path(cfg.download_dir).resolve()==target.resolve(),'GUI target folder not applied'
+  assert complete,'Actual motor GUI installation failed';report['actual_download_directory_after_install']=cfg.download_dir;assert Path(cfg.download_dir).resolve()==target.resolve(),'GUI target folder not applied'
+  # The original vendor may open its own welcome page independently of the
+  # companion checkbox. Close that real visible page with normal keyboard input.
+  for line in subprocess.check_output(['wmctrl','-lx'],text=True).splitlines():
+   if 'brave' in line.casefold() and 'internet download manager' in line.casefold():
+    wid=line.split()[0];subprocess.run(['wmctrl','-ia',wid],check=True);time.sleep(.4);events.append({'action':'real_keyboard_close_vendor_welcome','video_offset_seconds':time.time()-epoch});pyautogui.hotkey('alt','f4');time.sleep(1)
   cases.append({'id':'real-released-gui-motor-installation','status':'PASS','actual_idm_path':str(idm),'wine_prefix':cfg.wine_prefix,'download_dir':cfg.download_dir,'elapsed_seconds':time.time()-begin,'actual_idm_sha256':hashlib.sha256(idm.read_bytes()).hexdigest()});report['linux_wine_config']={'wine_prefix':cfg.wine_prefix,'download_dir':cfg.download_dir,'actual_idm_path':str(idm)};screenshot('engine-verified-installed')
   wine_env={**build_wine_env(cfg)};wine_env={k:v for k,v in wine_env.items() if not any(s in k.upper() for s in ['TOKEN','SECRET','PASSWORD']) and not k.startswith(('GITHUB_','ACTIONS_'))}
   to_win=lambda p:'Z:'+str(Path(p).resolve()).replace('/','\\')
@@ -97,12 +108,15 @@ def run(report,out,screenshot,guard):
   speak('engine-03.mp3','KURULUM DOĞRULANDI',['Gerçek uygulama dosyası var','İndirme henüz kanıtlanmadı'])
   choose('Yakalama')
   def configure_silent():
+   # All pages are built at startup; re-enter the actual destination in this
+   # settings form instead of allowing its older value to overwrite the new one.
+   paths=sorted([w for w in tree()['widgets'] if w['class'] in ['Entry','TEntry'] and str(w.get('value','')).startswith(str(HOME))],key=lambda w:w['rect'][1]);assert len(paths)>=2,'Actual settings path fields missing';set_entry(paths[1],str(target),'Verify and retain actual settings download directory')
    for w in tree()['widgets']:
     if w['class']=='TCheckbutton' and any(s in norm(w['text']) for s in ['sessiz','silent']) and w.get('checked'):click(w,'Disable silent transfer to show actual progress')
    choose('Kaydet');time.sleep(.5)
    for w in tree()['widgets']:
     if w['class'] in ['Button','TButton'] and norm(w['text']).strip() in ['ok','tamam'] and w.get('toplevel')!='.':click(w,'Acknowledge actual settings saved dialog');break
-   assert IdmLinuxConfig.load(create_if_missing=False).silent_mode is False
+   saved=IdmLinuxConfig.load(create_if_missing=False);assert saved.silent_mode is False;assert Path(saved.download_dir).resolve()==target.resolve(),'Saved target folder differs from shown destination'
   speak('engine-04.mp3','GÖRÜNÜR AKTARIM',['Sessiz gönderim kapalı','Ayarları kaydet'],actions=[(10,configure_silent)])
   choose('Genel Bakış');choose('Ana Penceresini');time.sleep(5);dismiss_information();screenshot('engine-original-idm-visible');assert native_rows(),'Read-only observer did not find actual IDMan.exe windows'
   # Own deterministic bytes. Global rate is deliberately limited, not an ISP benchmark.

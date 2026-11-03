@@ -37,7 +37,7 @@ if os.environ.get('FILM_WIDGET_DUMP'):
                         out.append(item)
                     for child in self.tk.splitlist(call('winfo','children',name)):walk(str(child))
                 walk(str(self))
-                data={'time':time.time(),'root_title':self.title(),'root_viewable':bool(self.winfo_viewable()),'window_id':self.frame(),'root_rect':[self.winfo_rootx(),self.winfo_rooty(),self.winfo_width(),self.winfo_height()],'widgets':out}
+                data={'focus_path':str(self.tk.call('focus')),'time':time.time(),'root_title':self.title(),'root_viewable':bool(self.winfo_viewable()),'window_id':self.frame(),'root_rect':[self.winfo_rootx(),self.winfo_rooty(),self.winfo_width(),self.winfo_height()],'widgets':out}
                 tmp=path.with_suffix('.tmp');tmp.write_text(json.dumps(data,ensure_ascii=False),encoding='utf-8');tmp.replace(path)
             except Exception:pass
             self.after(400,dump)
