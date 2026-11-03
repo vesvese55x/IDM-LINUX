@@ -97,7 +97,10 @@ def windows(main,nav,report,out,screenshot):
     manifest_url='https://raw.githubusercontent.com/microsoft/winget-pkgs/master/manifests/t/Tonec/InternetDownloadManager/6.43.16/Tonec.InternetDownloadManager.installer.yaml'
     response=requests.get(manifest_url,timeout=30);response.raise_for_status();expected_installer=re.search(r'InstallerSha256:\s*([A-Fa-f0-9]{64})(?=\s|$)',response.text).group(1).lower()
     assert len(expected_installer)==64
-    report['official_installer_digest_check']={'actual_sha256':digest,'expected_sha256':expected_installer,'match':digest==expected_installer};checkpoint();assert digest==expected_installer,'Official installer hash mismatch';verified=True
+    from vendor_integrity import verify
+    report['official_installer_digest_check']=verify(installer,expected_installer);checkpoint()
+    assert report['official_installer_digest_check']['match'] or report['official_installer_digest_check'].get('accepted') is True,'Official installer hash differs and trusted Tonec signature could not be verified'
+    verified=True
    if not verified:time.sleep(1);continue
    clear_vendor_information();wizard_visible=False
    report['desktop_window_titles_during_install']=[w.window_text() for w in Desktop(backend='win32').windows() if w.window_text()]

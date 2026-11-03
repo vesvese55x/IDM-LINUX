@@ -12,17 +12,23 @@ def approve_windows(report,out,screenshot):
  try:
   while time.monotonic()<deadline:
    browsers=[]
-   for w in Desktop(backend='uia').windows(class_name='Chrome_WidgetWin_1',visible_only=True):
+   for w in Desktop(backend='uia').windows(visible_only=True):
     try:
      if psutil.Process(w.process_id()).name().lower()=='brave.exe':browsers.append(w)
     except Exception:pass
    if not browsers:time.sleep(1);continue
-   browser=max(browsers,key=lambda w:w.rectangle().width()*w.rectangle().height());browser.set_focus();time.sleep(.6)
+   browser=max(browsers,key=lambda w:w.rectangle().width()*w.rectangle().height())
+   import win32gui
+   foreground=win32gui.GetForegroundWindow()
+   try:already_brave=psutil.Process(__import__('win32process').GetWindowThreadProcessId(foreground)[1]).name().lower()=='brave.exe'
+   except Exception:already_brave=False
+   if not already_brave:browser.set_focus();time.sleep(.6)
    controls=[]
-   for c in browser.descendants():
-    try:
-     if c.is_visible():controls.append(c)
-    except Exception:pass
+   for root_window in browsers:
+    for c in root_window.descendants():
+     try:
+      if c.is_visible():controls.append(c)
+     except Exception:pass
    snapshot=[]
    for c in controls:
     try:snapshot.append({'name':c.window_text(),'control_type':c.element_info.control_type,'automation_id':c.element_info.automation_id})
