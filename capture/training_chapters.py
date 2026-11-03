@@ -9,10 +9,11 @@ REPO='https://github.com/vesvese55x/IDM-LINUX/'
 
 def run(report,out,screenshot):
  import pyautogui
- out=Path(out);events=[];cues=[]
+ out=Path(out);events=[];cues=[];mouse_maps={}
  report.update({'phase':'tutorial-chapter-01-real-README-Loltek-browser','tutorial_chapter':'01','full_functional_suite':'NOT_RUN','audio_playback_rate':1.0,'tutorial_audio_cues':cues,'tutorial_browser_events':events})
  manifest=json.loads((Path(__file__).parent/'promo-audio-manifest.json').read_text())
  audio={a['file']:a for a in manifest}
+ pyautogui.click(22,pyautogui.size().height-24);time.sleep(1.5);screenshot('modern-linux-menu-open');pyautogui.press('esc');time.sleep(.8)
  log=(out/'tutorial-brave.log').open('wb')
  args=[brave_path(),'--remote-debugging-port=19333','--remote-debugging-address=127.0.0.1','--start-maximized','--new-window',REPO]
  subprocess.Popen(args,env=safe_env(),stdout=log,stderr=log,creationflags=subprocess.CREATE_NO_WINDOW if os.name=='nt' else 0);log.close()
@@ -41,14 +42,31 @@ def run(report,out,screenshot):
   wait_selector(selector)
   ev('document.querySelector('+json.dumps(selector)+').scrollIntoView({block:"center",behavior:"smooth"})');time.sleep(1.5)
   return ev('(()=>{const r=document.querySelector('+json.dumps(selector)+').getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2,width:r.width,height:r.height,sx:window.screenX,sy:window.screenY,ox:(window.outerWidth-window.innerWidth)/2,oy:window.outerHeight-window.innerHeight,dpr:window.devicePixelRatio}})()')
+ def pointer_map():
+  # Passive observation of REAL OS pointer events. No DOM/content replacement,
+  # no JS click and no CDP input dispatch. Derive actual screen/CSS transform.
+  key=(page['id'],ev('location.origin'),ev('devicePixelRatio'))
+  if key not in mouse_maps:
+   ev("window.__filmReadOnlyPointer=null;document.addEventListener('pointermove',e=>{window.__filmReadOnlyPointer={x:e.clientX,y:e.clientY}},{capture:true,passive:true})")
+   pyautogui.moveTo(700,400,duration=.4);time.sleep(.15);a=ev('window.__filmReadOnlyPointer')
+   pyautogui.moveTo(1000,650,duration=.4);time.sleep(.15);b=ev('window.__filmReadOnlyPointer')
+   assert a and b and abs(b['x']-a['x'])>50 and abs(b['y']-a['y'])>50,'Native pointer observation unavailable'
+   sx=300/(b['x']-a['x']);sy=250/(b['y']-a['y']);assert abs(sx-sy)<.03,(a,b,sx,sy)
+   mouse_maps[key]={'sx':sx,'sy':sy,'ox':700-a['x']*sx,'oy':400-a['y']*sy,'method':'Passive actual OS pointer coordinate observation'}
+  return mouse_maps[key]
  def click(selector,label):
   r=locate(selector);assert r['width']>0 and r['height']>0
-  x=r['sx']+r['ox']+r['x'];y=r['sy']+r['oy']+r['y']
-  assert 0<x<1920 and 0<y<1080,(selector,r)
-  pyautogui.moveTo(x,y,duration=.6);pyautogui.click()
-  events.append({'action':'real_mouse_click','target':label,'video_offset_seconds':time.time()-report['record_wallclock_start']})
+  mapping=pointer_map();x=mapping['ox']+r['x']*mapping['sx'];y=mapping['oy']+r['y']*mapping['sy']
+  assert 0<x<1920 and 0<y<1080,(selector,r,mapping)
+  pyautogui.moveTo(x,y,duration=.6);time.sleep(.25)
+  assert ev('document.querySelector('+json.dumps(selector)+').matches(":hover")'),'Real pointer is not hovering the intended clickable element'
+  events.append({'action':'real_mouse_click','target':label,'x':x,'y':y,'transform':mapping,'video_offset_seconds':time.time()-report['record_wallclock_start']})
+  pyautogui.click()
  def scroll(selector,label):
-  locate(selector);events.append({'action':'real_browser_scroll','target':label,'video_offset_seconds':time.time()-report['record_wallclock_start']})
+  locate(selector)
+  if '.pkg-table tbody tr:first-child' in selector:
+   ev('window.scrollBy({top:document.querySelector('+json.dumps(selector)+').getBoundingClientRect().top-110,behavior:"smooth"})');time.sleep(1.5)
+  events.append({'action':'real_browser_scroll','target':label,'video_offset_seconds':time.time()-report['record_wallclock_start']})
  def persist():
   (out/'tutorial-cues.json').write_text(json.dumps(cues,ensure_ascii=False,indent=2),encoding='utf-8')
   (out/'probe-report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
@@ -57,7 +75,9 @@ def run(report,out,screenshot):
   start=time.time();duration=audio[filename]['duration']
   cues.append({'audio_file':filename,'video_offset_seconds':start-report['record_wallclock_start'],'duration_seconds':duration,'playback_rate':1.0,'page_url':ev('location.href'),'visible_scene':label});persist()
   if switch:
-   delay,newselector,newlabel=switch;time.sleep(delay);scroll(newselector,newlabel)
+   steps=switch if isinstance(switch,list) else [switch]
+   for delay,newselector,newlabel in steps:
+    time.sleep(max(0,start+delay-time.time()));scroll(newselector,newlabel)
   time.sleep(max(0,duration+.8-(time.time()-start)))
  # Real GitHub README anchor, no lookalike or local page.
  wait_selector('article')
@@ -75,7 +95,8 @@ def run(report,out,screenshot):
  speak('04-torrent-hosters.mp3','#ozellikler .card:nth-child(4)','Torrent, DVR and file hosters')
  speak('05-doctor-settings.mp3','#ozellikler .card:nth-child(7)','Doctor, sandbox caveat, languages and cancellation')
  # Real ASR-derived word starts: Windows at27.86s in06,34.34s in07.
- speak('06-gui-windows.mp3','#ekranlar .sec-head','GUI gallery, then native Windows product',switch=(26.0,'#windows-title','Windows product at spoken Windows cue'))
+ speak('06-gui-windows.mp3','#ekranlar .shot:first-child','All Linux gallery rows, then native Windows product',switch=[(8,'#ekranlar .shot:nth-child(3)','Linux gallery row2: browsers, doctor, projects'),(17,'#ekranlar .shot:last-child','Linux gallery row3: support and about'),(26.0,'#windows-title','Windows product at spoken Windows cue')])
+ speak('10-windows-compatibility.mp3','#windows .compat-note','Real Windows compatibility limits, then all six gallery images',switch=[(24.2,'#windows .screens-grid .shot:first-child','Windows gallery: overview and browsers'),(38.8,'#windows .screens-grid .shot:nth-child(3)','Windows gallery: setup and projects'),(46.0,'#windows .screens-grid .shot:nth-child(5)','Windows gallery: settings and torrent eD2K')])
  speak('07-package-table.mp3','#kurulum .pkg-table tbody tr:first-child','Package selection table',switch=(32.5,'#kurulum .pkg-table tbody tr:last-child','Windows rows at spoken Windows cue'))
  speak('08-commands-safety.mp3','#kurulum .auto-install-options','Actual Linux/Windows commands and security caveats')
  copy_selector='#kurulum .install-command[data-platform="linux"] .copy'
@@ -124,7 +145,7 @@ def finish(report,out):
  for name in ['tutorial-gofile.json','tutorial-cues.json','desktop-shell-audit.json','wallpaper-system-info.json','console-visibility-audit.json']:
   p=out/name
   if p.exists():__import__('shutil').copyfile(p,proofs/name)
- for name in ['desktop-ready-before-recording','promo-01-ready','promo-02-ready','promo-07-ready','promo-complete']:
+ for name in ['desktop-ready-before-recording','modern-linux-menu-open','promo-01-ready','promo-02-ready','promo-07-ready','promo-complete']:
   p=out/(name+'.png')
   if p.exists():
    image=Image.open(p).convert('RGB');image.thumbnail((1280,720));image.save(proofs/(name+'.jpg'),quality=88)

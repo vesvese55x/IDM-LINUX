@@ -243,7 +243,7 @@ finally:
     report['status']='FAIL';report['tutorial_finish_error']=type(e).__name__+': '+str(e);(OUT/'tutorial-finish-exception.txt').write_text(traceback.format_exc())
   proofdir=OUT/'tutorial-receipts';proofdir.mkdir(exist_ok=True)
   save();shutil.copyfile(OUT/'probe-report.json',proofdir/'probe-report.json')
-  for label in ['failure-desktop','desktop-ready-before-recording','promo-01-ready','promo-02-ready','promo-complete']:
+  for label in ['failure-desktop','modern-linux-menu-open','desktop-ready-before-recording','promo-01-ready','promo-02-ready','promo-complete']:
    source=OUT/(label+'.png')
    if source.exists():
     from PIL import Image
