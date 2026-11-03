@@ -2,6 +2,18 @@
 from pathlib import Path
 import os,time,subprocess,json,shutil
 
+def x11_windows(root,max_depth=3):
+ """Include actual clients reparented beneath the window manager's frames."""
+ seen=set();pending=[(root,0)]
+ while pending:
+  parent,depth=pending.pop()
+  try:children=parent.query_tree().children
+  except Exception:continue
+  for child in children:
+   if child.id in seen:continue
+   seen.add(child.id);yield child
+   if depth+1<max_depth:pending.append((child,depth+1))
+
 def windows():
  import ctypes,win32gui,win32con,winreg
  from ctypes import wintypes
@@ -53,7 +65,7 @@ def linux(out,wall):
  assert all(p.poll() is None for _,p in processes),'Real Linux desktop/panel process exited'
  from Xlib import display,X
  d=display.Display();found=[]
- for w in d.screen().root.query_tree().children:
+ for w in x11_windows(d.screen().root):
   try:
    klass=' '.join(w.get_wm_class() or ()).lower()
    if w.get_attributes().map_state==X.IsViewable and ('xfdesktop' in klass or 'xfce4-panel' in klass):found.append({'class':klass,'width':w.get_geometry().width,'height':w.get_geometry().height})

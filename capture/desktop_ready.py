@@ -225,6 +225,7 @@ class ConsoleGuard:
    if hook:u.UnhookWinEvent(ctypes.c_void_p(hook))
  def linux(self):
   from Xlib import display,X
+  from desktop_shell import x11_windows
   d=display.Display();root=d.screen().root
   root.change_attributes(event_mask=X.SubstructureNotifyMask)
   names=['xterm','gnome-terminal','xfce4-terminal','konsole','kitty','alacritty','wineconsole','wezterm','terminator']
@@ -238,7 +239,7 @@ class ConsoleGuard:
        klass=' '.join(e.window.get_wm_class() or ()).lower()
        if any(n in klass for n in names):self.events.append({'time':time.time(),'class':klass,'source':'X11_MapNotify'})
       except Exception:pass
-    for w in root.query_tree().children:
+    for w in x11_windows(root):
      try:
       klass=' '.join(w.get_wm_class() or ()).lower()
       if any(n in klass for n in names) and w.get_attributes().map_state==X.IsViewable and w.id not in seen:
