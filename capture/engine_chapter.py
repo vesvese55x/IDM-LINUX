@@ -57,7 +57,7 @@ def run(report,out,screenshot,guard):
     parts=line.split(None,3)
     if len(parts)==4 and parts[3]==d['root_title']:clients.append(parts[0])
    assert len(clients)==1,'Actual managed Tk client window is ambiguous';subprocess.run(['wmctrl','-ia',clients[0]],check=True);time.sleep(.3)
-  pyautogui.moveTo(cx,cy,duration=.45);at=time.time()-epoch;events.append({'action':'real_mouse_click','target':label,'x':cx,'y':cy,'video_offset_seconds':at,'source':'Read-only native Win32 geometry' if native else 'Actual released Tk widget tree'});pyautogui.click();
+  pyautogui.moveTo(cx,cy,duration=.45);at=time.time()-epoch;events.append({'action':'real_mouse_click','target':label,'x':cx,'y':cy,'video_offset_seconds':at,'source':w.get('geometry_source','Read-only native Win32 geometry') if native else 'Actual released Tk widget tree'});pyautogui.click();
   if x>=8 and y>=80 and x+ww<1544 and y+hh<1024:report['runtime_marks'].append({'rect':w['rect'],'start':at-.2,'end':at+1.6,'color':'D29A12' if native else '68DAD1','source':events[-1]['source'],'target':label})
   time.sleep(.8)
   if park:pyautogui.moveTo(1500,960,duration=.2)
@@ -82,6 +82,22 @@ def run(report,out,screenshot,guard):
   for w in native_rows():
    if w['enabled'] and w['class'].casefold()=='button' and norm(w['text']).replace('&','').strip(' .') in labels:return w
   return None
+ def resume_from_actual_toolbar():
+  # Some IDM builds leave the progress Pause disabled and expose Resume in
+  # their main toolbar. Minimize the real paused dialog; do not cancel/relaunch.
+  rows=native_rows();main=next(w for w in rows if w['handle']==w['root'] and w['text'].startswith('Internet Download Manager'));managed=[]
+  for line in subprocess.check_output(['wmctrl','-l'],text=True).splitlines():
+   parts=line.split(None,3)
+   if len(parts)==4:managed.append(parts)
+  for parts in managed:
+   if 'BELGESELSEMO-ORNEK-DOSYA' in parts[3]:subprocess.run(['xdotool','windowminimize',parts[0]],check=True)
+  client=next(parts[0] for parts in managed if parts[3]==main['text']);subprocess.run(['wmctrl','-ia',client],check=True);time.sleep(1)
+  listing=next(w for w in native_rows() if w['root']==main['handle'] and w['class']=='SysListView32');assert listing.get('item_count')==1,'Resume toolbar requires the one owned fixture item';click(listing,'Focus actual one-item IDM download list',True);pyautogui.press('home');time.sleep(1)
+  listing=next(w for w in native_rows() if w['handle']==listing['handle']);assert listing.get('selected_count')==1,'Actual file row not selected'
+  toolbar=next(w for w in native_rows() if w['root']==main['handle'] and w['class']=='ToolbarWindow32');x,y,ww,hh=toolbar['rect'];image=pyautogui.screenshot().crop((x,y,x+ww,y+hh)).resize((ww*3,hh*3));path=out/'actual-toolbar-ocr.png';image.save(path)
+  result=subprocess.run(['tesseract',str(path),'stdout','-l','tur+eng','--psm','6','tsv'],capture_output=True,text=True,check=True)
+  import csv,io
+  words=list(csv.DictReader(io.StringIO(result.stdout),delimiter='\t'));hit=next((w for w in words if norm(w.get('text','')).replace('&','').strip()=='devam' and float(w['conf'])>45),None);assert hit,'Actual visible Resume toolbar label not recognized';rect=[x+int(hit['left'])/3,y+int(hit['top'])/3,int(hit['width'])/3,int(hit['height'])/3];report['resume_alternative_ui']={'method':'Actual main toolbar; one file selected; measured OCR label bounds','label':hit['text'],'confidence':float(hit['conf']),'rect':rect};return {'rect':rect,'geometry_source':'Actual toolbar screenshot OCR bounds, corroborated by native toolbar rectangle and single selected fixture item'}
  def dismiss_information():
   rows=native_rows();roots={w['handle']:w for w in rows if w['handle']==w['root']}
   for w in rows:
@@ -178,7 +194,9 @@ def run(report,out,screenshot,guard):
   with lock:b=stats['bytes_sent']
   assert b-a==0,'Bytes still advanced during settled 3-second pause';cases.append({'id':'real-linux-idm-pause','status':'PASS','bytes_in_settled_3_seconds':b-a,'pause_action_time':pause_clicked});screenshot('transfer-real-paused')
   speak('transfer-03.mp3','DURAKLATMA KANITI',['En az 3 saniye ölçüldü','Gönderilen bayt artmadı'])
-  resume=wait_native_button(['devam et','devam','baslat','resume','start'],10);resume_clicked=time.time();click(resume,'Actual native IDM Resume',True)
+  resume=native_button(['devam et','devam','baslat','resume','start'])
+  if resume is None:resume=resume_from_actual_toolbar()
+  resume_clicked=time.time();click(resume,'Actual native IDM Resume',True)
   with lock:stats['rate_bytes_per_second']=2*1024*1024
   deadline=time.monotonic()+180;completed=None
   while time.monotonic()<deadline:

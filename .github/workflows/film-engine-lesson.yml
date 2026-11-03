@@ -21,7 +21,7 @@ jobs:
         run: |
           sudo dpkg --add-architecture i386
           sudo apt-get update -qq
-          sudo apt-get install -y -qq xvfb xauth openbox xfdesktop4 xfce4-panel thunar dbus-x11 adwaita-icon-theme xclip xdotool wmctrl scrot ffmpeg python3-tk python3-venv python3-pil python3-gi fonts-dejavu-core fonts-dejavu-extra fonts-noto-core fonts-liberation locales feh xdg-utils curl wine wine32:i386 wine64 aria2 streamlink yt-dlp cabextract p7zip-full gcc-mingw-w64-x86-64
+          sudo apt-get install -y -qq xvfb xauth openbox xfdesktop4 xfce4-panel thunar dbus-x11 adwaita-icon-theme xclip xdotool wmctrl scrot ffmpeg python3-tk python3-venv python3-pil python3-gi fonts-dejavu-core fonts-dejavu-extra fonts-noto-core fonts-liberation locales feh xdg-utils curl wine wine32:i386 wine64 aria2 streamlink yt-dlp cabextract p7zip-full gcc-mingw-w64-x86-64 tesseract-ocr tesseract-ocr-tur
           sudo locale-gen tr_TR.UTF-8
           sudo update-locale LANG=tr_TR.UTF-8
           sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
