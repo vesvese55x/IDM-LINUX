@@ -28,6 +28,7 @@ jobs:
           DISPLAY: ':99'
           XDG_SESSION_TYPE: x11
           DESKTOP_SESSION: openbox
+          FILM_FUNCTIONAL: '1'
         run: |
           export XAUTHORITY="$RUNNER_TEMP/film.Xauthority"
           touch "$XAUTHORITY"
@@ -64,6 +65,8 @@ jobs:
             $env:PATH += ';C:\ProgramData\chocolatey\bin'
           }
       - name: Record the actual published EXE using native desktop capture
+        env:
+          FILM_FUNCTIONAL: '1'
         shell: powershell
         run: |
           python capture/native_probe.py windows
@@ -91,11 +94,18 @@ jobs:
       - name: Install fixture dependencies
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg python3-tk
+          sudo apt-get install -y -qq ffmpeg python3-tk python3-venv
+          /usr/bin/python3 -m venv --system-site-packages .unit-venv
+          .unit-venv/bin/pip install -q pytest==8.3.5
       - name: Run original source tests without changing them
         run: |
           mkdir -p evidence
           PYTHONPATH="$PWD/src" /usr/bin/python3 src/idm_linux/tests/test_suite.py > evidence/source-unit-tests.log 2>&1
+      - name: Discover all source test modules with pytest — independent of GUI proof
+        if: always()
+        run: |
+          mkdir -p evidence
+          PYTHONPATH="$PWD/src" .unit-venv/bin/python -m pytest src/idm_linux/tests -q --junitxml=evidence/source-pytest.xml > evidence/source-pytest.log 2>&1
       - uses: actions/upload-artifact@v4
         if: always()
         with:

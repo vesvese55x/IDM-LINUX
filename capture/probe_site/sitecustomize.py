@@ -12,6 +12,8 @@ if os.environ.get('FILM_WIDGET_DUMP'):
         path=Path(os.environ['FILM_WIDGET_DUMP'])
         def dump():
             try:
+                if self.winfo_viewable() and not getattr(self,'_film_viewport_set',False):
+                    self.geometry('1880x1000+10+10');self._film_viewport_set=True
                 out=[]
                 def walk(w):
                     if w.winfo_viewable():

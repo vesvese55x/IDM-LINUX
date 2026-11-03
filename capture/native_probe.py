@@ -88,6 +88,9 @@ def tour_linux(exe):
  # Return to the real overview for a clean opening/closing hold.
  x,y,w,h=nav[1]['rect'];pyautogui.moveTo(x+w*.5,y+h*.5,duration=.5);pyautogui.click();time.sleep(5)
  report['final_visible_widgets']=wait_tree(treepath);report['startup_navigation']='PASS'
+ if os.getenv('FILM_FUNCTIONAL')=='1':
+  import feature_cases
+  feature_cases.linux(treepath,report,OUT,screenshot)
 
 def tour_windows(exe):
  global app
@@ -139,6 +142,9 @@ def tour_windows(exe):
  second=subprocess.Popen([str(installed)],env=app_env(),stdout=log,stderr=log,creationflags=flags);time.sleep(5)
  wins=[w for w in Desktop(backend='win32').windows() if 'IDM SEMO' in w.window_text().upper() and 'WINDOWS SETUP' not in w.window_text().upper() and ('KONTROL MERKEZ' in w.window_text().upper() or 'CONTROL CENTER' in w.window_text().upper()) and w.rectangle().width()>800 and w.rectangle().height()>500]
  report['single_instance']={'main_windows_after_second_launch':len(wins),'status':'PASS' if len(wins)==1 else 'FAIL'};report['startup_navigation']='PASS';screenshot('final-overview')
+ if os.getenv('FILM_FUNCTIONAL')=='1':
+  import feature_cases
+  feature_cases.windows(main,nav,report,OUT,screenshot)
 
 try:
  if iswin:
@@ -163,7 +169,10 @@ try:
  exe=download_asset();start_recorder(w,h)
  if iswin:tour_windows(exe)
  else:tour_linux(exe)
- report['status']='PASS';report['notice']='Only startup, visible page navigation, desktop recording and explicitly listed checks are validated. Download/browser/video/P2P functional tests remain NOT_RUN.'
+ report['status']='PASS'
+ if os.getenv('FILM_FUNCTIONAL')=='1':
+  report['phase']='selected-real-GUI-functional-cases';report['full_functional_suite']='PARTIAL';report['functional_cases_status']='PASS' if all(c['status']=='PASS' for c in report.get('functional_cases',[]) if c['status']!='NOT_RUN') else 'PARTIAL'
+ report['notice']='Only startup, navigation, desktop recording and explicitly listed functional cases are validated. All unlisted browser/video/P2P/other cases remain NOT_RUN; this is not a full feature pass.'
 except Exception as e:
  report['status']='FAIL';report['error_type']=type(e).__name__;report['error']=str(e);(OUT/'exception.txt').write_text(traceback.format_exc(),encoding='utf-8')
  try:screenshot('failure-desktop')
