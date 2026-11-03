@@ -65,7 +65,7 @@ def tour_linux(exe):
  report['ui_instrumentation']='Read-only Tk widget tree; production AppImage unchanged; external mouse clicks'
  log=(OUT/'application.log').open('wb');loghandles.append(log);app=subprocess.Popen([str(launch)],env=env,stdout=log,stderr=log)
  treepath=OUT/'visible-widgets.json';d=wait_tree(treepath)
- ids=subprocess.check_output(['xdotool','search','--onlyvisible','--class','idm-linux-panel'],text=True).split()
+ ids=subprocess.run(['xdotool','search','--onlyvisible','--class','idm-linux-panel'],capture_output=True,text=True).stdout.split()
  if ids:
   window=ids[-1];run(['xdotool','windowactivate','--sync',window]);run(['xdotool','windowsize',window,'1880','1000']);run(['xdotool','windowmove',window,'10','10']);time.sleep(2)
  d=wait_tree(treepath);report['window_title']=d['root_title'];lx=d['root_rect'][0]
@@ -93,16 +93,26 @@ def tour_windows(exe):
  log=(OUT/'application.log').open('wb');loghandles.append(log);app=subprocess.Popen([str(exe)],env=app_env(),stdout=log,stderr=log,creationflags=flags)
  deadline=time.monotonic()+120;main=None
  while time.monotonic()<deadline:
-  wins=[w for w in Desktop(backend='win32').windows() if 'IDM SEMO' in w.window_text().upper() and w.rectangle().width()>800 and w.rectangle().height()>500]
+  wins=[w for w in Desktop(backend='win32').windows() if 'IDM SEMO' in w.window_text().upper() and 'WINDOWS SETUP' not in w.window_text().upper() and ('KONTROL MERKEZ' in w.window_text().upper() or 'CONTROL CENTER' in w.window_text().upper()) and w.rectangle().width()>800 and w.rectangle().height()>500]
   if wins:main=max(wins,key=lambda w:w.rectangle().width()*w.rectangle().height());break
   time.sleep(.5)
  assert main is not None,'Released EXE main window unavailable on native desktop'
- main.maximize();main.set_focus();time.sleep(3);report['window_title']=main.window_text();left=main.rectangle().left
+ main.maximize();time.sleep(2)
+ for dlg in Desktop(backend='win32').windows(class_name='#32770'):
+  if 'IDM SEMO' not in dlg.window_text().upper():continue
+  notice=' '.join(c.window_text() for c in dlg.descendants())
+  if 'klasör' in notice.lower() or 'folder' in notice.lower():
+   report.setdefault('acknowledged_folder_notices',[]).append(notice)
+   for b in dlg.descendants():
+    if b.window_text().replace('&','').strip().lower() in ['ok','tamam']:b.click_input();break
+ main.set_focus();time.sleep(2);report['window_title']=main.window_text();left=main.rectangle().left
+ import psutil
+ installed=Path(psutil.Process(main.process_id()).exe());report['installed_panel']={'path':str(installed),'sha256':file_sha(installed)}
  nav=[]
  for c in main.descendants():
   try:
    r=c.rectangle()
-   if c.friendly_class_name()=='Button' and c.is_visible() and c.window_text().strip() and r.right<=left+280 and r.width()>=140 and 24<=r.height()<=65:nav.append(c)
+   if (c.friendly_class_name()=='Button' or 'BUTTON' in c.class_name().upper()) and c.is_visible() and c.window_text().strip() and r.right<=left+280 and r.width()>=140 and 24<=r.height()<=65:nav.append(c)
   except Exception:pass
  nav.sort(key=lambda c:c.rectangle().top);report['navigation_buttons_detected']=[c.window_text() for c in nav];save();assert len(nav)>=10,'Expected ten actual Windows navigation buttons'
  for i,c in enumerate(nav[:10]):
@@ -117,8 +127,8 @@ def tour_windows(exe):
   report['pages'].append({'index':i,'navigation_label':label,'video_wallclock_offset_seconds':time.time()-report['record_wallclock_start'],'evidence':screenshot(f'page-{i:02d}'),'scope':'Page navigation/display only; feature operation NOT verified'});save()
  nav[1].click_input();time.sleep(4)
  # Verify actual released EXE single-instance handling, not a rebuilt test executable.
- second=subprocess.Popen([str(exe)],env=app_env(),stdout=log,stderr=log,creationflags=flags);time.sleep(5)
- wins=[w for w in Desktop(backend='win32').windows() if 'IDM SEMO' in w.window_text().upper() and w.rectangle().width()>800 and w.rectangle().height()>500]
+ second=subprocess.Popen([str(installed)],env=app_env(),stdout=log,stderr=log,creationflags=flags);time.sleep(5)
+ wins=[w for w in Desktop(backend='win32').windows() if 'IDM SEMO' in w.window_text().upper() and 'WINDOWS SETUP' not in w.window_text().upper() and ('KONTROL MERKEZ' in w.window_text().upper() or 'CONTROL CENTER' in w.window_text().upper()) and w.rectangle().width()>800 and w.rectangle().height()>500]
  report['single_instance']={'main_windows_after_second_launch':len(wins),'status':'PASS' if len(wins)==1 else 'FAIL'};report['startup_navigation']='PASS';screenshot('final-overview')
 
 try:

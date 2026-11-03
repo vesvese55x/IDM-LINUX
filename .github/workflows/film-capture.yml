@@ -20,21 +20,20 @@ jobs:
       - name: Prepare a real X11 desktop and capture tools
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq xvfb openbox xdotool wmctrl scrot ffmpeg python3-tk python3-venv python3-pil fonts-dejavu-core fonts-noto-core
+          sudo apt-get install -y -qq xvfb xauth openbox xdotool wmctrl scrot ffmpeg python3-tk python3-venv python3-pil fonts-dejavu-core fonts-noto-core
           /usr/bin/python3 -m venv --system-site-packages .capture-venv
           .capture-venv/bin/pip install -q requests pillow pyautogui cryptography websocket-client websockets
       - name: Record the published Linux AppImage, not a recompiled screenshot harness
         env:
           DISPLAY: ':99'
         run: |
-          Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp > /tmp/film-xvfb.log 2>&1 &
+          export XAUTHORITY="$RUNNER_TEMP/film.Xauthority"
+          touch "$XAUTHORITY"
+          chmod 600 "$XAUTHORITY"
+          xauth -f "$XAUTHORITY" add :99 . "$(mcookie)"
+          Xvfb :99 -screen 0 1920x1080x24 -auth "$XAUTHORITY" -nolisten tcp > /tmp/film-xvfb.log 2>&1 &
           openbox > /tmp/film-openbox.log 2>&1 &
           .capture-venv/bin/python capture/native_probe.py linux
-      - name: Source unit tests — separately labelled, not release-binary proof
-        if: always()
-        run: |
-          mkdir -p evidence
-          PYTHONPATH="$PWD/src" .capture-venv/bin/python src/idm_linux/tests/test_suite.py > evidence/source-unit-tests.log 2>&1
       - name: Save all original recordings and evidence, also on failure
         if: always()
         uses: actions/upload-artifact@v4
@@ -72,6 +71,33 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: film-windows-native-preflight
+          path: evidence/
+          if-no-files-found: error
+          retention-days: 14
+  source_unit:
+    name: Source unit suite (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install fixture dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg python3-tk
+      - name: Run original source tests without changing them
+        run: |
+          mkdir -p evidence
+          PYTHONPATH="$PWD/src" /usr/bin/python3 src/idm_linux/tests/test_suite.py > evidence/source-unit-tests.log 2>&1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: film-source-unit-${{ matrix.os }}
           path: evidence/
           if-no-files-found: error
           retention-days: 14
