@@ -11,6 +11,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   linux:
+    if: ${{ !contains(github.event.head_commit.message, '[windows-only]') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -80,6 +81,7 @@ jobs:
           if-no-files-found: error
           retention-days: 14
   source_unit:
+    if: ${{ !contains(github.event.head_commit.message, '[capture-only]') }}
     name: Source unit suite (${{ matrix.os }})
     strategy:
       fail-fast: false

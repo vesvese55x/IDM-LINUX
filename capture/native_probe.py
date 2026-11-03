@@ -172,6 +172,7 @@ try:
  report['status']='PASS'
  if os.getenv('FILM_FUNCTIONAL')=='1':
   report['phase']='selected-real-GUI-functional-cases';report['full_functional_suite']='PARTIAL';report['functional_cases_status']='PASS' if all(c['status']=='PASS' for c in report.get('functional_cases',[]) if c['status']!='NOT_RUN') else 'PARTIAL'
+  if any(c['status']=='FAIL' for c in report.get('functional_cases',[])):report['status']='FAIL'
  report['notice']='Only startup, navigation, desktop recording and explicitly listed functional cases are validated. All unlisted browser/video/P2P/other cases remain NOT_RUN; this is not a full feature pass.'
 except Exception as e:
  report['status']='FAIL';report['error_type']=type(e).__name__;report['error']=str(e);(OUT/'exception.txt').write_text(traceback.format_exc(),encoding='utf-8')
