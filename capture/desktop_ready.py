@@ -97,6 +97,12 @@ def browser_warmup(exe,out):
  values.setdefault('brave',{}).update({'has_seen_welcome_page':True})
  values.setdefault('profile',{}).update({'exit_type':'Normal','exited_cleanly':True})
  prefs.write_text(json.dumps(values))
+ # P3A belongs to Local State, not profile Preferences. Complete its first-use
+ # privacy choice off-camera (opt out), so no setup notice leaks into footage.
+ localfile=profile/'Local State'
+ local=json.loads(localfile.read_text()) if localfile.exists() else {}
+ local.setdefault('brave',{}).setdefault('p3a',{}).update({'enabled':False,'notice_acknowledged':True})
+ localfile.write_text(json.dumps(local))
  args=[exe,'--no-first-run','--no-default-browser-check','--disable-session-crashed-bubble','--remote-debugging-port=19333','--remote-debugging-address=127.0.0.1','about:blank']
  log=(out/'brave-off-camera-preparation.log').open('wb')
  process=subprocess.Popen(args,env=safe_env(),stdout=log,stderr=log,creationflags=FLAGS)
@@ -137,7 +143,9 @@ def browser_warmup(exe,out):
   try:cdp(version2['webSocketDebuggerUrl'],'Browser.close')
   except Exception:pass
   time.sleep(2)
-  return {'normal_restart_without_first_run_flags':'PASS','status':'PASS','profile':str(profile),'first_run_marker':True,'welcoming_tabs_remaining':False,'browser_version':version.get('Browser'),'preparation_recorded':False}
+  persisted=json.loads(localfile.read_text()).get('brave',{}).get('p3a',{})
+  assert persisted.get('notice_acknowledged') is True and persisted.get('enabled') is False,'First-use privacy preparation did not persist'
+  return {'privacy_first_use_prepared':'PASS','normal_restart_without_first_run_flags':'PASS','status':'PASS','profile':str(profile),'first_run_marker':True,'welcoming_tabs_remaining':False,'browser_version':version.get('Browser'),'preparation_recorded':False}
  finally:
   if process.poll() is None:
    try:process.wait(timeout=5)
