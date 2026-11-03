@@ -11,8 +11,8 @@
   },
   {
     "file": "03-browser-video.mp3",
-    "duration": 44.90449,
-    "bytes": 359462
+    "duration": 44.747755,
+    "bytes": 358209
   },
   {
     "file": "04-torrent-hosters.mp3",
@@ -31,13 +31,13 @@
   },
   {
     "file": "07-package-table.mp3",
-    "duration": 51.748571,
-    "bytes": 414215
+    "duration": 48.065306,
+    "bytes": 384749
   },
   {
     "file": "08-commands-safety.mp3",
-    "duration": 44.277551,
-    "bytes": 354447
+    "duration": 43.964082,
+    "bytes": 351939
   },
   {
     "file": "09-ecosystem.mp3",
@@ -46,7 +46,7 @@
   },
   {
     "file": "10-windows-compatibility.mp3",
-    "duration": 66.873469,
-    "bytes": 535214
+    "duration": 65.985306,
+    "bytes": 528109
   }
 ]

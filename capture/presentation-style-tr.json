@@ -1,0 +1,31 @@
+{
+  "spoken_language": "tr",
+  "voice": "voice-04",
+  "speed": 1.0,
+  "canonical_screen_spelling_is_unchanged": true,
+  "pronunciations": {
+    "IDM": "ideme",
+    "URL": "urele",
+    "CMD": "cemede",
+    "EXE": "ekse",
+    "RPM": "arpiem",
+    "pacman": "pekmen",
+    "yt-dlp": "yete delepe"
+  },
+  "cursor": {
+    "shape": "oval",
+    "fill": "translucent warm yellow",
+    "size_native_pixels": [
+      44,
+      30
+    ],
+    "position_source": "real OS pointer telemetry",
+    "click_effect": "short expanding fading ring at actual click"
+  },
+  "notes": {
+    "animation": "slide and fade; short underline reveal",
+    "avoid": "covering controls; flashing; fake PASS indicators; changing source UI",
+    "theme": "approved clean technology palette"
+  },
+  "user_approval": "Previous first chapter praised; preserve its style, wallpaper, narrow system-info panel, modern real taskbar and voice"
+}

@@ -96,6 +96,7 @@ def browser_warmup(exe,out):
  values.setdefault('browser',{}).update({'check_default_browser':False,'has_seen_welcome_page':True})
  values.setdefault('brave',{}).update({'has_seen_welcome_page':True})
  values.setdefault('profile',{}).update({'exit_type':'Normal','exited_cleanly':True})
+ values.setdefault('session',{}).update({'restore_on_startup':5,'startup_urls':[]})
  prefs.write_text(json.dumps(values))
  # P3A belongs to Local State, not profile Preferences. Complete its first-use
  # privacy choice off-camera (opt out), so no setup notice leaks into footage.

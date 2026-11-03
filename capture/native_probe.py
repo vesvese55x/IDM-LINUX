@@ -5,7 +5,7 @@ import requests
 ROOT=Path.cwd();OUT=ROOT/'evidence';OUT.mkdir(exist_ok=True)
 OS=sys.argv[1];iswin=OS=='windows';flags=subprocess.CREATE_NO_WINDOW if iswin else 0
 report={'phase':'real-release-native-desktop-preflight','status':'RUNNING','platform':platform.platform(),'runner_os':os.getenv('RUNNER_OS'),'source_checkout_commit':os.getenv('GITHUB_SHA'),'run_id':os.getenv('GITHUB_RUN_ID'),'utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'full_functional_suite':'NOT_RUN','pages':[],'capture_method':'ffmpeg gdigrab actual desktop' if iswin else 'ffmpeg x11grab actual Xvfb desktop','not_used':['DrawToBitmap','synthetic UI','PNG slideshow'],'application_modified':False}
-rec=None;app=None;loghandles=[];console_guard=None
+rec=None;app=None;loghandles=[];console_guard=None;pointer_tracker=None
 def save():
  (OUT/'probe-report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
 def run(cmd,**kw):return subprocess.run(cmd,check=True,creationflags=flags,**kw)
@@ -41,13 +41,18 @@ def screenshot(label):
  return {'filename':label+'.png','size':list(image.size),'rgb_mean':stat.mean,'rgb_stddev':stat.stddev,'sha256':file_sha(OUT/(label+'.png'))}
 
 def start_recorder(w,h):
- global rec
+ global rec,pointer_tracker
  ff=shutil.which('ffmpeg');assert ff,'ffmpeg missing'
+ cursor='0' if os.getenv('FILM_PRESENTATION')=='1' else '1'
  args=[ff,'-y','-hide_banner','-loglevel','warning','-thread_queue_size','512']
- if iswin:args+=['-f','gdigrab','-framerate','24','-draw_mouse','1','-video_size',f'{w}x{h}','-i','desktop']
- else:args+=['-f','x11grab','-framerate','24','-draw_mouse','1','-video_size',f'{w}x{h}','-i',os.environ['DISPLAY']+'.0']
+ if iswin:args+=['-f','gdigrab','-framerate','24','-draw_mouse',cursor,'-video_size',f'{w}x{h}','-i','desktop']
+ else:args+=['-f','x11grab','-framerate','24','-draw_mouse',cursor,'-video_size',f'{w}x{h}','-i',os.environ['DISPLAY']+'.0']
  args+=['-vf','scale=out_color_matrix=bt709:out_range=tv,format=yuv420p','-c:v','libx264','-threads','2','-preset','veryfast','-crf','16','-color_primaries','bt709','-color_trc','bt709','-colorspace','bt709','-movflags','+faststart',str(OUT/('native-'+OS+'.mp4'))]
- log=(OUT/'recorder.log').open('wb');loghandles.append(log);rec=subprocess.Popen(args,stdin=subprocess.PIPE,stdout=log,stderr=log,creationflags=flags);report['record_wallclock_start']=time.time();report['native_resolution']=[w,h];time.sleep(2);assert rec.poll() is None,'Desktop recorder failed to start'
+ log=(OUT/'recorder.log').open('wb');loghandles.append(log);rec=subprocess.Popen(args,stdin=subprocess.PIPE,stdout=log,stderr=log,creationflags=flags);report['record_wallclock_start']=time.time();report['native_resolution']=[w,h]
+ if os.getenv('FILM_PRESENTATION')=='1':
+  from presentation_overlay import PointerTracker
+  pointer_tracker=PointerTracker(OUT,report['record_wallclock_start']).start();report['cursor_presentation']='Real OS telemetry; native arrow excluded; editorial yellow oval'
+ time.sleep(2);assert rec.poll() is None,'Desktop recorder failed to start'
 
 def wait_tree(path,timeout=100):
  end=time.monotonic()+timeout
@@ -217,6 +222,9 @@ finally:
    try:rec.wait(timeout=10)
    except Exception:rec.kill()
   report['recorder_exit_code']=rec.poll()
+ if pointer_tracker:
+  report['pointer_tracking_audit']=pointer_tracker.finish()
+  if report['pointer_tracking_audit']['status']!='PASS':report['status']='FAIL'
  if console_guard:
   audit=console_guard.finish();report['console_visibility_audit']=audit
   report['film_footage_acceptance']='REJECT' if audit['status']!='PASS' else 'PENDING_VISUAL_REVIEW'
