@@ -191,6 +191,7 @@ try:
  if os.getenv('FILM_FUNCTIONAL')=='1':
   report['phase']='selected-real-GUI-functional-cases';report['full_functional_suite']='PARTIAL';report['functional_cases_status']='PASS' if all(c['status']=='PASS' for c in report.get('functional_cases',[]) if c['status']!='NOT_RUN') else 'PARTIAL'
   if any(c['status']=='FAIL' for c in report.get('functional_cases',[])):report['status']='FAIL'
+  elif any(c['status']=='BLOCKED' for c in report.get('functional_cases',[])):report['status']='PARTIAL'
  report['notice']='Only startup, navigation, desktop recording and explicitly listed functional cases are validated. All unlisted browser/video/P2P/other cases remain NOT_RUN; this is not a full feature pass.'
 except Exception as e:
  report['status']='FAIL';report['error_type']=type(e).__name__;report['error']=str(e);(OUT/'exception.txt').write_text(traceback.format_exc(),encoding='utf-8')
@@ -220,5 +221,5 @@ finally:
  if report.get('recorder_exit_code')!=0:report['status']='FAIL'
  save();print(json.dumps({'status':report['status'],'phase':report['phase'],'pages_visited':len(report['pages']),'full_functional_suite':report['full_functional_suite'],'video':report.get('video'),'error':report.get('error')},indent=2),flush=True)
  if os.getenv('GITHUB_STEP_SUMMARY'):
-  with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as f:f.write('## Real native release capture: '+OS+'\nStatus: '+report['status']+'\n\nFull functional suite: NOT_RUN. See original desktop MP4 and per-page evidence artifacts.\n')
+  with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as f:f.write('## Real native release capture: '+OS+'\nStatus: '+report['status']+'\n\nFull functional suite: '+report['full_functional_suite']+'. See explicitly listed cases, original desktop MP4 and evidence artifacts.\n')
 sys.exit(0 if report['status']=='PASS' else 1)

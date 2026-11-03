@@ -27,9 +27,11 @@ jobs:
       - name: Prepare declared Wine engine prerequisites on a fresh runner
         if: contains(github.event.head_commit.message, '[wine-engine]')
         run: |
+          mkdir -p "$HOME/Downloads" "$HOME/.config"
+          printf 'XDG_DOWNLOAD_DIR="$HOME/Downloads"\n' > "$HOME/.config/user-dirs.dirs"
           sudo dpkg --add-architecture i386
           sudo apt-get update -qq
-          sudo apt-get install -y -qq wine wine32:i386 wine64 aria2 streamlink yt-dlp curl cabextract p7zip-full
+          sudo apt-get install -y -qq wine wine32:i386 wine64 aria2 streamlink yt-dlp curl cabextract p7zip-full xclip
       - name: Record the published Linux AppImage, not a recompiled screenshot harness
         env:
           DISPLAY: ':99'
