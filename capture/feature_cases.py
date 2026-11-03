@@ -57,16 +57,27 @@ def windows(main,nav,report,out,screenshot):
    actions.append({'window_title':w.window_text(),'control_text':c.window_text(),'kind':kind,'video_offset_seconds':time.time()-report['record_wallclock_start']});checkpoint()
   def vendor_windows():
    result=[]
+   try:descendant_ids={p.pid for p in psutil.Process(main.process_id()).children(recursive=True)}
+   except Exception:descendant_ids=set()
    for w in Desktop(backend='win32').windows():
     try:
      title=norm(w.window_text());name=psutil.Process(w.process_id()).name().lower()
      if not w.is_visible():continue
-     if name=='semo_idm_setup.exe' or name=='idman.exe' or name.startswith(('idmiecc','idmintegr','iemonitor')) or title in ['internet download manager installation wizard','idm browser integration','idm installation']:
+     if w.process_id() in descendant_ids or name=='semo_idm_setup.exe' or title=='please read idm license' or name=='idman.exe' or name.startswith(('idmiecc','idmintegr','iemonitor')) or title in ['internet download manager installation wizard','idm browser integration','idm installation']:
       result.append(w)
     except Exception:pass
    return result
   def clear_vendor_information():
    count=0
+   for w in Desktop(backend='win32').windows(class_name='#32770'):
+    try:
+     if w.process_id()!=main.process_id():continue
+     text=' '.join(c.window_text() for c in w.descendants())
+     if not any(x in norm(text) for x in ['klasor','folder']):continue
+     for c in w.descendants():
+      if norm(c.window_text()).replace('&','').strip() in ['ok','tamam']:
+       report.setdefault('postinstall_folder_notices',[]).append(text);record_action(w,c,'acknowledge_app_folder_notice');c.click_input();count+=1;time.sleep(.8);break
+    except Exception:pass
    for w in vendor_windows():
     title=norm(w.window_text())
     if not any(x in title for x in ['browser integration','integration module','tip','registration','kayit','ipucu']):continue
@@ -89,7 +100,7 @@ def windows(main,nav,report,out,screenshot):
    clear_vendor_information();wizard_visible=False
    for w in vendor_windows():
     title=norm(w.window_text())
-    if not any(x in title for x in ['installation wizard','idm installation','setup','license','destination','program folder']):continue
+    if not any(x in title for x in ['installation wizard','idm installation','setup','license','destination','program folder','program group','installation complete','ready to install','select folder']):continue
     wizard_visible=True
     texts=[];controls=[]
     for c in w.descendants():
@@ -223,6 +234,7 @@ def linux_engine(treepath,report,out,screenshot):
  def click(item):
   x,y,w,h=item['rect'];assert 0<x+w/2<1920 and 0<y+h/2<1080,'Control outside visible capture viewport';pyautogui.moveTo(x+w/2,y+h/2,duration=.35);pyautogui.click();time.sleep(1.5)
  def choose(part,kind=None):
+  window=str(int(tree()['window_id'],16));subprocess.run(['xdotool','windowraise',window],check=False);subprocess.run(['xdotool','windowfocus',window],check=False);time.sleep(.3)
   candidates=[w for w in tree()['widgets'] if norm(part) in norm(w['text']) and (kind is None or w['class'] in kind)]
   assert candidates,'Released GUI control unavailable: '+part
   click(candidates[0]);return candidates[0]
@@ -230,6 +242,9 @@ def linux_engine(treepath,report,out,screenshot):
  sys.path.insert(0,str(Path(report['released_config_module_path']).parent.parent))
  from idm_linux.config import IdmLinuxConfig
  choose('Kurulum', ['Button','TButton'])
+ directory_entries=[w for w in tree()['widgets'] if w['class'] in ['Entry','TEntry'] and w['rect'][2]>350]
+ if directory_entries:
+  click(directory_entries[0]);pyautogui.hotkey('ctrl','a');pyautogui.write(str(Path.home()/'Downloads/IDM-LINUX'),interval=.025);time.sleep(.5)
  # Do not unexpectedly launch a browser during the engine-only scenario.
  for w in tree()['widgets']:
   if w['class']=='TCheckbutton' and w.get('checked') and any(x in norm(w['text']) for x in ['tarayici','browser']):click(w)
@@ -248,6 +263,8 @@ def linux_engine(treepath,report,out,screenshot):
  (out/'released-cli-status.txt').write_text(observed.stdout+'\n'+observed.stderr,encoding='utf-8')
  report['released_cli_status_exit_code']=observed.returncode
  choose('Genel Bakış',['Button','TButton']);time.sleep(2)
+ choose('Ana Penceresini',['Button','TButton']);time.sleep(8);screenshot('functional-wine-original-idm-open-request')
+ window=str(int(tree()['window_id'],16));subprocess.run(['xdotool','windowraise',window],check=False);subprocess.run(['xdotool','windowfocus',window],check=False);time.sleep(.5)
  payload=(bytes(range(251))*((8*1024*1024)//251+1))[:8*1024*1024];expected=hashlib.sha256(payload).hexdigest();stats={'bytes_sent':0,'requests':[]};lock=threading.Lock();slot=[time.monotonic()]
  class Handler(BaseHTTPRequestHandler):
   def log_message(self,*a):pass
@@ -285,4 +302,15 @@ def linux_engine(treepath,report,out,screenshot):
   screenshot('functional-linux-real-idm-download-result');cases.append({'id':'linux-gui-to-real-wine-idm-http-download','status':'PASS' if completed and stats['requests'] else 'FAIL','expected_sha256':expected,'actual_sha256':hashlib.sha256(completed.read_bytes()).hexdigest() if completed else None,'expected_bytes':len(payload),'saved_file':str(completed) if completed else None,'http_request_count':len(stats['requests']),'elapsed_seconds':time.time()-start,'managed_target_root':cfg.download_dir})
  finally:
   server.shutdown();server.server_close();(out/'controlled-http-evidence.json').write_text(json.dumps(stats,indent=2));checkpoint()
+  # Collect the actual application's diagnostic logs without changing it.
+  import shutil
+  logs_root=Path.home()/'.cache/idm-linux/logs'
+  if logs_root.exists():shutil.copytree(logs_root,out/'linux-runtime-logs',dirs_exist_ok=True)
+  (out/'x11-window-list.txt').write_text(subprocess.run(['wmctrl','-l'],capture_output=True,text=True).stdout)
+  if not completed:
+   from idm_linux.wine_sender import build_wine_env
+   env=build_wine_env(cfg);env={k:v for k,v in env.items() if not any(x in k.upper() for x in ['TOKEN','SECRET','PASSWORD']) and not k.startswith(('ACTIONS_','GITHUB_'))};env['WINEDEBUG']='err+all'
+   with (out/'wine-startup-diagnostic.log').open('wb') as log:
+    diagnostic=subprocess.Popen(['wine',str(idm),'/onboot'],env=env,stdout=log,stderr=subprocess.STDOUT);time.sleep(8);report['diagnostic_only_wine_launch']={'returncode_after_8s':diagnostic.poll(),'note':'External diagnosis after GUI test failure, not counted as GUI success.'}
+   screenshot('functional-linux-wine-failure-diagnostic');checkpoint()
  cases.append({'id':'linux-browser-p2p-video-dvr-and-pause-suite','status':'NOT_RUN','reason':'This batch targets actual GUI installation and Wine/IDM HTTP transfer only.'})
