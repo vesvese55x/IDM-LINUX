@@ -36,13 +36,18 @@ def run(report,out,screenshot,guard):
  def click(w,label,native=False,park=True):
   x,y,ww,hh=w['rect'];cx=x+ww/2;cy=y+hh/2;assert 0<cx<1920 and 0<cy<1032
   if not native:
-   d=tree();wid=str(int(d['window_id'],16));subprocess.run(['xdotool','windowraise',wid],capture_output=True);subprocess.run(['xdotool','windowfocus',wid],capture_output=True)
+   d=tree();clients=[]
+   for line in subprocess.check_output(['wmctrl','-l'],text=True).splitlines():
+    parts=line.split(None,3)
+    if len(parts)==4 and parts[3]==d['root_title']:clients.append(parts[0])
+   assert len(clients)==1,'Actual managed Tk client window is ambiguous';subprocess.run(['wmctrl','-ia',clients[0]],check=True);time.sleep(.3)
   pyautogui.moveTo(cx,cy,duration=.45);at=time.time()-epoch;events.append({'action':'real_mouse_click','target':label,'x':cx,'y':cy,'video_offset_seconds':at,'source':'Read-only native Win32 geometry' if native else 'Actual released Tk widget tree'});pyautogui.click();
   if x>=8 and y>=80 and x+ww<1544 and y+hh<1024:report['runtime_marks'].append({'rect':w['rect'],'start':at-.2,'end':at+1.6,'color':'D29A12' if native else '68DAD1','source':events[-1]['source'],'target':label})
   time.sleep(.8)
   if park:pyautogui.moveTo(1500,960,duration=.2)
  def set_entry(w,value,label):
   click(w,label,park=False);d=tree();report.setdefault('real_entry_focus_checks',[]).append({'target':w['path'],'actual_focus':d.get('focus_path'),'before':next((n.get('value') for n in d['widgets'] if n['path']==w['path']),None)})
+  assert d.get('focus_path')==w['path'],'Actual Tk entry never received keyboard focus'
   pyautogui.press('home');pyautogui.keyDown('shift');pyautogui.press('end');pyautogui.keyUp('shift');pyautogui.press('backspace');pyautogui.write(value,interval=.02);time.sleep(.6)
   actual=next(n.get('value') for n in tree()['widgets'] if n['path']==w['path']);assert actual==value,'Actual keyboard input did not set the intended field: '+str(actual)
   pyautogui.moveTo(1500,960,duration=.2)
@@ -82,9 +87,9 @@ def run(report,out,screenshot,guard):
  try:
   env={**safe_env(),'FILM_WIDGET_DUMP':str(treepath),'FILM_CAPTURE_GEOMETRY':'1380x870+70+100','PYTHONPATH':str(ROOT/'capture/probe_site')}
   app=subprocess.Popen(['idm-linux','gui'],env=env,stdout=(out/'engine-panel.log').open('wb'),stderr=subprocess.STDOUT);tree();time.sleep(1);choose('Kurulum')
-  speak('engine-01.mp3','PANEL ≠ MOTOR',['Wine araçları önceden hazır','Motor kurulumu şimdi yapılır'])
   widgets=tree()['widgets'];entries=[w for w in widgets if w['class'] in ['Entry','TEntry'] and w['rect'][2]>300];assert entries
   target=HOME/'Downloads/IDM-LINUX';target.mkdir(parents=True,exist_ok=True);entry=min(entries,key=lambda w:w['rect'][1]);set_entry(entry,str(target),'Actual installation download-folder input')
+  speak('engine-01.mp3','PANEL ≠ MOTOR',['Wine araçları önceden hazır','Motor kurulumu şimdi yapılır'])
   for w in tree()['widgets']:
    if w['class']=='TCheckbutton' and w.get('checked') and any(k in norm(w['text']) for k in ['tarayici','browser']):click(w,'Disable automatic browser opening for this lesson')
   speak('engine-02.mp3','İKİ AYRI YOL',['Wine ortamı ≠ dosya hedefi','Tarayıcı onayı ayrı ders'])
