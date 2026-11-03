@@ -160,7 +160,7 @@ def prepare(out,report):
  if ISWIN:
   import winreg
   with winreg.CreateKey(winreg.HKEY_CURRENT_USER,r'Control Panel\Desktop') as k:
-   winreg.SetValueEx(k,'WallpaperStyle',0,winreg.REG_SZ,'10');winreg.SetValueEx(k,'TileWallpaper',0,winreg.REG_SZ,'0')
+   winreg.SetValueEx(k,'WallpaperStyle',0,winreg.REG_SZ,'6');winreg.SetValueEx(k,'TileWallpaper',0,winreg.REG_SZ,'0')
   from PIL import Image
   bmp=Path(os.environ['TEMP'])/'film-studio-wallpaper.bmp';Image.open(wall).save(bmp)
   assert ctypes.windll.user32.SystemParametersInfoW(20,0,str(bmp),3),'Wallpaper application failed'
@@ -174,7 +174,7 @@ def prepare(out,report):
   default=make_windows_default(out)
  else:
   assert os.environ.get('LANG','').lower().startswith('tr_tr'),'Turkish locale not active'
-  call(['feh','--no-fehbg','--bg-fill',str(wall)],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+  call(['feh','--no-fehbg','--bg-max',str(wall)],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
   for mime in ['x-scheme-handler/http','x-scheme-handler/https','text/html','application/xhtml+xml']:
    call(['xdg-mime','default','brave-browser.desktop',mime],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
   subprocess.run(['xdg-settings','set','default-web-browser','brave-browser.desktop'],capture_output=True)

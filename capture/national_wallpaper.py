@@ -27,50 +27,46 @@ def font(size,bold=False):
  if os.name=='nt':p=Path(os.environ['WINDIR'])/'Fonts'/('segoeuib.ttf' if bold else 'segoeui.ttf')
  else:p=Path('/usr/share/fonts/truetype/dejavu')/('DejaVuSans-Bold.ttf' if bold else 'DejaVuSans.ttf')
  return ImageFont.truetype(str(p),size)
-def flag(draw,box):
- x,y,w,h=box;red=(190,27,49);white=(248,248,246)
- draw.rectangle((x,y,x+w,y+h),fill=red)
- cx=x+w*.34;cy=y+h*.5;r=h*.255
- draw.ellipse((cx-r,cy-r,cx+r,cy+r),fill=white)
- r2=h*.205;cx2=cx+h*.062
- draw.ellipse((cx2-r2,cy-r2,cx2+r2,cy+r2),fill=red)
- sx=x+w*.60;sr=h*.13;points=[]
- for n in range(10):
-  a=n*math.pi/5;r3=sr if n%2==0 else sr*.382
-  points.append((sx+math.cos(a)*r3,cy+math.sin(a)*r3))
- draw.polygon(points,fill=white)
-def build(out,language='tr'):
- out=Path(out);out.mkdir(exist_ok=True,parents=True);info=facts();en=language.lower().startswith('en')
- im=Image.open(ASSETS/'studio-wallpaper.png').convert('RGB').resize((1920,1080));d=ImageDraw.Draw(im)
- # National flag and original historical portrait are separate, undistorted elements.
- d.rounded_rectangle((757,62,1338,460),radius=18,fill=(30,64,85),outline=(112,147,164),width=2)
- flag(d,(771,77,552,368))
- d.rounded_rectangle((1380,62,1858,826),radius=22,fill=(17,42,62),outline=(134,157,171),width=2)
- portrait=ImageOps.fit(Image.open(ASSETS/'ataturk-1932.jpg').convert('RGB'),(442,596),method=Image.Resampling.LANCZOS)
- im.paste(portrait,(1398,80));d=ImageDraw.Draw(im)
- d.text((1400,700),'Mustafa Kemal',font=font(27),fill=(237,243,248));d.text((1400,739),'Atatürk',font=font(40,True),fill=(248,248,245))
- # Symbolic public silhouettes, not a claim to depict a particular real gathering.
- import random
- rng=random.Random(1923)
- for row in range(2):
-  for n in range(43):
-   x=n*47+rng.randint(-12,12);y=970+row*57+rng.randint(-12,16);r=rng.randint(10,16);color=(35,72,94) if row==0 else (22,53,75)
-   d.ellipse((x-r,y-r*3,x+r,y-r),fill=color);d.rounded_rectangle((x-r*1.25,y-r,x+r*1.25,1080),radius=12,fill=color)
- for x,y in [(155,890),(433,920),(780,870),(1135,919),(1700,884)]:
-  d.line((x,y,x,y+150),fill=(180,197,206),width=3);flag(d,(x,y,78,52))
- d.rounded_rectangle((52,62,709,514),radius=22,fill=(21,49,70),outline=(133,168,188),width=2)
- d.text((82,88),'BELGESELSEMO  /  '+('SYSTEM' if en else 'SİSTEM'),font=font(20,True),fill=(138,207,229))
- d.text((80,126),info['os_family'],font=font(51,True),fill=(247,250,251))
- d.text((83,197),info['os_name'][:49],font=font(21,True),fill=(227,239,246))
- lines=[(('Build / kernel: ' if en else 'Derleme / çekirdek: ')+info['build_or_kernel']),('CPU: '+info['cpu']),((str(info['logical_cpus'])+' logical CPUs' if en else str(info['logical_cpus'])+' mantıksal işlemci')+'  ·  '+info['architecture']),('RAM: '+str(info['ram_gib'])+' GiB'),(('Recording: ' if en else 'Kayıt: ')+info['capture_resolution']+'  /  24 fps')]
- y=241
- for line in lines:
-  for wrapped in textwrap.wrap(line,width=53):d.text((83,y),wrapped,font=font(18),fill=(209,227,239));y+=27
- d.line((83,448,676,448),fill=(89,130,153),width=1)
- d.text((83,468),'belgeselsemo.com.tr',font=font(25,True),fill=(241,246,248))
- d.text((64,718),'REPUBLIC  •  SCIENCE  •  TECHNOLOGY' if en else 'CUMHURİYET  •  BİLİM  •  TEKNOLOJİ',font=font(26,True),fill=(222,237,246))
- d.text((64,765),'IDM LINUX  ×  IDM SEMO',font=font(36,True),fill=(243,248,249))
- info.update({'language':'en' if en else 'tr','website':'https://belgeselsemo.com.tr','portrait':'Authentic 1932 historical photograph; source attribution in capture/assets/ataturk-source.json','crowd':'Symbolic illustration; not a documentary crowd photograph'})
- target=out/'national-system-wallpaper.png';im.save(target,optimize=True)
+def wrap_pixels(draw,text,typeface,width):
+ lines=[];line=''
+ for word in text.split():
+  candidate=(line+' '+word).strip()
+  if line and draw.textlength(candidate,font=typeface)>width:lines.append(line);line=word
+  else:line=candidate
+ if line:lines.append(line)
+ return lines
+
+def build(out,language='tr',system_info=None):
+ out=Path(out);out.mkdir(exist_ok=True,parents=True)
+ info=dict(system_info) if system_info is not None else facts()
+ en=language.lower().startswith('en')
+ source=ASSETS/'user-national-wallpaper.png'
+ im=Image.open(source).convert('RGBA');w,h=im.size
+ # Preserve the supplied composition, quote, portrait, colours and dimensions.
+ # A single bottom-left information plate is the only image edit.
+ scale=w/1920
+ fs=lambda n:max(12,round(n*scale))
+ fhead=font(fs(25),True);fbody=font(fs(19));fsite=font(fs(27),True)
+ pad=round(20*scale);left=round(26*scale);bottom=round(58*scale)
+ width=round(620*scale);line_height=round(27*scale)
+ layer=Image.new('RGBA',im.size,(0,0,0,0));d=ImageDraw.Draw(layer)
+ kernel_label=('Build' if info['os_family']=='Windows' else 'Kernel') if en else ('Derleme' if info['os_family']=='Windows' else 'Çekirdek')
+ header=info['os_family']+'  /  '+('SYSTEM INFO' if en else 'SİSTEM BİLGİSİ')
+ rows=[info['os_name'],kernel_label+': '+info['build_or_kernel'],('Processor: ' if en else 'İşlemci: ')+info['cpu'],(str(info['logical_cpus'])+' logical CPUs' if en else str(info['logical_cpus'])+' mantıksal işlemci')+'  ·  '+str(info['ram_gib'])+' GiB RAM  ·  '+info['architecture']]
+ wrapped=[]
+ for row in rows:wrapped.extend(wrap_pixels(d,row,fbody,width-pad*2))
+ height=pad*2+fs(31)+len(wrapped)*line_height+fs(43)
+ top=h-bottom-height
+ d.rounded_rectangle((left,top,left+width,h-bottom),radius=round(16*scale),fill=(12,16,22,218),outline=(235,207,185,150),width=max(1,round(scale)))
+ d.rounded_rectangle((left,top+pad,left+round(4*scale),h-bottom-pad),radius=2,fill=(221,40,55,255))
+ x=left+pad;y=top+pad
+ d.text((x,y),header,font=fhead,fill=(255,249,243,255));y+=fs(37)
+ for row in wrapped:d.text((x,y),row,font=fbody,fill=(236,240,244,255));y+=line_height
+ y+=fs(7)
+ d.text((x,y),'belgeselsemo.com.tr',font=fsite,fill=(255,248,237,255))
+ merged=Image.alpha_composite(im,layer).convert('RGB')
+ target=out/'national-system-wallpaper.png';merged.save(target,optimize=True)
+ import hashlib
+ info.update({'language':'en' if en else 'tr','website':'https://belgeselsemo.com.tr','background_source':'User supplied bd8abdd7-f735-448d-aa53-e9cb4836729c.png','background_sha256':hashlib.sha256(source.read_bytes()).hexdigest(),'source_resolution':list(im.size),'edit':'Bottom-left system information plate only; original artwork and existing quote unchanged','overlay_rect':[left,top,left+width,h-bottom],'preview_from_recorded_runner_facts':system_info is not None})
  (out/'wallpaper-system-info.json').write_text(json.dumps(info,ensure_ascii=False,indent=2),encoding='utf-8')
  return target,info
