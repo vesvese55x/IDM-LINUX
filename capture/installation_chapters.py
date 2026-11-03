@@ -11,7 +11,7 @@ def package_status():
  return {'installed':r.returncode==0 and 'install ok installed' in r.stdout,'detail':r.stdout.strip(),'returncode':r.returncode}
 def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 def prepare(report,out,appimage):
- DOWNLOADS.mkdir(exist_ok=True);assert not package_status()['installed'],'Not a clean installation runner'
+ DOWNLOADS.mkdir(exist_ok=True);DOWNLOADS.chmod(0o755);HOME.chmod(HOME.stat().st_mode | 0o001);assert not package_status()['installed'],'Not a clean installation runner'
  report['installation_initial_package_status']=package_status();report['installation_mode']=MODE
  if MODE=='app':
   path=DOWNLOADS/Path(appimage).name;shutil.copyfile(appimage,path);path.chmod(0o644)
@@ -82,13 +82,18 @@ def run(report,out,screenshot,guard):
   for at,fn in actions or []:time.sleep(max(0,start+at-time.time()));fn()
   time.sleep(max(0,start+duration+.8-time.time()))
  def query_gui(timeout=45):
-  deadline=time.monotonic()+timeout
+  deadline=time.monotonic()+timeout;previous=None;stable=0
   while time.monotonic()<deadline:
    try:
-    d=json.loads((out/'installed-ui.json').read_text())
-    if d.get('root_viewable') and len(d.get('widgets',[]))>30 and time.time()-d['time']<3:return d
+    d=json.loads((out/'installed-ui.json').read_text());rect=d.get('root_rect',[])
+    if d.get('root_viewable') and len(d.get('widgets',[]))>30 and time.time()-d['time']<3 and len(rect)==4 and rect[2:]==[1380,870] and 30<=rect[0]<=150 and 70<=rect[1]<=140:
+     if previous==rect:stable+=1
+     else:stable=0
+     previous=rect
+     if stable>=2:return d
    except Exception:pass
-   time.sleep(.4)
+   if app and app.poll() is not None:raise RuntimeError('Actual installed application exited before a stable live GUI')
+   time.sleep(.45)
   raise RuntimeError('The actually installed control panel did not produce a usable live window')
  def open_gui(argv=None):
   nonlocal app
@@ -98,7 +103,7 @@ def run(report,out,screenshot,guard):
   # Actual native widget rectangle; no browser-only geometry assumptions.
   for w in d['widgets']:
    if w['class'] in ['Button','TButton'] and ('Genel Bak' in w['text'] or 'Overview' in w['text']):
-    report['installed_gui']['overview_button_rect']=w['rect'];x,y,ww,hh=w['rect'];pyautogui.moveTo(x+ww/2,y+hh/2,duration=.5);events.append({'action':'real_mouse_click','target':'Installed application overview','x':x+ww/2,'y':y+hh/2,'video_offset_seconds':time.time()-epoch});pyautogui.click();time.sleep(1);break
+    report['installed_gui']['overview_button_rect']=w['rect'];x,y,ww,hh=w['rect'];pyautogui.moveTo(x+ww/2,y+hh/2,duration=.5);events.append({'action':'real_mouse_click','target':'Installed application overview','x':x+ww/2,'y':y+hh/2,'video_offset_seconds':time.time()-epoch});pyautogui.click();time.sleep(1);verified=query_gui();assert any('Genel Bakış & Canlı' in w.get('text','') or 'Overview & Live' in w.get('text','') for w in verified['widgets']),'Actual overview click did not open the requested page';report['installed_gui']['overview_navigation_verified']=True;pyautogui.moveTo(1500,960,duration=.3);break
  def dpkg_verify():
   state=package_status();assert state['installed'],state;report['installation_final_package_status']=state
  def gtk_rows():
@@ -116,7 +121,19 @@ def run(report,out,screenshot,guard):
  def click_widget(w,label):
   x,y,ww,hh=w['rect'];assert ww>10 and hh>10 and 0<x+ww/2<1920 and 0<y+hh/2<1032
   pyautogui.moveTo(x+ww/2,y+hh/2,duration=.55);events.append({'action':'real_mouse_click','target':label,'x':x+ww/2,'y':y+hh/2,'video_offset_seconds':time.time()-epoch});pyautogui.click()
- def properties():pyautogui.hotkey('ctrl','i');time.sleep(1.5);screenshot('appimage-properties')
+ def thunar_windows():
+  rows=[]
+  for line in subprocess.check_output(['wmctrl','-lGx'],text=True).splitlines():
+   fields=line.split(None,8)
+   if len(fields)>=9 and 'thunar' in fields[6].casefold():rows.append({'id':fields[0],'rect':[int(v) for v in fields[2:6]],'title':fields[8]})
+  return rows
+ def properties():
+  before={w['id'] for w in thunar_windows()};pyautogui.hotkey('ctrl','i');deadline=time.monotonic()+10
+  while time.monotonic()<deadline:
+   opened=[w for w in thunar_windows() if w['id'] not in before]
+   if opened:report['appimage_real_properties_window']=opened[0];screenshot('appimage-properties');return
+   time.sleep(.3)
+  raise RuntimeError('Actual AppImage properties dialog did not open')
  def permissions():
   # Standard GTK notebook keyboard navigation, with actual property dialog.
   pyautogui.hotkey('ctrl','pagedown');time.sleep(.4);pyautogui.hotkey('ctrl','pagedown');time.sleep(1);screenshot('appimage-permissions-visible')
@@ -133,13 +150,17 @@ def run(report,out,screenshot,guard):
    terminal.execute(600);dpkg_verify();terminal.stage("dpkg-query -W -f='${Status} ${Version}\\n' idm-linux");terminal.execute(20);time.sleep(5);screenshot('installation-terminal-verified');terminal.close();terminal=None;open_gui()
    speak('one-03.mp3' if MODE=='one' else 'apt-02.mp3','GERÇEK PENCERE',['Paket kaydı doğrulandı','Motor/indirme testi ayrı'])
   elif MODE=='app':
-   path=Path(report['installation_asset']['local_path']);thunar=subprocess.Popen(['thunar','--new-window','--geometry=1360x820+70+100',str(DOWNLOADS)],env=safe_env(),stdout=(out/'thunar.log').open('wb'),stderr=subprocess.STDOUT);time.sleep(3)
-   pyautogui.hotkey('ctrl','l');pyautogui.write(str(path));pyautogui.press('esc');pyautogui.hotkey('ctrl','l');pyautogui.write(str(DOWNLOADS));pyautogui.press('enter');time.sleep(1);pyautogui.press('home')
+   path=Path(report['installation_asset']['local_path']);thunar=subprocess.Popen(['thunar','--new-window',str(DOWNLOADS)],env=safe_env(),stdout=(out/'thunar.log').open('wb'),stderr=subprocess.STDOUT);time.sleep(3)
+   native=thunar_windows();assert native,'Real Thunar file manager did not open';file_window=max(native,key=lambda w:w['rect'][2]*w['rect'][3]);subprocess.run(['wmctrl','-ir',file_window['id'],'-e','0,70,100,1360,820'],check=True);subprocess.run(['wmctrl','-ia',file_window['id']],check=True);time.sleep(1)
+   assert [p.name for p in DOWNLOADS.iterdir() if p.is_file()]==[path.name],'Fresh download directory must contain only the demonstrated AppImage'
+   pyautogui.hotkey('ctrl','l');pyautogui.write(str(DOWNLOADS));pyautogui.press('enter');time.sleep(1);pyautogui.press('home');report['appimage_real_file_manager_window']=file_window
    speak('app-01.mp3','APPIMAGE İZNİ',['Dosya ≠ paket kaydı','chmod +x: çalıştırma izni'],actions=[(15,properties),(26,permissions)])
    pyautogui.hotkey('alt','f4');time.sleep(.5);pyautogui.hotkey('alt','f4');time.sleep(.8)
    terminal=Terminal(guard,out,MODE,events,epoch);terminal.stage('chmod +x '+path.name);time.sleep(7);terminal.execute(20);assert os.access(path,os.X_OK);screenshot('appimage-chmod-verified');terminal.close();terminal=None
    try:open_gui([str(path)]) ;report['appimage_launch_method']='Direct released AppImage with FUSE'
    except RuntimeError:
+    text=(out/'installed-application.log').read_text(errors='replace').casefold()
+    if not any(term in text for term in ['fuse','cannot mount appimage','operation not permitted']):raise
     if app and app.poll() is None:app.terminate();app.wait(10)
     terminal=Terminal(guard,out,MODE,events,epoch);terminal.stage('./'+path.name+' --appimage-extract');time.sleep(5);terminal.execute(180);time.sleep(3);terminal.close();terminal=None
     launch=DOWNLOADS/'squashfs-root/AppRun';assert launch.exists();open_gui([str(launch)]);report['appimage_launch_method']='Explicit real --appimage-extract then extracted AppRun; not claimed direct FUSE'
@@ -191,7 +212,7 @@ def finish(report,out):
   p=out/name
   if p.exists():shutil.copyfile(p,proofs/name)
  from PIL import Image
- for name in ['installed-real-gui','installation-terminal-verified','gdebi-real-install-completed','appimage-permissions-visible','installation-lesson-complete']:
+ for name in ['installed-real-gui','installation-terminal-verified','gdebi-real-install-completed','appimage-properties','appimage-permissions-visible','installation-lesson-complete']:
   p=out/(name+'.png')
   if p.exists():im=Image.open(p).convert('RGB');im.thumbnail((1280,720));im.save(proofs/(name+'.jpg'),quality=83)
  when=cues[-1]['video_offset_seconds']+5;subprocess.run(['ffmpeg','-v','error','-ss',str(when),'-i',str(target),'-frames:v','1','-vf','scale=1280:-2','-q:v','3','-y',str(proofs/'installation-final-presented.jpg')],check=True)
