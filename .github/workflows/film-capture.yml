@@ -1,0 +1,77 @@
+name: Film — real release GUI capture preflight
+on:
+  push:
+    branches: ['film-capture/**']
+    paths: ['capture/**', '.github/workflows/film-capture.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: film-capture-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  linux:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Prepare a real X11 desktop and capture tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb openbox xdotool wmctrl scrot ffmpeg python3-tk python3-venv python3-pil fonts-dejavu-core fonts-noto-core
+          /usr/bin/python3 -m venv --system-site-packages .capture-venv
+          .capture-venv/bin/pip install -q requests pillow pyautogui cryptography websocket-client websockets
+      - name: Record the published Linux AppImage, not a recompiled screenshot harness
+        env:
+          DISPLAY: ':99'
+        run: |
+          Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp > /tmp/film-xvfb.log 2>&1 &
+          openbox > /tmp/film-openbox.log 2>&1 &
+          .capture-venv/bin/python capture/native_probe.py linux
+      - name: Source unit tests — separately labelled, not release-binary proof
+        if: always()
+        run: |
+          mkdir -p evidence
+          PYTHONPATH="$PWD/src" .capture-venv/bin/python src/idm_linux/tests/test_suite.py > evidence/source-unit-tests.log 2>&1
+      - name: Save all original recordings and evidence, also on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: film-linux-native-preflight
+          path: evidence/
+          if-no-files-found: error
+          retention-days: 14
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Prepare native Windows automation and desktop recorder
+        shell: powershell
+        run: |
+          python -m pip install --quiet requests pillow pyautogui pywinauto psutil
+          if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
+            choco install ffmpeg -y --no-progress
+            if ($LASTEXITCODE -ne 0) { throw 'ffmpeg installation failed' }
+            $env:PATH += ';C:\ProgramData\chocolatey\bin'
+          }
+      - name: Record the actual published EXE using native desktop capture
+        shell: powershell
+        run: |
+          python capture/native_probe.py windows
+          if ($LASTEXITCODE -ne 0) { throw 'Native Windows probe failed; inspect evidence' }
+      - name: Save all original recordings and evidence, also on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: film-windows-native-preflight
+          path: evidence/
+          if-no-files-found: error
+          retention-days: 14
