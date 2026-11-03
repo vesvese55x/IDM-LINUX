@@ -76,8 +76,10 @@ def build(out,report,duration):
  kept=[p for i,p in enumerate(samples) if i in (0,len(samples)-1) or p[1:]!=samples[i-1][1:] or p[1:]!=samples[i+1][1:]]
  # Selective visibility: critical actual clicks, never a constant moving blob.
  click_events=[e for e in report.get('tutorial_browser_events',[]) if e.get('action')=='real_mouse_click' and 'x' in e]
- focus_windows=[(max(0,e['video_offset_seconds']-.32),min(duration,e['video_offset_seconds']+.85)) for e in click_events]
- shape=oval(26,18);dot=oval(3,3)
+ illustrated=report.get('installation_mode')=='external'
+ lead,hold=(.55,2.2) if illustrated else (.32,.85)
+ focus_windows=[(max(0,e['video_offset_seconds']-lead),min(duration,e['video_offset_seconds']+hold)) for e in click_events]
+ pw,ph=(34,22) if illustrated else (26,18);shape=oval(pw,ph);dot=oval(3,3)
  def alpha(t,gate,base):
   power=max(0,min(1,(t-gate[0])/.10,(gate[1]-t)/.16));return f'{round(255-(255-base)*power):02X}'
  for a,b in zip(kept,kept[1:]):
@@ -88,9 +90,10 @@ def build(out,report,duration):
    def pos(t):
     f=(t-a[0])/max(.0001,b[0]-a[0]);return a[1]+f*(b[1]-a[1]),a[2]+f*(b[2]-a[2])
    x1,y1=pos(lo);x2,y2=pos(hi);ms=max(1,round((hi-lo)*1000))
-   move=f'\\move({x1-13:.2f},{y1-9:.2f},{x2-13:.2f},{y2-9:.2f})'
+   move=f'\\move({x1-pw/2:.2f},{y1-ph/2:.2f},{x2-pw/2:.2f},{y2-ph/2:.2f})'
    opacity=f'\\1a&H{alpha(lo,gate,88)}&\\3a&H{alpha(lo,gate,24)}&\\t(0,{ms},\\1a&H{alpha(hi,gate,88)}&\\3a&H{alpha(hi,gate,24)}&)'
-   emit(30,lo,hi,'{\\an7'+move+'\\p1\\bord1.1\\shad0\\1c&H129AD2&\\3c&H054570&'+opacity+'}'+shape)
+   border='70D8FF' if illustrated else '054570'
+   emit(30,lo,hi,'{\\an7'+move+'\\p1\\bord1.6\\shad0\\1c&H129AD2&\\3c&H'+border+'&'+opacity+'}'+shape)
    move=f'\\move({x1-1.5:.2f},{y1-1.5:.2f},{x2-1.5:.2f},{y2-1.5:.2f})'
    opacity=f'\\1a&H{alpha(lo,gate,16)}&\\t(0,{ms},\\1a&H{alpha(hi,gate,16)}&)'
    emit(31,lo,hi,'{\\an7'+move+'\\p1\\bord0\\shad0\\1c&H054570&'+opacity+'}'+dot)
@@ -128,17 +131,14 @@ def build(out,report,duration):
    # Restrained hand-drawn-style underline reveals left to right, not blinking.
    emit(7,start+.36,end,'{\\an7\\pos(1594,248)\\clip(1594,246,1594,252)\\t(0,480,\\clip(1594,246,1712,252))\\p1\\bord0\\1c&H70D8FF&\\1a&H30&}m 0 0 b 24 2 74 -1 118 1 l 118 3 b 74 1 24 4 0 2')
    cards.append({'start':start,'end':end,'title':title,'body':body,'safe_rect':[x,y,w,h]})
- native_marks=[]
- for m in report.get('runtime_marks',[]):
-  x,y,w,h=m['rect'];assert x>=0 and y>=0 and x+w<1552 and y+h<1032,'Native annotation violates verified capture safe area'
-  color=m['color'];color=color[4:6]+color[2:4]+color[:2]
-  tag=f'\\an7\\pos({x-4},{y-4})\\p1\\bord2.1\\shad0\\1a&HFF&\\3c&H{color}&\\fad(140,220)'
-  emit(12,m['start'],m['end'],'{'+tag+'}'+rectangle(w+8,h+8,7));native_marks.append(m)
+ import native_teaching_marks
+ native_drawing_audit=native_teaching_marks.draw(out,report,duration,emit,rectangle,oval)
+ native_marks=native_drawing_audit['rendered']
  import semantic_emphasis
  semantic_audit=semantic_emphasis.draw(out,report,duration,emit,rectangle,oval)
  focus_seconds=semantic_emphasis.union_length(focus_windows)
  events.sort(key=lambda e:e[0]);path=out/'presentation.ass';path.write_text(HEADER+''.join(e[1] for e in events),encoding='utf-8')
- audit={'status':'PASS','cursor_style':'26x18 dark amber, 3px centre dot; visible only briefly at important actual clicks','cursor_always_visible':False,'cursor_visible_seconds':round(focus_seconds,3),'cursor_duty_cycle':round(focus_seconds/duration,5),'semantic_emphasis':semantic_audit,'pointer_samples':len(samples),'cursor_keyframes':len(kept),'real_click_pulses':sum(e.get('action')=='real_mouse_click' for e in report.get('tutorial_browser_events',[])),'native_measured_marks':native_marks,'animated_note_count':len(cards),'notes':cards,'source_content_modified':False,'ui_interaction_affected':False,'note_layout_scope':'Native GUI stabilized at 1380x870+70+100; actual widget marks verified; right notes x1576+ reserved' if report.get('installation_mode') else 'Verified browser right gutter only; GUI chapters require their own safe area, never blindly reuse','voice_rate':1.0}
+ audit={'status':'PASS','cursor_style':('34x22 dark amber with gold edge, 3px centre dot; 2.75-second important-click focus' if illustrated else '26x18 dark amber, 3px centre dot; visible only briefly at important actual clicks'),'cursor_always_visible':False,'cursor_visible_seconds':round(focus_seconds,3),'cursor_duty_cycle':round(focus_seconds/duration,5),'semantic_emphasis':semantic_audit,'pointer_samples':len(samples),'cursor_keyframes':len(kept),'real_click_pulses':sum(e.get('action')=='real_mouse_click' for e in report.get('tutorial_browser_events',[])),'native_measured_marks':native_marks,'native_teaching_marks':native_drawing_audit,'animated_note_count':len(cards),'notes':cards,'source_content_modified':False,'ui_interaction_affected':False,'note_layout_scope':'Native GUI stabilized at 1380x870+70+100; actual widget marks verified; right notes x1576+ reserved' if report.get('installation_mode') else 'Verified browser right gutter only; GUI chapters require their own safe area, never blindly reuse','voice_rate':1.0}
  (out/'presentation-audit.json').write_text(json.dumps(audit,ensure_ascii=False,indent=2),encoding='utf-8');return path,audit
 
 def self_test():

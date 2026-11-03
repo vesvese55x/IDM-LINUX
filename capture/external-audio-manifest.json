@@ -1,0 +1,37 @@
+[
+  {
+    "file": "ext-01.mp3",
+    "duration": 33.253878,
+    "bytes": 266258
+  },
+  {
+    "file": "ext-02.mp3",
+    "duration": 34.586122,
+    "bytes": 276915
+  },
+  {
+    "file": "ext-03.mp3",
+    "duration": 32.026122,
+    "bytes": 256435
+  },
+  {
+    "file": "ext-04.mp3",
+    "duration": 34.194286,
+    "bytes": 273781
+  },
+  {
+    "file": "ext-05.mp3",
+    "duration": 33.227755,
+    "bytes": 266049
+  },
+  {
+    "file": "ext-06.mp3",
+    "duration": 33.38449,
+    "bytes": 267302
+  },
+  {
+    "file": "ext-07.mp3",
+    "duration": 37.955918,
+    "bytes": 303874
+  }
+]

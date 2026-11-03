@@ -55,5 +55,14 @@
       "No effects crowding the controls",
       "Short-lived marks; calm intervals between emphasis"
     ]
+  },
+  "numbers": {
+    "policy": "Write every spoken number in full Turkish words with its correct mathematical meaning and unit; distinguish versions and identifiers from decimals",
+    "integer_example": "1663506 → bir milyon altı yüz altmış üç bin beş yüz altı",
+    "decimal_example": "17,6 → on yedi virgül altı",
+    "percent_example": "%17,6 → yüzde on yedi virgül altı",
+    "architecture": "64 bit → altmış dört bit",
+    "version": "26.05 → yirmi altı nokta sıfır beş (sürüm bileşenleri; ondalık sayı değil)",
+    "hash_algorithm": "SHA-256 → şa iki yüz elli altı"
   }
 }

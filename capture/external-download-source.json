@@ -1,0 +1,10 @@
+{
+  "official_page": "https://www.7-zip.org/download.html",
+  "release_page": "https://github.com/ip7z/7zip/releases/tag/26.05",
+  "asset": {
+    "name": "7z2605-x64.exe",
+    "size": 1663506,
+    "digest": "sha256:fd99e86f57d8f429ef5ed045bf98315af962e2309b0f1ba87a147a44c71647d0",
+    "browser_download_url": "https://github.com/ip7z/7zip/releases/download/26.05/7z2605-x64.exe"
+  }
+}
