@@ -1,6 +1,5 @@
-"""Read-only Tk widget introspection for automation of the unmodified release.
-No UI is replaced; clicks happen externally through the real X11 desktop.
-Enabled only in the application child process via FILM_WIDGET_DUMP.
+"""Observe the released Tk UI including Tcl-native messageboxes. No UI replacement.
+The capture viewport is the only geometry override; actions use actual mouse input.
 """
 import os
 if os.environ.get('FILM_WIDGET_DUMP'):
@@ -15,21 +14,29 @@ if os.environ.get('FILM_WIDGET_DUMP'):
                 if self.winfo_viewable() and not getattr(self,'_film_viewport_set',False):
                     self.geometry('1880x1000+10+10');self._film_viewport_set=True
                 out=[]
-                def walk(w):
-                    if w.winfo_viewable():
-                        try:text=str(w.cget('text'))
+                def walk(name):
+                    # winfo_children() cannot wrap Tcl-created __tk__messagebox
+                    # objects. Query Tcl directly so modal dialogs do not freeze
+                    # the observation file or leave stale screen coordinates.
+                    call=self.tk.call
+                    if self.tk.getboolean(call('winfo','viewable',name)):
+                        klass=str(call('winfo','class',name))
+                        try:text=str(call(name,'cget','-text'))
                         except Exception:text=''
-                        item={'path':str(w),'class':w.winfo_class(),'text':text,'rect':[w.winfo_rootx(),w.winfo_rooty(),w.winfo_width(),w.winfo_height()]}
-                        try:item['state']=str(w.cget('state'))
+                        top=str(call('winfo','toplevel',name))
+                        try:title=str(call('wm','title',top))
+                        except Exception:title=''
+                        item={'path':str(name),'class':klass,'text':text,'window_title':title,'toplevel':top,'window_id':str(call('winfo','id',name)),'rect':[int(call('winfo',x,name)) for x in ['rootx','rooty','width','height']]}
+                        try:item['state']=str(call(name,'cget','-state'))
                         except Exception:pass
                         try:
-                            if w.winfo_class() in ['Entry','TEntry','TCombobox']:item['value']=w.get()
-                            elif w.winfo_class()=='Text':item['value']=w.get('1.0','end-1c')
-                            elif w.winfo_class()=='TCheckbutton':item['checked']=bool(w.instate(['selected']))
+                            if klass in ['Entry','TEntry','TCombobox']:item['value']=str(call(name,'get'))
+                            elif klass=='Text':item['value']=str(call(name,'get','1.0','end-1c'))
+                            elif klass=='TCheckbutton':item['checked']=self.tk.getboolean(call(name,'instate','selected'))
                         except Exception:pass
                         out.append(item)
-                    for child in w.winfo_children():walk(child)
-                walk(self)
+                    for child in self.tk.splitlist(call('winfo','children',name)):walk(str(child))
+                walk(str(self))
                 data={'time':time.time(),'root_title':self.title(),'root_viewable':bool(self.winfo_viewable()),'window_id':self.frame(),'root_rect':[self.winfo_rootx(),self.winfo_rooty(),self.winfo_width(),self.winfo_height()],'widgets':out}
                 tmp=path.with_suffix('.tmp');tmp.write_text(json.dumps(data,ensure_ascii=False),encoding='utf-8');tmp.replace(path)
             except Exception:pass

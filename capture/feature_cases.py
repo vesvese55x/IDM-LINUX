@@ -65,7 +65,7 @@ def windows(main,nav,report,out,screenshot):
     try:
      title=norm(w.window_text());name=psutil.Process(w.process_id()).name().lower()
      if not w.is_visible():continue
-     if w.process_id() in descendant_ids or name=='semo_idm_setup.exe' or title in ['please read idm license','choose destination location','start installation','installation complete','select program folder'] or ('idm' in title and 'semo' not in title) or name=='idman.exe' or name.startswith(('idmiecc','idmintegr','iemonitor')) or title in ['internet download manager installation wizard','idm browser integration','idm installation']:
+     if w.process_id() in descendant_ids or name=='semo_idm_setup.exe' or title in ['please read idm license','choose destination location','start installation','installation complete','select program folder'] or (('idm' in title or 'internet download manager' in title) and 'semo' not in title) or name=='idman.exe' or name.startswith(('idmiecc','idmintegr','iemonitor')) or title in ['internet download manager installation wizard','idm browser integration','idm installation']:
       result.append(w)
     except Exception:pass
    return result
@@ -267,6 +267,9 @@ def linux_engine(treepath,report,out,screenshot):
  for w in tree()['widgets']:
   if w['class']=='TCheckbutton' and any(x in norm(w['text']) for x in ['sessiz','silent']) and not w.get('checked'):click(w)
  choose('Kaydet',['Button','TButton']);time.sleep(2)
+ for w in tree()['widgets']:
+  if w['class'] in ['Button','TButton'] and norm(w['text']).strip() in ['ok','tamam'] and any(x in norm(w.get('window_title','')) for x in ['kaydedildi','saved']):
+   click(w);report['acknowledged_settings_saved_dialog']=w.get('window_title');break
  cases.append({'id':'linux-silent-mode-selected-through-real-gui','status':'PASS' if IdmLinuxConfig.load(create_if_missing=False).silent_mode else 'FAIL'})
  choose('Genel Bakış',['Button','TButton']);time.sleep(2)
  choose('Ana Penceresini',['Button','TButton']);time.sleep(8);screenshot('functional-wine-original-idm-open-request')
