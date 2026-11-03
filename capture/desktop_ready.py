@@ -23,7 +23,7 @@ def read_default():
  result={}
  for scheme in ['http','https']:
   try:
-   with winreg.OpenKey(winreg.HKEY_CURRENT_USER,r'Software\Microsoft\Windows\Shell\Associations\UrlAssociations\'+scheme+r'\UserChoice') as k:result[scheme]=winreg.QueryValueEx(k,'ProgId')[0]
+   with winreg.OpenKey(winreg.HKEY_CURRENT_USER,r'Software\Microsoft\Windows\Shell\Associations\UrlAssociations'+'\\'+scheme+r'\UserChoice') as k:result[scheme]=winreg.QueryValueEx(k,'ProgId')[0]
   except OSError:result[scheme]=None
  return result
 
