@@ -128,10 +128,16 @@ def run(report,out,screenshot,guard):
   assert page,'Actual official source page unavailable'
   def ev(js):
    r=cdp(page['webSocketDebuggerUrl'],'Runtime.evaluate',{'expression':js,'returnByValue':True});assert not r.get('error') and not r.get('result',{}).get('exceptionDetails');return r['result']['result'].get('value')
+  # Target URL/readyState can describe an initial blank document before the
+  # navigation commits and before an X11 managed window maps. Require the
+  # actual official link DOM and the real mapped browser client together.
+  clients=[];lines=[]
   while time.monotonic()<deadline:
-   if ev('document.readyState')=='complete':break
-   time.sleep(.3)
-  lines=subprocess.check_output(['wmctrl','-lx'],text=True).splitlines();clients=[l.split(None,4)[0] for l in lines if 'brave' in l.casefold() and 'download' in l.casefold()];assert len(clients)==1,lines;client=clients[0];subprocess.run(['wmctrl','-ir',client,'-b','remove,maximized_vert,maximized_horz'],check=True);subprocess.run(['wmctrl','-ir',client,'-e','0,70,100,1380,870'],check=True);subprocess.run(['wmctrl','-ia',client],check=True);time.sleep(1)
+   loaded=ev('location.hostname==="www.7-zip.org" && [...document.querySelectorAll("a")].some(a=>a.href==='+json.dumps(report['external_source']['asset']['browser_download_url'])+')')
+   lines=subprocess.check_output(['wmctrl','-lx'],text=True).splitlines();clients=[l.split(None,4)[0] for l in lines if 'brave' in l.casefold() and 'download' in l.casefold()]
+   if loaded and len(clients)==1:break
+   time.sleep(.4)
+  assert loaded and len(clients)==1,('Official DOM and mapped source browser unavailable',lines);client=clients[0];subprocess.run(['wmctrl','-ir',client,'-b','remove,maximized_vert,maximized_horz'],check=True);subprocess.run(['wmctrl','-ir',client,'-e','0,70,100,1380,870'],check=True);subprocess.run(['wmctrl','-ia',client],check=True);time.sleep(1)
   # Passive observation of real mouse events gives a measured CSS->screen map.
   ev("window.__filmReadOnlyPointer=null;document.addEventListener('pointermove',e=>{window.__filmReadOnlyPointer={x:e.clientX,y:e.clientY}},{capture:true,passive:true})")
   pyautogui.moveTo(700,400,duration=.3);time.sleep(.2);a=ev('window.__filmReadOnlyPointer');pyautogui.moveTo(1000,650,duration=.3);time.sleep(.2);b=ev('window.__filmReadOnlyPointer');assert a and b;sx=300/(b['x']-a['x']);sy=250/(b['y']-a['y']);assert abs(sx-sy)<.03;ox=700-a['x']*sx;oy=400-a['y']*sy
