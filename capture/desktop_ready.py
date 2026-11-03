@@ -119,7 +119,25 @@ def browser_warmup(exe,out):
   try:cdp(version['webSocketDebuggerUrl'],'Browser.close')
   except Exception:pass
   time.sleep(2)
-  return {'status':'PASS','profile':str(profile),'first_run_marker':True,'welcoming_tabs_remaining':False,'browser_version':version.get('Browser'),'preparation_recorded':False}
+  # A second ordinary startup must remain first-run-free without the bypass
+  # flags used during initial off-camera provisioning.
+  normal=[a for a in args if a not in ['--no-first-run','--no-default-browser-check']]
+  process=subprocess.Popen(normal,env=safe_env(),stdout=log,stderr=log,creationflags=FLAGS)
+  deadline=time.monotonic()+30;version2=None
+  while time.monotonic()<deadline:
+   try:
+    rr=requests.get('http://127.0.0.1:19333/json/version',timeout=1)
+    if rr.ok:version2=rr.json();break
+   except requests.RequestException:pass
+   time.sleep(.5)
+  assert version2,'Normal Brave restart did not become ready'
+  time.sleep(3)
+  normal_tabs=requests.get('http://127.0.0.1:19333/json/list',timeout=5).json()
+  assert not any(any(t.get('url','').startswith(prefix) for prefix in ['brave://welcome','brave://intro','brave://onboarding']) for t in normal_tabs),'Normal Brave restart still showed first-run setup'
+  try:cdp(version2['webSocketDebuggerUrl'],'Browser.close')
+  except Exception:pass
+  time.sleep(2)
+  return {'normal_restart_without_first_run_flags':'PASS','status':'PASS','profile':str(profile),'first_run_marker':True,'welcoming_tabs_remaining':False,'browser_version':version.get('Browser'),'preparation_recorded':False}
  finally:
   if process.poll() is None:
    try:process.wait(timeout=5)
@@ -156,6 +174,18 @@ def prepare(out,report):
   ft=TTFont(fontpath);cmap=ft.getBestCmap();chars='ÇĞİÖŞÜçğıöşü';missing=[c for c in chars if ord(c) not in cmap];assert not missing,missing
   report['turkish_desktop_preflight']={'locale':os.environ.get('LANG'),'font':fontpath,'required_characters':chars,'missing_characters':missing,'font_coverage':'PASS','wine_text_visual_verification':'PENDING'}
  browser=browser_warmup(exe,out)
+ if ISWIN:
+  # This is a disposable capture VM: conceal unrelated preinstalled desktop
+  # shortcuts, without deleting any files or stopping the desktop shell.
+  import win32gui,win32con
+  def hide_desktop_list(hwnd,_):
+   try:
+    view=win32gui.FindWindowEx(hwnd,0,'SHELLDLL_DefView',None)
+    if view:
+     icons=win32gui.FindWindowEx(view,0,'SysListView32',None)
+     if icons:win32gui.ShowWindow(icons,win32con.SW_HIDE)
+   except Exception:pass
+  win32gui.EnumWindows(hide_desktop_list,None)
  report['desktop_preparation']={'status':'PASS','before_recording':True,'brave_executable':exe,'default_http_https':default,'browser':browser,'wallpaper':'studio-wallpaper.png','installer_or_first_run_recorded':False}
 
 class ConsoleGuard:
@@ -178,11 +208,13 @@ class ConsoleGuard:
     if klass in ['ConsoleWindowClass','CASCADIA_HOSTING_WINDOW_CLASS'] and win32gui.IsWindowVisible(hwnd):
      self.events.append({'time':time.time(),'class':klass,'source':origin});win32gui.ShowWindow(hwnd,win32con.SW_HIDE)
    except Exception:pass
-  CB=ctypes.WINFUNCTYPE(None,ctypes.c_void_p,HWND,DWORD,LONG,LONG,DWORD,DWORD)
+  CB=ctypes.WINFUNCTYPE(None,ctypes.c_void_p,DWORD,HWND,LONG,LONG,DWORD,DWORD)
   def event(h,kind,hwnd,obj,child,thread,ms):
    if hwnd and obj==0:check(hwnd,'EVENT_OBJECT_SHOW')
   callback=CB(event);u=ctypes.windll.user32;u.SetWinEventHook.restype=ctypes.c_void_p
+  u.SetWinEventHook.argtypes=[DWORD,DWORD,ctypes.c_void_p,CB,DWORD,DWORD,DWORD]
   hook=u.SetWinEventHook(0x8002,0x8002,None,callback,0,0,0)
+  if not hook:self.events.append({'time':time.time(),'source':'monitor_initialization','error':'WinEvent hook unavailable'})
   msg=wintypes.MSG()
   try:
    while not self.stop.is_set():
