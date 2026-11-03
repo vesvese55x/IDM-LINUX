@@ -259,6 +259,15 @@ def linux_engine(treepath,report,out,screenshot):
  screenshot('functional-wine-install-after');cases.append({'id':'linux-release-gui-installs-original-idm-in-wine','status':'PASS' if complete else 'FAIL','actual_idm_path':str(idm) if idm else None,'wine_prefix':cfg.wine_prefix if cfg else None,'elapsed_seconds':time.time()-start,'completed_to_100_percent':complete});checkpoint()
  if not complete:return
  report['linux_wine_config']={'wine_prefix':cfg.wine_prefix,'download_dir':cfg.download_dir,'actual_idm_path':str(idm)}
+ from idm_linux.wine_sender import build_wine_env
+ env=build_wine_env(cfg);env={k:v for k,v in env.items() if not any(x in k.upper() for x in ['TOKEN','SECRET','PASSWORD']) and not k.startswith(('ACTIONS_','GITHUB_'))}
+ acp=subprocess.run(['wine','reg','query',r'HKLM\System\CurrentControlSet\Control\Nls\CodePage','/v','ACP'],env=env,capture_output=True,text=True,timeout=25)
+ locale_info=subprocess.run(['wine','reg','query',r'HKCU\Control Panel\International','/v','Locale'],env=env,capture_output=True,text=True,timeout=25)
+ (out/'wine-turkish-codepage.txt').write_text(acp.stdout+'\n'+acp.stderr+'\n'+locale_info.stdout+'\n'+locale_info.stderr,encoding='utf-8')
+ turkish_acp=acp.returncode==0 and '1254' in acp.stdout
+ report.setdefault('turkish_desktop_preflight',{})['wine_ansi_codepage_1254']='PASS' if turkish_acp else 'FAIL'
+ cases.append({'id':'wine-turkish-ansi-codepage','status':'PASS' if turkish_acp else 'FAIL','expected_ansi_codepage':1254,'registry_output':acp.stdout})
+
  # CLI observation uses AppRun from the same released AppImage, not source checkout.
  observed=subprocess.run([report['release_apprun_path'],'status'],capture_output=True,text=True,timeout=45)
  (out/'released-cli-status.txt').write_text(observed.stdout+'\n'+observed.stderr,encoding='utf-8')

@@ -5,7 +5,7 @@ import requests
 ROOT=Path.cwd();OUT=ROOT/'evidence';OUT.mkdir(exist_ok=True)
 OS=sys.argv[1];iswin=OS=='windows';flags=subprocess.CREATE_NO_WINDOW if iswin else 0
 report={'phase':'real-release-native-desktop-preflight','status':'RUNNING','platform':platform.platform(),'runner_os':os.getenv('RUNNER_OS'),'source_checkout_commit':os.getenv('GITHUB_SHA'),'run_id':os.getenv('GITHUB_RUN_ID'),'utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'full_functional_suite':'NOT_RUN','pages':[],'capture_method':'ffmpeg gdigrab actual desktop' if iswin else 'ffmpeg x11grab actual Xvfb desktop','not_used':['DrawToBitmap','synthetic UI','PNG slideshow'],'application_modified':False}
-rec=None;app=None;loghandles=[]
+rec=None;app=None;loghandles=[];console_guard=None
 def save():
  (OUT/'probe-report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
 def run(cmd,**kw):return subprocess.run(cmd,check=True,creationflags=flags,**kw)
@@ -184,7 +184,11 @@ try:
  import pyautogui
  pyautogui.FAILSAFE=False
  w,h=pyautogui.size();assert w>=1000 and h>=700,'Desktop resolution is not usable'
- exe=download_asset();start_recorder(w,h)
+ exe=download_asset()
+ import desktop_ready
+ desktop_ready.prepare(OUT,report);save();screenshot('desktop-ready-before-recording')
+ console_guard=desktop_ready.ConsoleGuard(OUT);console_guard.start()
+ start_recorder(w,h)
  if iswin:tour_windows(exe)
  else:tour_linux(exe)
  report['status']='PASS'
@@ -206,6 +210,10 @@ finally:
    try:rec.wait(timeout=10)
    except Exception:rec.kill()
   report['recorder_exit_code']=rec.poll()
+ if console_guard:
+  audit=console_guard.finish();report['console_visibility_audit']=audit
+  report['film_footage_acceptance']='REJECT' if audit['status']!='PASS' else 'PENDING_VISUAL_REVIEW'
+  if audit['status']!='PASS':report['status']='FAIL'
  if app:
   try:app.terminate()
   except Exception:pass

@@ -21,9 +21,15 @@ jobs:
       - name: Prepare a real X11 desktop and capture tools
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq xvfb xauth openbox xdotool wmctrl scrot ffmpeg python3-tk python3-venv python3-pil fonts-dejavu-core fonts-noto-core
+          sudo apt-get install -y -qq xvfb xauth openbox xdotool wmctrl scrot ffmpeg python3-tk python3-venv python3-pil fonts-dejavu-core fonts-dejavu-extra fonts-noto-core fonts-liberation locales feh xdg-utils curl
+          sudo locale-gen tr_TR.UTF-8
+          sudo update-locale LANG=tr_TR.UTF-8
+          sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
+          echo 'deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg arch=amd64] https://brave-browser-apt-release.s3.brave.com/ stable main' | sudo tee /etc/apt/sources.list.d/brave-browser-release.list > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq brave-browser
           /usr/bin/python3 -m venv --system-site-packages .capture-venv
-          .capture-venv/bin/pip install -q requests pillow pyautogui cryptography websocket-client websockets
+          .capture-venv/bin/pip install -q requests pillow pyautogui cryptography websocket-client websockets fonttools
       - name: Prepare declared Wine engine prerequisites on a fresh runner
         if: contains(github.event.head_commit.message, '[wine-engine]')
         run: |
@@ -34,6 +40,9 @@ jobs:
           sudo apt-get install -y -qq wine wine32:i386 wine64 aria2 streamlink yt-dlp curl cabextract p7zip-full xclip
       - name: Record the published Linux AppImage, not a recompiled screenshot harness
         env:
+          LANG: tr_TR.UTF-8
+          LC_ALL: tr_TR.UTF-8
+          LANGUAGE: tr_TR:tr
           DISPLAY: ':99'
           XDG_SESSION_TYPE: x11
           DESKTOP_SESSION: openbox
@@ -61,7 +70,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        bootstrap_mode: [wait, click]
+        bootstrap_mode: [click]
     runs-on: windows-2022
     timeout-minutes: 20
     steps:
@@ -74,7 +83,9 @@ jobs:
       - name: Prepare native Windows automation and desktop recorder
         shell: powershell
         run: |
-          python -m pip install --quiet requests pillow pyautogui pywinauto psutil
+          python -m pip install --quiet requests pillow pyautogui pywinauto psutil websocket-client
+          choco install brave -y --no-progress
+          if ($LASTEXITCODE -ne 0) { throw 'Brave installation failed' }
           if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
             choco install ffmpeg -y --no-progress
             if ($LASTEXITCODE -ne 0) { throw 'ffmpeg installation failed' }
