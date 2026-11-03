@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mode: [one, app, apt, gdebi]
+        mode: ${{ fromJSON(contains(github.event.head_commit.message, '[app-only]') && '["app"]' || '["one","app","apt","gdebi"]') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:

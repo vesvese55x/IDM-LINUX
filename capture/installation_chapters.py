@@ -150,7 +150,7 @@ def run(report,out,screenshot,guard):
    terminal.execute(600);dpkg_verify();terminal.stage("dpkg-query -W -f='${Status} ${Version}\\n' idm-linux");terminal.execute(20);time.sleep(5);screenshot('installation-terminal-verified');terminal.close();terminal=None;open_gui()
    speak('one-03.mp3' if MODE=='one' else 'apt-02.mp3','GERÇEK PENCERE',['Paket kaydı doğrulandı','Motor/indirme testi ayrı'])
   elif MODE=='app':
-   path=Path(report['installation_asset']['local_path']);thunar=subprocess.Popen(['thunar','--new-window',str(DOWNLOADS)],env=safe_env(),stdout=(out/'thunar.log').open('wb'),stderr=subprocess.STDOUT);time.sleep(3)
+   path=Path(report['installation_asset']['local_path']);thunar=subprocess.Popen(['thunar',str(DOWNLOADS)],env=safe_env(),stdout=(out/'thunar.log').open('wb'),stderr=subprocess.STDOUT);time.sleep(3)
    native=thunar_windows();assert native,'Real Thunar file manager did not open';file_window=max(native,key=lambda w:w['rect'][2]*w['rect'][3]);subprocess.run(['wmctrl','-ir',file_window['id'],'-e','0,70,100,1360,820'],check=True);subprocess.run(['wmctrl','-ia',file_window['id']],check=True);time.sleep(1)
    assert [p.name for p in DOWNLOADS.iterdir() if p.is_file()]==[path.name],'Fresh download directory must contain only the demonstrated AppImage'
    pyautogui.hotkey('ctrl','l');pyautogui.write(str(DOWNLOADS));pyautogui.press('enter');time.sleep(1);pyautogui.press('home');report['appimage_real_file_manager_window']=file_window
