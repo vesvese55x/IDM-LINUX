@@ -24,12 +24,19 @@ jobs:
           sudo apt-get install -y -qq xvfb xauth openbox xdotool wmctrl scrot ffmpeg python3-tk python3-venv python3-pil fonts-dejavu-core fonts-noto-core
           /usr/bin/python3 -m venv --system-site-packages .capture-venv
           .capture-venv/bin/pip install -q requests pillow pyautogui cryptography websocket-client websockets
+      - name: Prepare declared Wine engine prerequisites on a fresh runner
+        if: contains(github.event.head_commit.message, '[wine-engine]')
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq wine wine32:i386 wine64 aria2 streamlink yt-dlp curl cabextract p7zip-full
       - name: Record the published Linux AppImage, not a recompiled screenshot harness
         env:
           DISPLAY: ':99'
           XDG_SESSION_TYPE: x11
           DESKTOP_SESSION: openbox
           FILM_FUNCTIONAL: '1'
+          FILM_WINE_ENGINE_TEST: ${{ contains(github.event.head_commit.message, '[wine-engine]') && '1' || '0' }}
         run: |
           export XAUTHORITY="$RUNNER_TEMP/film.Xauthority"
           touch "$XAUTHORITY"
@@ -47,6 +54,7 @@ jobs:
           if-no-files-found: error
           retention-days: 14
   windows:
+    if: ${{ !contains(github.event.head_commit.message, '[linux-only]') }}
     name: Windows user GUI (${{ matrix.bootstrap_mode }})
     strategy:
       fail-fast: false

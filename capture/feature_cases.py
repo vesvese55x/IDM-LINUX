@@ -208,4 +208,81 @@ def linux(treepath,report,out,screenshot):
   nav_language();choices=[x for x in tree()['widgets'] if x['text'].strip()=='Türkçe'];click(choices[0]);time.sleep(1);screenshot('functional-language-restored-tr')
   cases.append({'id':'gui-language-en-tr-en-tr','status':'PASS','turkish_title':tr,'english_title':en})
  except Exception as e:cases.append({'id':'gui-language-en-tr-en-tr','status':'FAIL','reason':str(e)})
- cases.append({'id':'wine-idm-download-browser-p2p-functional-tests','status':'NOT_RUN','reason':'This stage only adds real language switching; Wine/IDM and network engine scenarios require the next dedicated batch.'})
+ if os.getenv('FILM_WINE_ENGINE_TEST')=='1':
+  try:linux_engine(treepath,report,out,screenshot)
+  except Exception as e:cases.append({'id':'linux-real-wine-idm-engine-batch','status':'FAIL','reason':str(e)})
+ else:cases.append({'id':'wine-idm-download-browser-p2p-functional-tests','status':'NOT_RUN','reason':'Dedicated Wine batch not selected.'})
+
+
+def linux_engine(treepath,report,out,screenshot):
+ import sys,subprocess,pyautogui
+ cases=report.setdefault('functional_cases',[])
+ def checkpoint():
+  (out/'probe-report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
+ def tree():return json.loads(treepath.read_text(encoding='utf-8'))
+ def click(item):
+  x,y,w,h=item['rect'];assert 0<x+w/2<1920 and 0<y+h/2<1080,'Control outside visible capture viewport';pyautogui.moveTo(x+w/2,y+h/2,duration=.35);pyautogui.click();time.sleep(1.5)
+ def choose(part,kind=None):
+  candidates=[w for w in tree()['widgets'] if norm(part) in norm(w['text']) and (kind is None or w['class'] in kind)]
+  assert candidates,'Released GUI control unavailable: '+part
+  click(candidates[0]);return candidates[0]
+ def logs():return '\n'.join(w.get('value','') for w in tree()['widgets'] if w['class']=='Text')
+ sys.path.insert(0,str(Path(report['released_config_module_path']).parent.parent))
+ from idm_linux.config import IdmLinuxConfig
+ choose('Kurulum', ['Button','TButton'])
+ # Do not unexpectedly launch a browser during the engine-only scenario.
+ for w in tree()['widgets']:
+  if w['class']=='TCheckbutton' and w.get('checked') and any(x in norm(w['text']) for x in ['tarayici','browser']):click(w)
+ screenshot('functional-wine-install-before');choose('İşlemi Şimdi Başlat',['Button','TButton']);start=time.time();deadline=time.monotonic()+540;cfg=None;idm=None;complete=False
+ while time.monotonic()<deadline:
+  cfg=IdmLinuxConfig.load(create_if_missing=False);idm=cfg.find_idm_exe();log=logs()
+  (out/'real-gui-install-log.txt').write_text(log,encoding='utf-8')
+  if idm and any(w['text'].strip()=='100%' for w in tree()['widgets']):complete=True;break
+  if any(w['class'] in ['Label','TLabel'] and any(t in norm(w['text']) for t in ['kurulum sirasinda hata','installation failed']) for w in tree()['widgets']):break
+  time.sleep(2)
+ screenshot('functional-wine-install-after');cases.append({'id':'linux-release-gui-installs-original-idm-in-wine','status':'PASS' if complete else 'FAIL','actual_idm_path':str(idm) if idm else None,'wine_prefix':cfg.wine_prefix if cfg else None,'elapsed_seconds':time.time()-start,'completed_to_100_percent':complete});checkpoint()
+ if not complete:return
+ report['linux_wine_config']={'wine_prefix':cfg.wine_prefix,'download_dir':cfg.download_dir,'actual_idm_path':str(idm)}
+ # CLI observation uses AppRun from the same released AppImage, not source checkout.
+ observed=subprocess.run([report['release_apprun_path'],'status'],capture_output=True,text=True,timeout=45)
+ (out/'released-cli-status.txt').write_text(observed.stdout+'\n'+observed.stderr,encoding='utf-8')
+ report['released_cli_status_exit_code']=observed.returncode
+ choose('Genel Bakış',['Button','TButton']);time.sleep(2)
+ payload=(bytes(range(251))*((8*1024*1024)//251+1))[:8*1024*1024];expected=hashlib.sha256(payload).hexdigest();stats={'bytes_sent':0,'requests':[]};lock=threading.Lock();slot=[time.monotonic()]
+ class Handler(BaseHTTPRequestHandler):
+  def log_message(self,*a):pass
+  def respond(self,body):
+   start,end=0,len(payload)-1;header=self.headers.get('Range','')
+   if header.startswith('bytes='):
+    a,b=header[6:].split('-',1);start=int(a or 0);end=min(end,int(b) if b else end)
+   with lock:stats['requests'].append({'time':time.time(),'method':self.command,'range':header,'user_agent':self.headers.get('User-Agent','')})
+   if start>=len(payload):self.send_response(416);self.send_header('Content-Range','bytes */'+str(len(payload)));self.end_headers();return
+   self.send_response(206 if header else 200);self.send_header('Accept-Ranges','bytes');self.send_header('Last-Modified','Tue, 03 Nov 2026 00:00:00 GMT');self.send_header('ETag','\"film-proof-v1\"');self.send_header('Content-Type','application/octet-stream');self.send_header('Content-Length',str(end-start+1));self.send_header('Content-Disposition','attachment; filename="film-proof.bin"')
+   if header:self.send_header('Content-Range',f'bytes {start}-{end}/{len(payload)}')
+   self.end_headers()
+   if not body:return
+   try:
+    for offset in range(start,end+1,16384):
+     chunk=payload[offset:min(offset+16384,end+1)]
+     with lock:due=slot[0];slot[0]=max(slot[0],time.monotonic())+len(chunk)/(512*1024)
+     time.sleep(max(0,due-time.monotonic()));self.wfile.write(chunk);self.wfile.flush()
+     with lock:stats['bytes_sent']+=len(chunk)
+   except (BrokenPipeError,ConnectionResetError,ConnectionAbortedError,OSError):pass
+  def do_HEAD(self):self.respond(False)
+  def do_GET(self):self.respond(True)
+ server=ThreadingHTTPServer(('127.0.0.1',0),Handler);server.daemon_threads=True;threading.Thread(target=server.serve_forever,daemon=True).start();url=f'http://127.0.0.1:{server.server_address[1]}/film-proof.bin'
+ try:
+  entries=sorted([w for w in tree()['widgets'] if w['class'] in ['Entry','TEntry'] and w['rect'][2]>350],key=lambda w:w['rect'][1]);assert entries,'Real quick download input unavailable'
+  click(entries[0]);pyautogui.hotkey('ctrl','a');pyautogui.write(url,interval=.035);choose('IDM',['Button','TButton']);start=time.time();deadline=time.monotonic()+160;completed=None
+  while time.monotonic()<deadline:
+   target=Path(cfg.download_dir).expanduser()
+   for f in target.rglob('film-proof*') if target.exists() else []:
+    try:
+     if f.is_file() and f.stat().st_size==len(payload) and hashlib.sha256(f.read_bytes()).hexdigest()==expected:completed=f;break
+    except (OSError,PermissionError):pass
+   if completed:break
+   time.sleep(1)
+  screenshot('functional-linux-real-idm-download-result');cases.append({'id':'linux-gui-to-real-wine-idm-http-download','status':'PASS' if completed and stats['requests'] else 'FAIL','expected_sha256':expected,'actual_sha256':hashlib.sha256(completed.read_bytes()).hexdigest() if completed else None,'expected_bytes':len(payload),'saved_file':str(completed) if completed else None,'http_request_count':len(stats['requests']),'elapsed_seconds':time.time()-start,'managed_target_root':cfg.download_dir})
+ finally:
+  server.shutdown();server.server_close();(out/'controlled-http-evidence.json').write_text(json.dumps(stats,indent=2));checkpoint()
+ cases.append({'id':'linux-browser-p2p-video-dvr-and-pause-suite','status':'NOT_RUN','reason':'This batch targets actual GUI installation and Wine/IDM HTTP transfer only.'})

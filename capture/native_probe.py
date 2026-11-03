@@ -66,6 +66,7 @@ def tour_linux(exe):
  exe.chmod(0o755);extract=Path(os.environ.get('RUNNER_TEMP',str(ROOT)))/'film-appimage';extract.mkdir(exist_ok=True)
  with (OUT/'appimage-extract.log').open('wb') as f:run([str(exe),'--appimage-extract'],cwd=extract,stdout=f,stderr=subprocess.STDOUT)
  launch=extract/'squashfs-root/AppRun';assert launch.exists()
+ candidates=list((extract/'squashfs-root').rglob('idm_linux/config.py'));assert candidates,'Released config module unavailable';report['released_config_module_path']=str(candidates[0]);report['release_apprun_path']=str(launch)
  env=app_env();env['FILM_WIDGET_DUMP']=str(OUT/'visible-widgets.json');env['PYTHONPATH']=str(ROOT/'capture/probe_site');env['PYTHONUNBUFFERED']='1'
  report['ui_instrumentation']='Read-only Tk widget tree; production AppImage unchanged; external mouse clicks'
  log=(OUT/'application.log').open('wb');loghandles.append(log);app=subprocess.Popen([str(launch)],env=env,stdout=log,stderr=log)

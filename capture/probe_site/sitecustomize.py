@@ -19,7 +19,15 @@ if os.environ.get('FILM_WIDGET_DUMP'):
                     if w.winfo_viewable():
                         try:text=str(w.cget('text'))
                         except Exception:text=''
-                        out.append({'path':str(w),'class':w.winfo_class(),'text':text,'rect':[w.winfo_rootx(),w.winfo_rooty(),w.winfo_width(),w.winfo_height()]})
+                        item={'path':str(w),'class':w.winfo_class(),'text':text,'rect':[w.winfo_rootx(),w.winfo_rooty(),w.winfo_width(),w.winfo_height()]}
+                        try:item['state']=str(w.cget('state'))
+                        except Exception:pass
+                        try:
+                            if w.winfo_class() in ['Entry','TEntry','TCombobox']:item['value']=w.get()
+                            elif w.winfo_class()=='Text':item['value']=w.get('1.0','end-1c')
+                            elif w.winfo_class()=='TCheckbutton':item['checked']=bool(w.instate(['selected']))
+                        except Exception:pass
+                        out.append(item)
                     for child in w.winfo_children():walk(child)
                 walk(self)
                 data={'time':time.time(),'root_title':self.title(),'root_viewable':bool(self.winfo_viewable()),'window_id':self.frame(),'root_rect':[self.winfo_rootx(),self.winfo_rooty(),self.winfo_width(),self.winfo_height()],'widgets':out}
