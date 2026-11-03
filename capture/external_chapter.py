@@ -14,6 +14,18 @@ def prepare(report,out,asset):
  with (Path(out)/'external-motor-prerequisite-offcamera.log').open('w') as log:
   result=execute_install_pipeline(project_root=Path(report['released_config_module_path']).parent,chosen_prefix=Path(cfg.wine_prefix),download_dir=target,skip_system_pkgs=True,language='tr',keep_wine_warm=True,create_desktop_icons=False,auto_open_browser=False,log_fn=lambda s:(log.write(s+'\n'),log.flush()))
  assert result.ok and result.idm_exe.exists(),'Actual motor prerequisite failed'
+ # The original vendor can open its own welcome browser independently of
+ # companion auto_open_browser. Close only this disposable runner's real
+ # Brave windows before preparing the browser debug/profile session.
+ time.sleep(2)
+ vendor=[]
+ for line in subprocess.check_output(['wmctrl','-lx'],text=True).splitlines():
+  if 'brave' in line.casefold():
+   wid=line.split()[0];vendor.append(line);subprocess.run(['wmctrl','-ic',wid],check=True)
+ time.sleep(2)
+ if vendor:
+  subprocess.run(['pkill','-TERM','-x','brave'],check=False);time.sleep(1)
+ report['vendor_welcome_closed_offcamera']={'actual_windows':vendor,'method':'Normal WM close; terminate remaining disposable Brave processes before normal warmup'}
  report['motor_prepared_offcamera']={'method':'Unmodified released installation pipeline, as already taught in preceding lesson','actual_executable':str(result.idm_exe),'sha256':hashlib.sha256(result.idm_exe.read_bytes()).hexdigest()};report['installation_scope']='Actual external official 7-Zip release download through released panel and native IDM, publisher bytes/SHA256 verification. Not a browser-extension, hoster matrix, install or speed test.'
  source=json.loads((ROOT/'capture/external-download-source.json').read_text());live=requests.get('https://api.github.com/repos/ip7z/7zip/releases/tags/26.05',timeout=30);live.raise_for_status();actual=next(a for a in live.json()['assets'] if a['name']==source['asset']['name']);assert all(actual[k]==source['asset'][k] for k in ['name','size','digest','browser_download_url']);report['external_source']=source
 
