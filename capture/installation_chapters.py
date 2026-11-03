@@ -128,29 +128,12 @@ def run(report,out,screenshot,guard):
    fields=line.split(None,8)
    if len(fields)>=9 and 'thunar' in fields[6].casefold():rows.append({'id':fields[0],'rect':[int(v) for v in fields[2:6]],'title':fields[8]})
   return rows
- def select_real_appimage():
-  import pyatspi
-  wanted=Path(report['installation_asset']['local_path']).name;deadline=time.monotonic()+15
-  while time.monotonic()<deadline:
-   found=[];budget=[1600]
-   def walk(n,depth=0):
-    if depth>14 or budget[0]<=0:return
-    budget[0]-=1
-    try:
-     if (n.name or '')==wanted:
-      r=n.queryComponent().getExtents(pyatspi.DESKTOP_COORDS)
-      if r.width>10 and r.height>10 and r.x>=70 and r.x+r.width<1500 and r.y>100 and r.y+r.height<1000:found.append({'rect':[r.x,r.y,r.width,r.height],'name':n.name,'role':n.getRoleName()})
-     for child in n:walk(child,depth+1)
-    except Exception:pass
-   desktop=pyatspi.Registry.getDesktop(0)
-   for application in desktop:
-    if 'thunar' in (application.name or '').casefold():walk(application)
-   if found:
-    node=min(found,key=lambda n:n['rect'][2]*n['rect'][3]);report['appimage_native_accessibility_target']=node;click_widget(node,'Actual AppImage file icon from native AT-SPI');time.sleep(.5);return
-   time.sleep(.5)
-  raise RuntimeError('Actual AppImage icon was not discoverable in native accessibility tree')
+ def file_manager_request(method):
+  uri=Path(report['installation_asset']['local_path']).as_uri()
+  cmd=['gdbus','call','--session','--dest','org.freedesktop.FileManager1','--object-path','/org/freedesktop/FileManager1','--method','org.freedesktop.FileManager1.'+method,"['"+uri+"']",'']
+  result=subprocess.run(cmd,capture_output=True,text=True,env=safe_env());events.append({'action':'native_file_manager_api','method':method,'actual_file_uri':uri,'returncode':result.returncode,'video_offset_seconds':time.time()-epoch});assert result.returncode==0,'Native FileManager1 '+method+' failed: '+result.stderr
  def properties():
-  before={w['id'] for w in thunar_windows()};pyautogui.hotkey('alt','enter');deadline=time.monotonic()+10
+  before={w['id'] for w in thunar_windows()};file_manager_request('ShowItemProperties');deadline=time.monotonic()+10
   while time.monotonic()<deadline:
    opened=[w for w in thunar_windows() if w['id'] not in before]
    if opened:report['appimage_real_properties_window']=opened[0];screenshot('appimage-properties');return
@@ -175,7 +158,7 @@ def run(report,out,screenshot,guard):
    path=Path(report['installation_asset']['local_path']);thunar=subprocess.Popen(['thunar',str(DOWNLOADS)],env={**safe_env(),'GTK_MODULES':'atk-bridge','NO_AT_BRIDGE':'0','GTK_THEME':'Adwaita:dark'},stdout=(out/'thunar.log').open('wb'),stderr=subprocess.STDOUT);time.sleep(3)
    native=thunar_windows();assert native,'Real Thunar file manager did not open';file_window=max(native,key=lambda w:w['rect'][2]*w['rect'][3]);subprocess.run(['wmctrl','-ir',file_window['id'],'-e','0,70,100,1360,820'],check=True);subprocess.run(['wmctrl','-ia',file_window['id']],check=True);time.sleep(1)
    assert [p.name for p in DOWNLOADS.iterdir() if p.is_file()]==[path.name],'Fresh download directory must contain only the demonstrated AppImage'
-   pyautogui.hotkey('ctrl','l');pyautogui.write(str(DOWNLOADS));pyautogui.press('enter');time.sleep(1);pyautogui.press('esc');select_real_appimage();report['appimage_real_file_manager_window']=file_window
+   pyautogui.hotkey('ctrl','l');pyautogui.write(str(DOWNLOADS));pyautogui.press('enter');time.sleep(1);pyautogui.press('esc');file_manager_request('ShowItems');time.sleep(1);report['appimage_real_file_manager_window']=file_window
    speak('app-01.mp3','APPIMAGE İZNİ',['Dosya ≠ paket kaydı','chmod +x: çalıştırma izni'],actions=[(15,properties),(26,permissions)])
    pyautogui.hotkey('alt','f4');time.sleep(.5);pyautogui.hotkey('alt','f4');time.sleep(.8)
    terminal=Terminal(guard,out,MODE,events,epoch);terminal.stage('chmod +x '+path.name);time.sleep(7);terminal.execute(20);assert os.access(path,os.X_OK);screenshot('appimage-chmod-verified');terminal.close();terminal=None
