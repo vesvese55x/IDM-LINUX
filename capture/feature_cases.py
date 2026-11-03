@@ -79,7 +79,7 @@ def windows(main,nav,report,out,screenshot):
    return count
   while time.monotonic()<deadline:
    installer=Path(os.environ['TEMP'])/'semo_idm_setup.exe'
-   if installer.exists() and not verified:
+   if installer.exists() and not verified and any('installation wizard' in norm(w.window_text()) for w in vendor_windows()):
     digest=hashlib.sha256(installer.read_bytes()).hexdigest()
     manifest_url='https://raw.githubusercontent.com/microsoft/winget-pkgs/master/manifests/t/Tonec/InternetDownloadManager/6.43.16/Tonec.InternetDownloadManager.installer.yaml'
     response=requests.get(manifest_url,timeout=30);response.raise_for_status();expected_installer=re.search(r'InstallerSha256:\s*([A-Fa-f0-9]{64})(?=\s|$)',response.text).group(1).lower()
@@ -89,7 +89,7 @@ def windows(main,nav,report,out,screenshot):
    clear_vendor_information();wizard_visible=False
    for w in vendor_windows():
     title=norm(w.window_text())
-    if not any(x in title for x in ['installation wizard','idm installation','setup']):continue
+    if not any(x in title for x in ['installation wizard','idm installation','setup','license','destination','program folder']):continue
     wizard_visible=True
     texts=[];controls=[]
     for c in w.descendants():
@@ -273,7 +273,7 @@ def linux_engine(treepath,report,out,screenshot):
  server=ThreadingHTTPServer(('127.0.0.1',0),Handler);server.daemon_threads=True;threading.Thread(target=server.serve_forever,daemon=True).start();url=f'http://127.0.0.1:{server.server_address[1]}/film-proof.bin'
  try:
   entries=sorted([w for w in tree()['widgets'] if w['class'] in ['Entry','TEntry'] and w['rect'][2]>350],key=lambda w:w['rect'][1]);assert entries,'Real quick download input unavailable'
-  click(entries[0]);pyautogui.hotkey('ctrl','a');pyautogui.write(url,interval=.035);choose('IDM',['Button','TButton']);start=time.time();deadline=time.monotonic()+160;completed=None
+  click(entries[0]);pyautogui.hotkey('ctrl','a');pyautogui.write(url,interval=.035);send=next(w for w in tree()['widgets'] if w['class']=='TButton' and 'idm' in norm(w['text']) and abs(w['rect'][1]-entries[0]['rect'][1])<15);click(send);start=time.time();deadline=time.monotonic()+160;completed=None
   while time.monotonic()<deadline:
    target=Path(cfg.download_dir).expanduser()
    for f in target.rglob('film-proof*') if target.exists() else []:
