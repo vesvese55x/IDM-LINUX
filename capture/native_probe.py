@@ -189,14 +189,17 @@ try:
  desktop_ready.prepare(OUT,report);save();screenshot('desktop-ready-before-recording')
  console_guard=desktop_ready.ConsoleGuard(OUT);console_guard.start()
  start_recorder(w,h)
- if os.getenv('FILM_DESKTOP_ONLY')=='1':
+ if os.getenv('FILM_TUTORIAL_CHAPTER')=='promo':
+  import training_chapters
+  training_chapters.run(report,OUT,screenshot)
+ elif os.getenv('FILM_DESKTOP_ONLY')=='1':
   report['phase']='real-desktop-icons-taskbar-validation';report['application_feature_tests']='NOT_RUN — desktop-only environment check'
   time.sleep(3);screenshot('desktop-icons-taskbar-visible')
   pyautogui.click(22,h-20);time.sleep(2);screenshot('desktop-taskbar-menu-click');pyautogui.press('esc');time.sleep(2)
  elif iswin:tour_windows(exe)
  else:tour_linux(exe)
  report['status']='PASS'
- if os.getenv('FILM_FUNCTIONAL')=='1' and os.getenv('FILM_DESKTOP_ONLY')!='1':
+ if os.getenv('FILM_FUNCTIONAL')=='1' and os.getenv('FILM_DESKTOP_ONLY')!='1' and not os.getenv('FILM_TUTORIAL_CHAPTER'):
   report['phase']='selected-real-GUI-functional-cases';report['full_functional_suite']='PARTIAL';report['functional_cases_status']='PASS' if all(c['status']=='PASS' for c in report.get('functional_cases',[]) if c['status']!='NOT_RUN') else 'PARTIAL'
   if any(c['status']=='FAIL' for c in report.get('functional_cases',[])):report['status']='FAIL'
   elif any(c['status']=='BLOCKED' for c in report.get('functional_cases',[])):report['status']='PARTIAL'
@@ -231,6 +234,20 @@ finally:
    probe=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-show_format','-of','json',str(video)],creationflags=flags));(OUT/'video-ffprobe.json').write_text(json.dumps(probe,indent=2));report['video']['duration_seconds']=float(probe['format']['duration'])
   except Exception:report['status']='FAIL';report['video']['probe']='FAIL'
  if report.get('recorder_exit_code')!=0:report['status']='FAIL'
+ if os.getenv('FILM_TUTORIAL_CHAPTER'):
+  if report.get('status')=='PASS':
+   try:
+    import training_chapters
+    training_chapters.finish(report,OUT)
+   except Exception as e:
+    report['status']='FAIL';report['tutorial_finish_error']=type(e).__name__+': '+str(e);(OUT/'tutorial-finish-exception.txt').write_text(traceback.format_exc())
+  proofdir=OUT/'tutorial-receipts';proofdir.mkdir(exist_ok=True)
+  save();shutil.copyfile(OUT/'probe-report.json',proofdir/'probe-report.json')
+  for label in ['failure-desktop','desktop-ready-before-recording','promo-01-ready','promo-02-ready','promo-complete']:
+   source=OUT/(label+'.png')
+   if source.exists():
+    from PIL import Image
+    image=Image.open(source).convert('RGB');image.thumbnail((1280,720));image.save(proofdir/(label+'.jpg'),quality=85)
  save();print(json.dumps({'status':report['status'],'phase':report['phase'],'pages_visited':len(report['pages']),'full_functional_suite':report['full_functional_suite'],'video':report.get('video'),'error':report.get('error')},indent=2),flush=True)
  if os.getenv('GITHUB_STEP_SUMMARY'):
   with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as f:f.write('## Real native release capture: '+OS+'\nStatus: '+report['status']+'\n\nFull functional suite: '+report['full_functional_suite']+'. See explicitly listed cases, original desktop MP4 and evidence artifacts.\n')

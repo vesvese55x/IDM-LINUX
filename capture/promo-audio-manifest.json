@@ -1,0 +1,47 @@
+[
+  {
+    "file": "01-readme.mp3",
+    "duration": 37.250612,
+    "bytes": 298231
+  },
+  {
+    "file": "02-overview.mp3",
+    "duration": 44.329796,
+    "bytes": 354865
+  },
+  {
+    "file": "03-browser-video.mp3",
+    "duration": 44.90449,
+    "bytes": 359462
+  },
+  {
+    "file": "04-torrent-hosters.mp3",
+    "duration": 45.766531,
+    "bytes": 366359
+  },
+  {
+    "file": "05-doctor-settings.mp3",
+    "duration": 42.762449,
+    "bytes": 342326
+  },
+  {
+    "file": "06-gui-windows.mp3",
+    "duration": 45.792653,
+    "bytes": 366568
+  },
+  {
+    "file": "07-package-table.mp3",
+    "duration": 51.748571,
+    "bytes": 414215
+  },
+  {
+    "file": "08-commands-safety.mp3",
+    "duration": 44.277551,
+    "bytes": 354447
+  },
+  {
+    "file": "09-ecosystem.mp3",
+    "duration": 42.553469,
+    "bytes": 340654
+  }
+]

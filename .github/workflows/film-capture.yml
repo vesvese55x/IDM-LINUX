@@ -21,7 +21,7 @@ jobs:
       - name: Prepare a real X11 desktop and capture tools
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq xvfb xauth openbox xfdesktop4 xfce4-panel thunar dbus-x11 adwaita-icon-theme xdotool wmctrl scrot ffmpeg python3-tk python3-venv python3-pil fonts-dejavu-core fonts-dejavu-extra fonts-noto-core fonts-liberation locales feh xdg-utils curl
+          sudo apt-get install -y -qq xvfb xauth openbox xfdesktop4 xfce4-panel thunar dbus-x11 adwaita-icon-theme xclip xdotool wmctrl scrot ffmpeg python3-tk python3-venv python3-pil fonts-dejavu-core fonts-dejavu-extra fonts-noto-core fonts-liberation locales feh xdg-utils curl
           sudo locale-gen tr_TR.UTF-8
           sudo update-locale LANG=tr_TR.UTF-8
           sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
@@ -38,7 +38,7 @@ jobs:
           sudo dpkg --add-architecture i386
           sudo apt-get update -qq
           sudo apt-get install -y -qq wine wine32:i386 wine64 aria2 streamlink yt-dlp curl cabextract p7zip-full xclip
-      - name: Record the published Linux AppImage, not a recompiled screenshot harness
+      - name: Record real desktop GUI cases or the selected tutorial chapter
         env:
           LANG: tr_TR.UTF-8
           LC_ALL: tr_TR.UTF-8
@@ -46,6 +46,7 @@ jobs:
           DISPLAY: ':99'
           XDG_SESSION_TYPE: x11
           DESKTOP_SESSION: openbox
+          FILM_TUTORIAL_CHAPTER: ${{ contains(github.event.head_commit.message, '[tutorial-promo]') && 'promo' || '' }}
           FILM_DESKTOP_ONLY: ${{ contains(github.event.head_commit.message, '[desktop-check]') && '1' || '0' }}
           FILM_FUNCTIONAL: '1'
           FILM_WINE_ENGINE_TEST: ${{ contains(github.event.head_commit.message, '[wine-engine]') && '1' || '0' }}
@@ -64,6 +65,14 @@ jobs:
           name: film-linux-native-preflight
           path: evidence/
           if-no-files-found: error
+          retention-days: 14
+      - name: Save small tutorial receipts and review thumbnails separately
+        if: always() && contains(github.event.head_commit.message, '[tutorial-promo]')
+        uses: actions/upload-artifact@v4
+        with:
+          name: film-tutorial-receipts
+          path: evidence/tutorial-receipts/
+          if-no-files-found: warn
           retention-days: 14
   windows:
     if: ${{ !contains(github.event.head_commit.message, '[linux-only]') }}
@@ -94,6 +103,7 @@ jobs:
           }
       - name: Record the actual published EXE using native desktop capture
         env:
+          FILM_TUTORIAL_CHAPTER: ${{ contains(github.event.head_commit.message, '[tutorial-promo]') && 'promo' || '' }}
           FILM_DESKTOP_ONLY: ${{ contains(github.event.head_commit.message, '[desktop-check]') && '1' || '0' }}
           FILM_FUNCTIONAL: '1'
           FILM_BOOTSTRAP_MODE: ${{ matrix.bootstrap_mode }}
