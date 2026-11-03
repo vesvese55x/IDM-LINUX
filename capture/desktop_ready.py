@@ -87,6 +87,14 @@ def cdp(ws,method,params=None):
  finally:sock.close()
 
 def browser_warmup(exe,out):
+ # This lesson prepares the original motor before browser provisioning; its
+ # vendor may start a browser without an X11 window yet. Clean that disposable
+ # process at the exact provisioning boundary, not only visible early windows.
+ if not ISWIN and os.getenv('FILM_TUTORIAL_CHAPTER')=='external':
+  before=subprocess.run(['pgrep','-a','-x','brave'],capture_output=True,text=True).stdout
+  subprocess.run(['pkill','-TERM','-x','brave'],check=False)
+  time.sleep(2)
+  (Path(out)/'vendor-browser-before-warmup.txt').write_text(before)
  # Standard installed profile, so subsequent normal/default-browser launches and
  # the apps' native-messaging registration see exactly the same profile.
  profile=profile_root();(profile/'Default').mkdir(parents=True,exist_ok=True)
