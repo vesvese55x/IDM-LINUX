@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   linux:
-    if: ${{ !contains(github.event.head_commit.message, '[windows-only]') && !contains(github.event.head_commit.message, '[install-lessons]') }}
+    if: ${{ !contains(github.event.head_commit.message, '[windows-only]') && !contains(github.event.head_commit.message, '[install-lessons]') && !contains(github.event.head_commit.message, '[engine-lesson]') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:

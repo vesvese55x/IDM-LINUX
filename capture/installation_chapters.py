@@ -197,13 +197,13 @@ def run(report,out,screenshot,guard):
   if app and app.poll() is None:app.terminate()
   if gdebi and gdebi.poll() is None:gdebi.terminate()
 
-def finish(report,out):
+def finish(report,out,audio_subdir="install_audio",target_filename=None,review_labels=None,lesson_mode=None):
  from presentation_overlay import build
  out=Path(out);source=out/'native-linux.mp4';duration=float(subprocess.check_output(['ffprobe','-v','error','-show_entries','format=duration','-of','default=nw=1:nk=1',str(source)],text=True));cues=report['tutorial_audio_cues'];assert cues
  overlay,audit=build(out,report,duration);report['presentation_audit']=audit
- target=out/('BELGESELSEMO-EGITIM-KURULUM-'+MODE.upper()+'-TR.mp4');cmd=['ffmpeg','-y','-v','warning','-i',str(source)];filters=[]
+ target=out/(target_filename or ('BELGESELSEMO-EGITIM-KURULUM-'+MODE.upper()+'-TR.mp4'));cmd=['ffmpeg','-y','-v','warning','-i',str(source)];filters=[]
  for i,c in enumerate(cues,1):
-  cmd+=['-i',str(ROOT/'capture/install_audio'/c['audio_file'])];filters.append(f'[{i}:a]adelay={round(c["video_offset_seconds"]*1000)}:all=1[a{i}]')
+  cmd+=['-i',str(ROOT/'capture'/audio_subdir/c['audio_file'])];filters.append(f'[{i}:a]adelay={round(c["video_offset_seconds"]*1000)}:all=1[a{i}]')
  labels=''.join(f'[a{i}]' for i in range(1,len(cues)+1));filters.append(labels+f'amix=inputs={len(cues)}:normalize=0,apad[voice]');cmd+=['-stream_loop','-1','-i',str(ROOT/'capture/tutorial_audio/technology-bed.mp3')];filters.append(f'[{len(cues)+1}:a]volume=0.32,afade=t=in:d=1.5,afade=t=out:st={duration-2}:d=2[bg]');filters.append('[voice][bg]amix=inputs=2:normalize=0,alimiter=limit=.95[a]')
  cmd+=['-filter_complex_threads','1','-filter_complex',';'.join(filters),'-vf','ass='+str(overlay),'-map','0:v','-map','[a]','-c:v','libx264','-threads','2','-preset','veryfast','-crf','17','-pix_fmt','yuv420p','-color_primaries','bt709','-color_trc','bt709','-colorspace','bt709','-c:a','aac','-b:a','160k','-ar','48000','-ac','2','-t',str(duration),'-movflags','+faststart',str(target)]
  with (out/'install-mux.log').open('wb') as f:subprocess.run(cmd,stdout=f,stderr=f,check=True)
@@ -211,13 +211,13 @@ def finish(report,out):
  md5=hashlib.md5(target.read_bytes()).hexdigest()
  with target.open('rb') as f:r=requests.post('https://upload.gofile.io/uploadfile',files={'file':(target.name,f,'video/mp4')},timeout=(30,300))
  r.raise_for_status();data=r.json();assert data['status']=='ok';data=data['data'];assert data['md5']==md5 and data['size']==target.stat().st_size
- receipt={'mode':MODE,'download_page':data['downloadPage'],'file':target.name,'bytes':target.stat().st_size,'md5':md5,'sha256':sha(target),'duration':duration,'full_decode':'PASS','scope':report['installation_scope'],'voice_rate':1.0};report['tutorial_delivery']=receipt;(out/'tutorial-gofile.json').write_text(json.dumps(receipt,ensure_ascii=False,indent=2))
+ receipt={'mode':lesson_mode or MODE,'download_page':data['downloadPage'],'file':target.name,'bytes':target.stat().st_size,'md5':md5,'sha256':sha(target),'duration':duration,'full_decode':'PASS','scope':report['installation_scope'],'voice_rate':1.0};report['tutorial_delivery']=receipt;(out/'tutorial-gofile.json').write_text(json.dumps(receipt,ensure_ascii=False,indent=2))
  proofs=out/'tutorial-receipts';proofs.mkdir(exist_ok=True)
  for name in ['tutorial-gofile.json','console-visibility-audit.json','pointer-audit.json','presentation-audit.json','desktop-shell-audit.json']:
   p=out/name
   if p.exists():shutil.copyfile(p,proofs/name)
  from PIL import Image
- for name in ['installed-real-gui','installation-terminal-verified','gdebi-real-install-completed','appimage-properties','appimage-permissions-visible','installation-lesson-complete']:
+ for name in (review_labels or ['installed-real-gui','installation-terminal-verified','gdebi-real-install-completed','appimage-properties','appimage-permissions-visible','installation-lesson-complete']):
   p=out/(name+'.png')
   if p.exists():im=Image.open(p).convert('RGB');im.thumbnail((1280,720));im.save(proofs/(name+'.jpg'),quality=83)
  when=cues[-1]['video_offset_seconds']+5;subprocess.run(['ffmpeg','-v','error','-ss',str(when),'-i',str(target),'-frames:v','1','-vf','scale=1280:-2','-q:v','3','-y',str(proofs/'installation-final-presented.jpg')],check=True)

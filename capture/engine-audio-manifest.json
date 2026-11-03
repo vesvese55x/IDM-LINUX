@@ -1,0 +1,52 @@
+[
+  {
+    "file": "engine-01.mp3",
+    "duration": 39.105306,
+    "bytes": 313069
+  },
+  {
+    "file": "engine-02.mp3",
+    "duration": 42.34449,
+    "bytes": 338982
+  },
+  {
+    "file": "engine-03.mp3",
+    "duration": 39.549388,
+    "bytes": 316622
+  },
+  {
+    "file": "engine-04.mp3",
+    "duration": 41.090612,
+    "bytes": 328951
+  },
+  {
+    "file": "engine-wrap.mp3",
+    "duration": 42.971429,
+    "bytes": 343998
+  },
+  {
+    "file": "transfer-01.mp3",
+    "duration": 43.154286,
+    "bytes": 345461
+  },
+  {
+    "file": "transfer-02.mp3",
+    "duration": 39.993469,
+    "bytes": 320174
+  },
+  {
+    "file": "transfer-03.mp3",
+    "duration": 40.463673,
+    "bytes": 323936
+  },
+  {
+    "file": "transfer-04.mp3",
+    "duration": 43.206531,
+    "bytes": 345879
+  },
+  {
+    "file": "transfer-05.mp3",
+    "duration": 40.933878,
+    "bytes": 327698
+  }
+]

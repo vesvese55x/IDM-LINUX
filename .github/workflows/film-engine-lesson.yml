@@ -1,0 +1,76 @@
+name: Film — real Linux motor and pause/resume lesson
+on:
+  push:
+    branches: ['film-capture/**']
+    paths: ['capture/**', '.github/workflows/film-engine-lesson.yml']
+permissions:
+  contents: read
+concurrency:
+  group: engine-lesson-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  engine:
+    if: contains(github.event.head_commit.message, '[engine-lesson]')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Prepare declared system prerequisites off camera, never the IDM motor
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb xauth openbox xfdesktop4 xfce4-panel thunar dbus-x11 adwaita-icon-theme xclip xdotool wmctrl scrot ffmpeg python3-tk python3-venv python3-pil python3-gi fonts-dejavu-core fonts-dejavu-extra fonts-noto-core fonts-liberation locales feh xdg-utils curl wine wine32:i386 wine64 aria2 streamlink yt-dlp cabextract p7zip-full gcc-mingw-w64-x86-64
+          sudo locale-gen tr_TR.UTF-8
+          sudo update-locale LANG=tr_TR.UTF-8
+          sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
+          echo 'deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg arch=amd64] https://brave-browser-apt-release.s3.brave.com/ stable main' | sudo tee /etc/apt/sources.list.d/brave-browser-release.list > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq brave-browser
+          /usr/bin/python3 -m venv --system-site-packages .capture-venv
+          .capture-venv/bin/pip install -q requests pillow pyautogui cryptography websocket-client websockets fonttools
+          mkdir -p "$HOME/Downloads" "$HOME/.config"
+          printf 'XDG_DOWNLOAD_DIR="$HOME/Downloads"\n' > "$HOME/.config/user-dirs.dirs"
+          x86_64-w64-mingw32-gcc -O2 -municode -mwindows capture/wine_window_observer.c -o capture/wine_window_observer.exe -lshell32
+          python3 - <<'PY'
+          import struct
+          from pathlib import Path
+          data=Path('capture/wine_window_observer.exe').read_bytes()
+          pe=struct.unpack_from('<I',data,0x3c)[0]
+          assert struct.unpack_from('<H',data,pe+24+68)[0]==2,'Observer must be GUI subsystem: no console'
+          PY
+      - name: Record actual GUI motor installation and owned HTTP fixture transfer
+        env:
+          LANG: tr_TR.UTF-8
+          LC_ALL: tr_TR.UTF-8
+          LANGUAGE: tr_TR:tr
+          DISPLAY: ':99'
+          XDG_SESSION_TYPE: x11
+          DESKTOP_SESSION: openbox
+          FILM_PRESENTATION: '1'
+          FILM_TUTORIAL_CHAPTER: engine
+          FILM_FUNCTIONAL: '1'
+        run: |
+          export XAUTHORITY="$RUNNER_TEMP/film.Xauthority"
+          touch "$XAUTHORITY"
+          chmod 600 "$XAUTHORITY"
+          xauth -f "$XAUTHORITY" add :99 . "$(mcookie)"
+          Xvfb :99 -screen 0 1920x1080x24 -auth "$XAUTHORITY" -nolisten tcp > /tmp/film-xvfb.log 2>&1 &
+          openbox > /tmp/film-openbox.log 2>&1 &
+          .capture-venv/bin/python -B capture/presentation_overlay.py
+          dbus-run-session -- .capture-venv/bin/python -B capture/native_probe.py linux
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: film-engine-original-and-evidence
+          path: evidence/
+          retention-days: 14
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: film-engine-small-receipts
+          path: evidence/tutorial-receipts/
+          retention-days: 14
+          if-no-files-found: warn

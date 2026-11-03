@@ -193,6 +193,9 @@ try:
  if os.getenv("FILM_TUTORIAL_CHAPTER")=="install":
   import installation_chapters
   installation_chapters.prepare(report,OUT,exe)
+ if os.getenv("FILM_TUTORIAL_CHAPTER")=="engine":
+  import engine_chapter
+  engine_chapter.prepare(report,OUT,exe)
  import desktop_ready
  desktop_ready.prepare(OUT,report);save();screenshot('desktop-ready-before-recording')
  console_guard=desktop_ready.ConsoleGuard(OUT);console_guard.start()
@@ -202,6 +205,8 @@ try:
   training_chapters.run(report,OUT,screenshot)
  elif os.getenv('FILM_TUTORIAL_CHAPTER')=='install':
   installation_chapters.run(report,OUT,screenshot,console_guard)
+ elif os.getenv('FILM_TUTORIAL_CHAPTER')=='engine':
+  engine_chapter.run(report,OUT,screenshot,console_guard)
  elif os.getenv('FILM_DESKTOP_ONLY')=='1':
   report['phase']='real-desktop-icons-taskbar-validation';report['application_feature_tests']='NOT_RUN — desktop-only environment check'
   time.sleep(3);screenshot('desktop-icons-taskbar-visible')
@@ -253,6 +258,9 @@ finally:
     if os.getenv('FILM_TUTORIAL_CHAPTER')=='install':
      import installation_chapters
      installation_chapters.finish(report,OUT)
+    elif os.getenv('FILM_TUTORIAL_CHAPTER')=='engine':
+     import engine_chapter
+     engine_chapter.finish(report,OUT)
     else:
      import training_chapters
      training_chapters.finish(report,OUT)
