@@ -68,7 +68,8 @@ def windows(main,nav,report,out,screenshot):
    # Official Microsoft winget manifest for exactly the downloaded vendor build.
    # This is an explicitly labelled test prerequisite/workaround, NOT a SEMO fix.
    installer=Path(os.environ['TEMP'])/'semo_idm_setup.exe';assert installer.exists(),'Downloaded official installer missing'
-   digest=hashlib.sha256(installer.read_bytes()).hexdigest();expected_installer='276aa7e4ff7682445b011ebe6ac3920e7eeca6ece7d3f6723b1f1cb515164461b';assert digest==expected_installer,'Official installer digest did not match Microsoft winget manifest'
+   digest=hashlib.sha256(installer.read_bytes()).hexdigest();import requests,re
+   manifest_url='https://raw.githubusercontent.com/microsoft/winget-pkgs/master/manifests/t/Tonec/InternetDownloadManager/6.43.16/Tonec.InternetDownloadManager.installer.yaml';response=requests.get(manifest_url,timeout=30);response.raise_for_status();expected_installer=re.search(r'InstallerSha256:\s*([A-Fa-f0-9]{64})',response.text).group(1).lower();report['official_installer_digest_check']={'actual_sha256':digest,'expected_sha256':expected_installer,'match':digest==expected_installer};assert digest==expected_installer,'Official installer digest did not match Microsoft winget manifest'
    import subprocess
    process=subprocess.Popen([str(installer),'/skipdlgs'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,creationflags=subprocess.CREATE_NO_WINDOW)
    deadline=time.monotonic()+120
