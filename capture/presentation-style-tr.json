@@ -14,18 +14,46 @@
   },
   "cursor": {
     "shape": "oval",
-    "fill": "translucent warm yellow",
+    "fill": "darker amber #D29A12",
     "size_native_pixels": [
-      44,
-      30
+      26,
+      18
     ],
-    "position_source": "real OS pointer telemetry",
-    "click_effect": "short expanding fading ring at actual click"
+    "centre_dot": 3,
+    "always_visible": false,
+    "visibility": "Only critical actual clicks,0.32s before/0.85s after; real OS telemetry",
+    "click_effect": "short fine40px expanding ring"
   },
   "notes": {
     "animation": "slide and fade; short underline reveal",
     "avoid": "covering controls; flashing; fake PASS indicators; changing source UI",
     "theme": "approved clean technology palette"
   },
-  "user_approval": "Previous first chapter praised; preserve its style, wallpaper, narrow system-info panel, modern real taskbar and voice"
+  "user_approval": "Previous first chapter praised; preserve its style, wallpaper, narrow system-info panel, modern real taskbar and voice",
+  "revision": "V3 — selective semantic emphasis",
+  "semantic_emphasis": {
+    "kinds": [
+      "rectangle",
+      "ellipse",
+      "freehand_loop",
+      "freehand_arrow",
+      "underline",
+      "translucent_highlight"
+    ],
+    "geometry": "Read-only actual visible DOM ranges, physical native screen transform, occlusion checks",
+    "colors": {
+      "amber": "important text",
+      "cyan": "information",
+      "mint": "platform/package distinction, not tested PASS",
+      "coral": "caution, not unverified FAIL",
+      "violet": "secondary topic"
+    },
+    "constraints": [
+      "No guesses for missing targets",
+      "Stop at actual scroll onset",
+      "Skip occluded/offscreen elements",
+      "No effects crowding the controls",
+      "Short-lived marks; calm intervals between emphasis"
+    ]
+  }
 }

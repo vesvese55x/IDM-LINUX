@@ -9,12 +9,12 @@ REPO='https://github.com/vesvese55x/IDM-LINUX/'
 
 def run(report,out,screenshot):
  import pyautogui
- out=Path(out);events=[];cues=[];mouse_maps={}
- report.update({'phase':'tutorial-chapter-01-real-README-Loltek-browser','tutorial_chapter':'01','full_functional_suite':'NOT_RUN','audio_playback_rate':1.0,'tutorial_audio_cues':cues,'tutorial_browser_events':events})
+ out=Path(out);events=[];cues=[];mouse_maps={};views=[];targets=[]
+ report.update({'phase':'tutorial-chapter-01-real-README-Loltek-browser','tutorial_chapter':'01','full_functional_suite':'NOT_RUN','audio_playback_rate':1.0,'tutorial_audio_cues':cues,'tutorial_browser_events':events,'presentation_views':views,'presentation_targets':targets})
  manifest=json.loads((Path(__file__).parent/'promo-audio-manifest.json').read_text())
  audio={a['file']:a for a in manifest}
  events.append({'action':'real_mouse_click','target':'Open real Linux applications menu','x':22,'y':pyautogui.size().height-24,'video_offset_seconds':time.time()-report['record_wallclock_start']})
- pyautogui.click(22,pyautogui.size().height-24);time.sleep(1.5);screenshot('modern-linux-menu-open');pyautogui.press('esc');time.sleep(.8)
+ pyautogui.click(22,pyautogui.size().height-24);time.sleep(1.5);screenshot('modern-linux-menu-open');pyautogui.press('esc');time.sleep(.8);pyautogui.moveTo(1850,850,duration=.4)
  log=(out/'tutorial-brave.log').open('wb')
  args=[brave_path(),'--remote-debugging-port=19333','--remote-debugging-address=127.0.0.1','--start-maximized',REPO]
  subprocess.Popen(args,env=safe_env(),stdout=log,stderr=log,creationflags=subprocess.CREATE_NO_WINDOW if os.name=='nt' else 0);log.close()
@@ -72,10 +72,17 @@ def run(report,out,screenshot):
   events.append({'action':'real_mouse_click','target':label,'x':x,'y':y,'transform':mapping,'video_offset_seconds':time.time()-report['record_wallclock_start']})
   pyautogui.click()
  def scroll(selector,label):
+  report.setdefault('presentation_scroll_starts',[]).append(time.time()-report['record_wallclock_start'])
   locate(selector)
   if '.pkg-table tbody tr:first-child' in selector:
    ev('window.scrollBy({top:document.querySelector('+json.dumps(selector)+').getBoundingClientRect().top-110,behavior:"smooth"})');time.sleep(1.5)
   events.append({'action':'real_browser_scroll','target':label,'video_offset_seconds':time.time()-report['record_wallclock_start']})
+  mapping=pointer_map()
+  import semantic_emphasis
+  at=time.time()-report['record_wallclock_start'];view={'id':len(views)+1,'time':at,'scene':label};views.append(view)
+  targets.extend(semantic_emphasis.snapshot(ev,mapping,at,view['id']))
+  # No parked menu tooltip or long hover URL over the lower-third captions.
+  pyautogui.moveTo(1850,850,duration=.3)
  def persist():
   (out/'tutorial-cues.json').write_text(json.dumps(cues,ensure_ascii=False,indent=2),encoding='utf-8')
   (out/'probe-report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
@@ -98,14 +105,14 @@ def run(report,out,screenshot):
  assert ev('document.documentElement.lang')=='tr','Turkish UI not selected'
  assert ev('location.href').split('#')[0]==PROMO,'Not the requested actual Loltek page'
  report['tutorial_promo_url']=ev('location.href');report['tutorial_feature_card_count']=ev('document.querySelectorAll("#ozellikler .card").length')
- speak('02-overview.mp3','header h1','Product identity and platform choices',switch=(30.5,'.platform-grid','Platform cards before spoken platform-selection cue'))
+ speak('02-overview.mp3','header h1','Product identity and platform choices',switch=(30.0,'.platform-grid','Platform cards before spoken platform-selection cue'))
  speak('03-browser-video.mp3','#ozellikler .card:nth-child(1)','Browser, video and supported-source limitations')
  speak('04-torrent-hosters.mp3','#ozellikler .card:nth-child(4)','Torrent, DVR and file hosters')
  speak('05-doctor-settings.mp3','#ozellikler .card:nth-child(7)','Doctor, sandbox caveat, languages and cancellation')
  # Real ASR-derived word starts: Windows at27.86s in06,32.82s in revised07.
- speak('06-gui-windows.mp3','#ekranlar .shot:first-child','All Linux gallery rows, then native Windows product',switch=[(8,'#ekranlar .shot:nth-child(3)','Linux gallery row2: browsers, doctor, projects'),(17,'#ekranlar .shot:last-child','Linux gallery row3: support and about'),(26.0,'#windows-title','Windows product at spoken Windows cue')])
- speak('10-windows-compatibility.mp3','#windows .compat-note','Real Windows compatibility limits, then all six gallery images',switch=[(24.2,'#windows .screens-grid .shot:first-child','Windows gallery: overview and browsers'),(38.8,'#windows .screens-grid .shot:nth-child(3)','Windows gallery: setup and projects'),(46.0,'#windows .screens-grid .shot:nth-child(5)','Windows gallery: settings and torrent eD2K')])
- speak('07-package-table.mp3','#kurulum .pkg-table tbody tr:first-child','Package selection table',switch=(30.9,'#kurulum .pkg-table tbody tr:last-child','Windows rows at spoken Windows cue'))
+ speak('06-gui-windows.mp3','#ekranlar .shot:first-child','All Linux gallery rows, then native Windows product',switch=[(8,'#ekranlar .shot:nth-child(3)','Linux gallery row2: browsers, doctor, projects'),(17,'#ekranlar .shot:last-child','Linux gallery row3: support and about'),(25.5,'#windows-title','Windows product at spoken Windows cue')])
+ speak('10-windows-compatibility.mp3','#windows .compat-note','Real Windows compatibility limits, then all six gallery images',switch=[(23.7,'#windows .screens-grid .shot:first-child','Windows gallery: overview and browsers'),(38.3,'#windows .screens-grid .shot:nth-child(3)','Windows gallery: setup and projects'),(45.5,'#windows .screens-grid .shot:nth-child(5)','Windows gallery: settings and torrent eD2K')])
+ speak('07-package-table.mp3','#kurulum .pkg-table tbody tr:first-child','Package selection table',switch=(30.4,'#kurulum .pkg-table tbody tr:last-child','Windows rows at spoken Windows cue'))
  speak('08-commands-safety.mp3','#kurulum .auto-install-options','Actual Linux/Windows commands and security caveats')
  copy_selector='#kurulum .install-command[data-platform="linux"] .copy'
  click(copy_selector,'Copy official Linux one-line installer for next chapter');time.sleep(1)
@@ -113,7 +120,7 @@ def run(report,out,screenshot):
  expected='curl -fsSL https://raw.githubusercontent.com/vesvese55x/IDM-LINUX/refs/heads/main/belgeselsemo-idm-linux-installer | sh'
  assert copied==expected,'Browser copy did not produce the exact official installer command'
  report['tutorial_copied_linux_command']=copied
- speak('09-ecosystem.mp3','#ekosistem .sec-head','BELGESELSEMO ecosystem and next practical chapters',switch=(19.5,'footer','Economy soon card and actual website footer'))
+ speak('09-ecosystem.mp3','#ekosistem .sec-head','BELGESELSEMO ecosystem and next practical chapters',switch=(19.0,'footer','Economy soon card and actual website footer'))
  screenshot('promo-complete');persist()
  report.setdefault('functional_cases',[]).append({'id':'chapter-01-real-readme-loltek-tour','status':'PASS','scope':'Actual browser tour and exact command copy only; installation and app feature transfers NOT_RUN','narration_clips':len(cues),'natural_voice_seconds':sum(c['duration_seconds'] for c in cues),'url':PROMO,'voice':'Previously approved voice-04','asr_timed_scene_switches':{'06':27.86,'07':32.82}})
  cdp(page['webSocketDebuggerUrl'],'Browser.close')
@@ -123,7 +130,7 @@ def finish(report,out):
  out=Path(out);cues=report.get('tutorial_audio_cues',[])
  if not cues:return
  source=out/('native-'+('windows' if os.name=='nt' else 'linux')+'.mp4')
- audiodir=Path(__file__).parent/'tutorial_audio';target=out/'BELGESELSEMO-EGITIM-BOLUM-01-PROMO-TR-V2.mp4'
+ audiodir=Path(__file__).parent/'tutorial_audio';target=out/'BELGESELSEMO-EGITIM-BOLUM-01-PROMO-TR-V3.mp4'
  flags=subprocess.CREATE_NO_WINDOW if os.name=='nt' else 0
  duration=float(subprocess.check_output(['ffprobe','-v','error','-show_entries','format=duration','-of','default=nw=1:nk=1',str(source)],text=True,creationflags=flags))
  assert max(c['video_offset_seconds']+c['duration_seconds'] for c in cues)<=duration+.3,'Recorded video is shorter than the narration timeline'
@@ -139,6 +146,9 @@ def finish(report,out):
  if os.getenv('FILM_PRESENTATION')=='1':
   import presentation_overlay
   overlay,presentation_audit=presentation_overlay.build(out,report,duration);report['presentation_audit']=presentation_audit
+  semantic=presentation_audit['semantic_emphasis'];assert semantic['rendered_count']>=18,'Too few verified on-screen annotations'
+  assert {m['kind'] for m in semantic['rendered']}=={'rectangle','ellipse','underline','highlight','freehand_arrow','freehand_loop'},'Missing requested teaching-mark style'
+  assert presentation_audit['cursor_duty_cycle']<.05,'Focus cursor is visible too often'
   escaped=overlay.as_posix().replace(':','\\:').replace("'","\\'")
   video_args=['-vf',"ass=filename='"+escaped+"'",'-c:v','libx264','-threads','2','-preset','veryfast','-crf','17','-pix_fmt','yuv420p','-color_primaries','bt709','-color_trc','bt709','-colorspace','bt709','-color_range','tv']
  cmd+=['-filter_complex_threads','1','-filter_complex',';'.join(filters),'-map','0:v','-map','[outa]']+video_args+['-c:a','aac','-b:a','160k','-ac','2','-ar','48000','-t',str(duration),'-movflags','+faststart',str(target)]
@@ -151,12 +161,12 @@ def finish(report,out):
   r.raise_for_status();data=r.json();assert data['status']=='ok';data=data['data'];assert data['md5']==digest and data['size']==path.stat().st_size
   return {'download_page':data['downloadPage'],'filename':path.name,'bytes':path.stat().st_size,'md5':digest,'sha256':hashlib.sha256(path.read_bytes()).hexdigest()}
  receipt=upload(target)
- receipt.update({'scope':'Narrated real browser chapter01 only; not the finished long training/studio film','audio_rate':1.0,'background_music':'Approved V5 technology score, quiet looping bed','resolution':'1920x1080,24fps, native screen footage','full_decode':'PASS','cue_count':len(cues),'presentation_revision':'V2 — requested TR pronunciation, real-pointer yellow oval, animated notes','animated_notes':report.get('presentation_audit',{}).get('animated_note_count'), 'native_arrow_recorded':os.getenv('FILM_PRESENTATION')!='1'})
+ receipt.update({'scope':'Narrated real browser chapter01 only; not the finished long training/studio film','audio_rate':1.0,'background_music':'Approved V5 technology score, quiet looping bed','resolution':'1920x1080,24fps, native screen footage','full_decode':'PASS','cue_count':len(cues),'presentation_revision':'V3 — compact selective dark amber focus, DOM-measured multi-color teaching marks and animated notes','animated_notes':report.get('presentation_audit',{}).get('animated_note_count'), 'native_arrow_recorded':os.getenv('FILM_PRESENTATION')!='1'})
  (out/'tutorial-gofile.json').write_text(json.dumps(receipt,ensure_ascii=False,indent=2),encoding='utf-8');report['tutorial_delivery']=receipt
  # Small proof-only artifact for the constrained agent workspace.
  from PIL import Image
  proofs=out/'tutorial-receipts';proofs.mkdir(exist_ok=True)
- for name in ['tutorial-gofile.json','tutorial-cues.json','desktop-shell-audit.json','wallpaper-system-info.json','console-visibility-audit.json','pointer-audit.json','presentation-audit.json']:
+ for name in ['tutorial-gofile.json','tutorial-cues.json','desktop-shell-audit.json','wallpaper-system-info.json','console-visibility-audit.json','pointer-audit.json','presentation-audit.json','semantic-emphasis-audit.json']:
   p=out/name
   if p.exists():__import__('shutil').copyfile(p,proofs/name)
  for name in ['desktop-ready-before-recording','modern-linux-menu-open','promo-01-ready','promo-02-ready','promo-07-ready','promo-complete']:
@@ -168,6 +178,9 @@ def finish(report,out):
   for i in [0,1,7]:
    cue=cues[i];when=cue['video_offset_seconds']+(5 if i!=7 else 11)
    subprocess.run(['ffmpeg','-v','error','-ss',str(when),'-i',str(target),'-frames:v','1','-vf','scale=1280:-2','-q:v','2','-y',str(proofs/f'presentation-final-{i:02}.jpg')],check=True,creationflags=flags)
+  for number,mark in enumerate(report.get('presentation_audit',{}).get('semantic_emphasis',{}).get('rendered',[])[:4]):
+   when=mark['start']+min(1.4,(mark['end']-mark['start'])/2)
+   subprocess.run(['ffmpeg','-v','error','-ss',str(when),'-i',str(target),'-frames:v','1','-vf','scale=1280:-2','-q:v','3','-y',str(proofs/f'v3-semantic-{number:02}.jpg')],check=True,creationflags=flags)
   click=next(e for e in report['tutorial_browser_events'] if e.get('target')=='README promotion link to exact Loltek URL')
   subprocess.run(['ffmpeg','-v','error','-ss',str(click['video_offset_seconds']+.18),'-i',str(target),'-frames:v','1','-vf','scale=1280:-2','-q:v','2','-y',str(proofs/'presentation-actual-click.jpg')],check=True,creationflags=flags)
  print(json.dumps({'tutorial_delivery':receipt},ensure_ascii=False),flush=True)
