@@ -31,7 +31,12 @@ def download_asset():
 def screenshot(label):
  import pyautogui
  from PIL import ImageStat
- image=pyautogui.screenshot();stat=ImageStat.Stat(image.convert('RGB'));assert max(stat.stddev)>10 and sum(stat.mean)>10,'Desktop blank/locked/unavailable'
+ 
+ if iswin:image=pyautogui.screenshot()
+ else:
+  from PIL import Image
+  run(['scrot','-o',str(OUT/(label+'.png'))]);image=Image.open(OUT/(label+'.png')).copy()
+ stat=ImageStat.Stat(image.convert('RGB'));assert max(stat.stddev)>10 and sum(stat.mean)>10,'Desktop blank/locked/unavailable'
  image.save(OUT/(label+'.png'))
  return {'filename':label+'.png','size':list(image.size),'rgb_mean':stat.mean,'rgb_stddev':stat.stddev,'sha256':file_sha(OUT/(label+'.png'))}
 
@@ -49,7 +54,7 @@ def wait_tree(path,timeout=100):
  while time.monotonic()<end:
   try:
    d=json.loads(path.read_text(encoding='utf-8'))
-   if len(d['widgets'])>30 and d['root_rect'][2]>800:return d
+   if d.get('root_viewable') and len(d['widgets'])>30 and d['root_rect'][2]>800:return d
   except Exception:pass
   if app and app.poll() is not None:raise RuntimeError('Released AppImage exited before usable GUI')
   time.sleep(.5)
@@ -65,9 +70,13 @@ def tour_linux(exe):
  report['ui_instrumentation']='Read-only Tk widget tree; production AppImage unchanged; external mouse clicks'
  log=(OUT/'application.log').open('wb');loghandles.append(log);app=subprocess.Popen([str(launch)],env=env,stdout=log,stderr=log)
  treepath=OUT/'visible-widgets.json';d=wait_tree(treepath)
- ids=subprocess.run(['xdotool','search','--onlyvisible','--class','idm-linux-panel'],capture_output=True,text=True).stdout.split()
- if ids:
-  window=ids[-1];run(['xdotool','windowactivate','--sync',window]);run(['xdotool','windowsize',window,'1880','1000']);run(['xdotool','windowmove',window,'10','10']);time.sleep(2)
+ window=str(int(d['window_id'],16))
+ report['x11_window_id']=window
+ report['window_manager']=subprocess.run(['wmctrl','-m'],capture_output=True,text=True).stdout
+ # Activation is best-effort; direct X11 focus/resize does not require EWMH support.
+ for cmd in [['xdotool','windowsize',window,'1880','1000'],['xdotool','windowmove',window,'10','10'],['xdotool','windowraise',window],['xdotool','windowfocus',window]]:
+  result=subprocess.run(cmd,capture_output=True,text=True);report.setdefault('x11_window_operations',[]).append({'operation':cmd[1],'returncode':result.returncode,'stderr':result.stderr[:500]})
+ time.sleep(2)
  d=wait_tree(treepath);report['window_title']=d['root_title'];lx=d['root_rect'][0]
  nav=[x for x in d['widgets'] if x['class'] in ['Button','TButton'] and x['text'].strip() and x['rect'][0]<lx+30 and 130<=x['rect'][2]<=300 and x['rect'][3]>=20]
  nav=sorted(nav,key=lambda x:x['rect'][1]);report['navigation_buttons_detected']=[x['text'] for x in nav];save();assert len(nav)>=9,'Expected nine actual Linux navigation buttons'

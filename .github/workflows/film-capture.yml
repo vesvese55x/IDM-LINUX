@@ -26,6 +26,8 @@ jobs:
       - name: Record the published Linux AppImage, not a recompiled screenshot harness
         env:
           DISPLAY: ':99'
+          XDG_SESSION_TYPE: x11
+          DESKTOP_SESSION: openbox
         run: |
           export XAUTHORITY="$RUNNER_TEMP/film.Xauthority"
           touch "$XAUTHORITY"
