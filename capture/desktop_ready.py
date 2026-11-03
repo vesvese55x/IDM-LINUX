@@ -185,18 +185,8 @@ def prepare(out,report):
   ft=TTFont(fontpath);cmap=ft.getBestCmap();chars='ÇĞİÖŞÜçğıöşü';missing=[c for c in chars if ord(c) not in cmap];assert not missing,missing
   report['turkish_desktop_preflight']={'locale':os.environ.get('LANG'),'font':fontpath,'required_characters':chars,'missing_characters':missing,'font_coverage':'PASS','wine_text_visual_verification':'PENDING'}
  browser=browser_warmup(exe,out)
- if ISWIN:
-  # This is a disposable capture VM: conceal unrelated preinstalled desktop
-  # shortcuts, without deleting any files or stopping the desktop shell.
-  import win32gui,win32con
-  def hide_desktop_list(hwnd,_):
-   try:
-    view=win32gui.FindWindowEx(hwnd,0,'SHELLDLL_DefView',None)
-    if view:
-     icons=win32gui.FindWindowEx(view,0,'SysListView32',None)
-     if icons:win32gui.ShowWindow(icons,win32con.SW_HIDE)
-   except Exception:pass
-  win32gui.EnumWindows(hide_desktop_list,None)
+ import desktop_shell
+ report['desktop_shell']=desktop_shell.prepare(out,wall)
  report['desktop_preparation']={'status':'PASS','before_recording':True,'brave_executable':exe,'default_http_https':default,'browser':browser,'wallpaper':wall.name,'installer_or_first_run_recorded':False}
 
 class ConsoleGuard:

@@ -48,7 +48,7 @@ def build(out,language='tr',system_info=None):
  fs=lambda n:max(12,round(n*scale))
  fhead=font(fs(25),True);fbody=font(fs(19));fsite=font(fs(27),True)
  pad=round(20*scale);left=round(26*scale);bottom=round(58*scale)
- width=round(620*scale);line_height=round(27*scale)
+ width=round(500*scale);line_height=round(27*scale)
  layer=Image.new('RGBA',im.size,(0,0,0,0));d=ImageDraw.Draw(layer)
  kernel_label=('Build' if info['os_family']=='Windows' else 'Kernel') if en else ('Derleme' if info['os_family']=='Windows' else 'Çekirdek')
  header=info['os_family']+'  /  '+('SYSTEM INFO' if en else 'SİSTEM BİLGİSİ')

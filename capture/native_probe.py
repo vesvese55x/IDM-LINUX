@@ -189,10 +189,14 @@ try:
  desktop_ready.prepare(OUT,report);save();screenshot('desktop-ready-before-recording')
  console_guard=desktop_ready.ConsoleGuard(OUT);console_guard.start()
  start_recorder(w,h)
- if iswin:tour_windows(exe)
+ if os.getenv('FILM_DESKTOP_ONLY')=='1':
+  report['phase']='real-desktop-icons-taskbar-validation';report['application_feature_tests']='NOT_RUN — desktop-only environment check'
+  time.sleep(3);screenshot('desktop-icons-taskbar-visible')
+  pyautogui.click(22,h-20);time.sleep(2);screenshot('desktop-taskbar-menu-click');pyautogui.press('esc');time.sleep(2)
+ elif iswin:tour_windows(exe)
  else:tour_linux(exe)
  report['status']='PASS'
- if os.getenv('FILM_FUNCTIONAL')=='1':
+ if os.getenv('FILM_FUNCTIONAL')=='1' and os.getenv('FILM_DESKTOP_ONLY')!='1':
   report['phase']='selected-real-GUI-functional-cases';report['full_functional_suite']='PARTIAL';report['functional_cases_status']='PASS' if all(c['status']=='PASS' for c in report.get('functional_cases',[]) if c['status']!='NOT_RUN') else 'PARTIAL'
   if any(c['status']=='FAIL' for c in report.get('functional_cases',[])):report['status']='FAIL'
   elif any(c['status']=='BLOCKED' for c in report.get('functional_cases',[])):report['status']='PARTIAL'
