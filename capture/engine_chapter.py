@@ -13,6 +13,22 @@ def prepare(report,out,asset):
  module=next(Path('/opt/idm-linux').rglob('idm_linux/config.py'));report['released_config_module_path']=str(module);sys.path.insert(0,str(module.parent.parent))
  from idm_linux.config import IdmLinuxConfig
  cfg=IdmLinuxConfig.load(create_if_missing=False);assert cfg.find_idm_exe() is None,'Motor is not fresh'
+ # Off-camera observer self-test in an isolated throwaway Wine prefix. This
+ # is harness validation only and is never presented as an IDM functional test.
+ smoke=Path(os.environ['RUNNER_TEMP'])/'observer-smoke';smoke.mkdir(exist_ok=True);state=smoke/'state.json';stopfile=smoke/'stop';smokeenv={**safe_env(),'WINEPREFIX':str(smoke/'prefix'),'WINEDEBUG':'-all','WINEDLLOVERRIDES':'mscoree,mshtml='}
+ winpath=lambda p:'Z:'+str(p.resolve()).replace('/','\\')
+ with (Path(out)/'observer-selftest.log').open('wb') as log:
+  proc=subprocess.Popen(['wine',str(ROOT/'capture/wine_window_observer.exe'),winpath(state),winpath(stopfile),'selftest'],env=smokeenv,stdout=log,stderr=log);deadline=time.monotonic()+90;observed=None
+  while time.monotonic()<deadline:
+   if state.exists():
+    try:
+     observed=json.loads(state.read_text())
+     if any(w['class'].casefold()=='button' and w['text']=='Native button' and w['rect'][2]>10 for w in observed['widgets']):break
+    except Exception:pass
+   if proc.poll() is not None:break
+   time.sleep(.5)
+  stopfile.touch();proc.wait(15);assert observed and any(w['text']=='Native button' for w in observed['widgets']),'Readonly observer native self-test failed before recording'
+ report['native_observer_offcamera_selftest']={'status':'PASS','method':'Actual diagnostic Win32 test window/button in isolated prefix, not an IDM outcome','subsystem':'GUI/no console'}
  report['engine_initially_absent']=True;report['engine_prerequisites']='Control-panel DEB, Wine binaries and system tools prepared off camera; actual motor/prefix installation is performed by released GUI on camera.'
  report['installation_scope']='Real released GUI installs Wine/IDM motor; controlled owned local HTTP download/pause/resume/hash only. External hosters/browser/YouTube/P2P NOT_RUN.'
 

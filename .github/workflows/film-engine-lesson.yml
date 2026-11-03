@@ -32,7 +32,7 @@ jobs:
           .capture-venv/bin/pip install -q requests pillow pyautogui cryptography websocket-client websockets fonttools
           mkdir -p "$HOME/Downloads" "$HOME/.config"
           printf 'XDG_DOWNLOAD_DIR="$HOME/Downloads"\n' > "$HOME/.config/user-dirs.dirs"
-          x86_64-w64-mingw32-gcc -O2 -municode -mwindows capture/wine_window_observer.c -o capture/wine_window_observer.exe -lshell32
+          x86_64-w64-mingw32-gcc -O2 -fno-builtin -fno-stack-protector -nostdlib -mwindows -Wl,-e,entry capture/wine_window_observer.c -o capture/wine_window_observer.exe -lkernel32 -luser32 -lshell32 -lgcc
           python3 - <<'PY'
           import struct
           from pathlib import Path
