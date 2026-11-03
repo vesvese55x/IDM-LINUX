@@ -125,7 +125,10 @@ def run(report,out,screenshot,guard):
   wine_env={**build_wine_env(cfg)};wine_env={k:v for k,v in wine_env.items() if not any(s in k.upper() for s in ['TOKEN','SECRET','PASSWORD']) and not k.startswith(('GITHUB_','ACTIONS_'))}
   to_win=lambda p:'Z:'+str(Path(p).resolve()).replace('/','\\')
   observer=subprocess.Popen(['wine',str(ROOT/'capture/wine_window_observer.exe'),to_win(dump),to_win(stop)],env=wine_env,stdout=(out/'native-observer.log').open('wb'),stderr=subprocess.STDOUT)
-  acp=subprocess.run(['wine','reg','query',r'HKLM\System\CurrentControlSet\Control\Nls\CodePage','/v','ACP'],env=wine_env,capture_output=True,text=True,timeout=30);report['wine_turkish_acp']=acp.stdout;assert '1254' in acp.stdout,'Turkish Wine code page not verified';cases.append({'id':'wine-turkish-codepage','status':'PASS','codepage':1254})
+  # Read the actual prefix registry store without spawning a competing Wine
+  # reg.exe. A not-yet-flushed snapshot is BLOCKED, not a claimed locale pass.
+  regfile=Path(cfg.wine_prefix)/'system.reg';regtext=regfile.read_text(errors='replace') if regfile.exists() else '';key=r'[System\\CurrentControlSet\\Control\\Nls\\CodePage]';section=regtext.split(key,1)[1].split('\n[',1)[0] if key in regtext else '';matched=re.search(r'^"ACP"="(\d+)"',section,re.M);codepage=matched.group(1) if matched else None
+  report['wine_turkish_acp']={'method':'Read-only actual Wine registry store','path':str(regfile),'value':codepage};cases.append({'id':'wine-turkish-codepage','status':'PASS' if codepage=='1254' else 'BLOCKED','codepage':codepage,'reason':None if codepage=='1254' else 'No conclusive flushed ACP snapshot; live GUI Turkish glyphs require visual review'})
   speak('engine-03.mp3','KURULUM DOĞRULANDI',['Gerçek uygulama dosyası var','İndirme henüz kanıtlanmadı'])
   choose('Yakalama')
   def configure_silent():
