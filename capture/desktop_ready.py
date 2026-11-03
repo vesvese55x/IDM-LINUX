@@ -153,7 +153,10 @@ def browser_warmup(exe,out):
   log.close()
 
 def prepare(out,report):
- out=Path(out);wall=Path(__file__).parent/'assets/studio-wallpaper.png';exe=brave_path();assert exe
+ out=Path(out)
+ from national_wallpaper import build
+ wall,wallinfo=build(out,os.environ.get('FILM_LANGUAGE','tr'));report['wallpaper_system_info']=wallinfo
+ exe=brave_path();assert exe
  if ISWIN:
   import winreg
   with winreg.CreateKey(winreg.HKEY_CURRENT_USER,r'Control Panel\Desktop') as k:
@@ -194,7 +197,7 @@ def prepare(out,report):
      if icons:win32gui.ShowWindow(icons,win32con.SW_HIDE)
    except Exception:pass
   win32gui.EnumWindows(hide_desktop_list,None)
- report['desktop_preparation']={'status':'PASS','before_recording':True,'brave_executable':exe,'default_http_https':default,'browser':browser,'wallpaper':'studio-wallpaper.png','installer_or_first_run_recorded':False}
+ report['desktop_preparation']={'status':'PASS','before_recording':True,'brave_executable':exe,'default_http_https':default,'browser':browser,'wallpaper':wall.name,'installer_or_first_run_recorded':False}
 
 class ConsoleGuard:
  def __init__(self,out):self.out=Path(out);self.events=[];self.stop=threading.Event();self.armed=False;self.thread=None

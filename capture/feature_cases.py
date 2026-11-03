@@ -132,6 +132,8 @@ def windows(main,nav,report,out,screenshot):
   cases.append({'id':'official-idm-install-through-semo-user-gui','status':'PASS' if idm and stable_since is not None else 'BLOCKED','mode':'intentional interactive user-assisted GUI','external_installer_relaunch':False,'actual_idm_path':str(idm) if idm else None,'gui_actions':len(actions),'elapsed_seconds':time.time()-start,'reason':None if idm and stable_since is not None else 'Interactive installation did not reach an installed executable and closed wizard.'})
   if not idm:checkpoint();return
   report['actual_original_idm_path']=str(idm);time.sleep(4)
+  from browser_consent import approve_windows
+  approve_windows(report,out,screenshot);checkpoint()
   for _ in range(5):
    if not clear_vendor_information():break
   main.set_focus()
