@@ -191,13 +191,41 @@ def prepare(out,report):
  report['desktop_preparation']={'status':'PASS','before_recording':True,'brave_executable':exe,'default_http_https':default,'browser':browser,'wallpaper':wall.name,'installer_or_first_run_recorded':False}
 
 class ConsoleGuard:
- def __init__(self,out):self.out=Path(out);self.events=[];self.stop=threading.Event();self.armed=False;self.thread=None
+ def __init__(self,out):self.out=Path(out);self.events=[];self.allowed_events=[];self.install_rules={};self.rule_lock=threading.RLock();self.seen_rejected=set();self.seen_allowed=set();self.stop=threading.Event();self.armed=False;self.thread=None
  def start(self):
   self.armed=True
   if ISWIN:
    self.thread=threading.Thread(target=self.windows,daemon=True)
   else:self.thread=threading.Thread(target=self.linux,daemon=True)
   self.thread.start()
+ def allow_install_terminal(self,chapter,title,seconds=900):
+  import uuid
+  assert not ISWIN and chapter in ['linux-one-line','linux-appimage','linux-deb-apt'],'No terminal exemption for this chapter'
+  assert len(title)>20 and seconds<=1200
+  token=uuid.uuid4().hex
+  with self.rule_lock:self.install_rules[token]={'chapter':chapter,'title':title,'parent_pid':os.getpid(),'binary':str(Path(shutil.which('xterm')).resolve()),'until':time.monotonic()+seconds,'active':True,'opened':time.time()}
+  return token
+ def end_install_terminal(self,token):
+  with self.rule_lock:self.install_rules[token]['active']=False;self.install_rules[token]['closed']=time.time()
+ def observe_linux_terminal(self,w,d,klass,source):
+  title=w.get_wm_name() or '';pid=0
+  try:
+   prop=w.get_full_property(d.intern_atom('_NET_WM_PID'),0);pid=int(prop.value[0])
+  except Exception:pass
+  approved=None
+  with self.rule_lock:
+   for token,rule in self.install_rules.items():
+    if not(rule['active'] and time.monotonic()<=rule['until'] and title==rule['title'] and 'xterm' in klass):continue
+    try:
+     exe=str(Path(f'/proc/{pid}/exe').resolve());stat=Path(f'/proc/{pid}/stat').read_text();parent=int(stat.rsplit(')',1)[1].split()[1])
+     if exe==rule['binary'] and parent==rule['parent_pid']:approved=rule;break
+    except Exception:pass
+  event={'time':time.time(),'class':klass,'source':source,'window_id':w.id,'pid':pid,'title':title}
+  if approved:
+   key=(w.id,approved['chapter'])
+   if key not in self.seen_allowed:self.seen_allowed.add(key);self.allowed_events.append({**event,'chapter':approved['chapter'],'policy':'Exact unique title, real xterm binary and direct capture-process parent; bounded live installation scope'})
+  elif w.id not in self.seen_rejected:
+   self.seen_rejected.add(w.id);self.events.append(event)
  def windows(self):
   import win32gui,win32con
   from ctypes import wintypes
@@ -238,19 +266,20 @@ class ConsoleGuard:
      if e.type==X.MapNotify:
       try:
        klass=' '.join(e.window.get_wm_class() or ()).lower()
-       if any(n in klass for n in names):self.events.append({'time':time.time(),'class':klass,'source':'X11_MapNotify'})
+       if any(n in klass for n in names):self.observe_linux_terminal(e.window,d,klass,'X11_MapNotify')
       except Exception:pass
     for w in x11_windows(root):
      try:
       klass=' '.join(w.get_wm_class() or ()).lower()
-      if any(n in klass for n in names) and w.get_attributes().map_state==X.IsViewable and w.id not in seen:
-       seen.add(w.id);self.events.append({'time':time.time(),'class':klass,'source':'visibility_scan'})
+      if any(n in klass for n in names) and w.get_attributes().map_state==X.IsViewable:
+       self.observe_linux_terminal(w,d,klass,'visibility_scan')
      except Exception:pass
     self.stop.wait(.04)
   finally:d.close()
  def finish(self):
   alive=bool(self.thread and self.thread.is_alive())
+  if any(r['active'] for r in self.install_rules.values()):self.events.append({'time':time.time(),'source':'unclosed_installation_scope'})
   self.stop.set()
   if self.thread:self.thread.join(timeout=3)
-  result={'status':'REJECT' if self.events or not alive else 'PASS','monitor_alive_at_end':alive,'detected_terminal_console_events':len(self.events),'events':self.events,'method':'WinEvent+visibility scan' if ISWIN else 'X11 MapNotify+visibility scan','limit':'Native window monitoring is supplemented by editorial frame review; no absolute zero-flash guarantee from sampling alone.'}
+  result={'status':'REJECT' if self.events or not alive else 'PASS','monitor_alive_at_end':alive,'detected_terminal_console_events':len(self.events),'events':self.events,'authorized_installation_terminal_events':self.allowed_events,'installation_scopes_all_closed':all(not r['active'] for r in self.install_rules.values()),'method':'WinEvent+visibility scan' if ISWIN else 'X11 MapNotify+visibility scan','limit':'Native window monitoring is supplemented by editorial frame review; no absolute zero-flash guarantee from sampling alone.'}
   (self.out/'console-visibility-audit.json').write_text(json.dumps(result,indent=2));return result

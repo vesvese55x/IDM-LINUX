@@ -1,0 +1,52 @@
+[
+  {
+    "file": "app-01.mp3",
+    "duration": 56.346122,
+    "bytes": 450995
+  },
+  {
+    "file": "app-02.mp3",
+    "duration": 52.819592,
+    "bytes": 422783
+  },
+  {
+    "file": "apt-01.mp3",
+    "duration": 60.447347,
+    "bytes": 483805
+  },
+  {
+    "file": "apt-02.mp3",
+    "duration": 57.521633,
+    "bytes": 460400
+  },
+  {
+    "file": "gdebi-01.mp3",
+    "duration": 51.983673,
+    "bytes": 416096
+  },
+  {
+    "file": "gdebi-02.mp3",
+    "duration": 51.30449,
+    "bytes": 410662
+  },
+  {
+    "file": "gdebi-03.mp3",
+    "duration": 55.484082,
+    "bytes": 444099
+  },
+  {
+    "file": "one-01.mp3",
+    "duration": 51.905306,
+    "bytes": 415469
+  },
+  {
+    "file": "one-02.mp3",
+    "duration": 54.778776,
+    "bytes": 438457
+  },
+  {
+    "file": "one-03.mp3",
+    "duration": 51.435102,
+    "bytes": 411707
+  }
+]

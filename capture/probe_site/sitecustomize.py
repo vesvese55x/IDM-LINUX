@@ -12,7 +12,7 @@ if os.environ.get('FILM_WIDGET_DUMP'):
         def dump():
             try:
                 if self.winfo_viewable() and not getattr(self,'_film_viewport_set',False):
-                    self.geometry('1880x1000+10+10');self._film_viewport_set=True
+                    self.geometry(os.environ.get('FILM_CAPTURE_GEOMETRY','1880x1000+10+10'));self._film_viewport_set=True
                 out=[]
                 def walk(name):
                     # winfo_children() cannot wrap Tcl-created __tk__messagebox

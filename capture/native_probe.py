@@ -190,6 +190,9 @@ try:
  pyautogui.FAILSAFE=False
  w,h=pyautogui.size();assert w>=1000 and h>=700,'Desktop resolution is not usable'
  exe=download_asset()
+ if os.getenv("FILM_TUTORIAL_CHAPTER")=="install":
+  import installation_chapters
+  installation_chapters.prepare(report,OUT,exe)
  import desktop_ready
  desktop_ready.prepare(OUT,report);save();screenshot('desktop-ready-before-recording')
  console_guard=desktop_ready.ConsoleGuard(OUT);console_guard.start()
@@ -197,6 +200,8 @@ try:
  if os.getenv('FILM_TUTORIAL_CHAPTER')=='promo':
   import training_chapters
   training_chapters.run(report,OUT,screenshot)
+ elif os.getenv('FILM_TUTORIAL_CHAPTER')=='install':
+  installation_chapters.run(report,OUT,screenshot,console_guard)
  elif os.getenv('FILM_DESKTOP_ONLY')=='1':
   report['phase']='real-desktop-icons-taskbar-validation';report['application_feature_tests']='NOT_RUN — desktop-only environment check'
   time.sleep(3);screenshot('desktop-icons-taskbar-visible')
@@ -245,8 +250,12 @@ finally:
  if os.getenv('FILM_TUTORIAL_CHAPTER'):
   if report.get('status')=='PASS':
    try:
-    import training_chapters
-    training_chapters.finish(report,OUT)
+    if os.getenv('FILM_TUTORIAL_CHAPTER')=='install':
+     import installation_chapters
+     installation_chapters.finish(report,OUT)
+    else:
+     import training_chapters
+     training_chapters.finish(report,OUT)
    except Exception as e:
     report['status']='FAIL';report['tutorial_finish_error']=type(e).__name__+': '+str(e);(OUT/'tutorial-finish-exception.txt').write_text(traceback.format_exc())
   proofdir=OUT/'tutorial-receipts';proofdir.mkdir(exist_ok=True)

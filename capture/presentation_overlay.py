@@ -114,8 +114,8 @@ def build(out,report,duration):
  for number,cue in enumerate(cues,1):
   prefix=cue['audio_file'][:2];base=cue['video_offset_seconds'];length=cue['duration_seconds']
   # Left gutter only. Keep browser controls and the operating-system taskbar clear.
-  emit(3,base,base+min(5.5,length),'{\\an7\\pos(24,996)\\fs17\\1c&HC8D3DD&\\bord0.5\\3c&H131B24&\\fad(220,220)}'+escape(f'{number:02} · '+chapters[prefix]))
-  for offset,seconds,title,body in notes.get(prefix,[]):
+  emit(3,base,base+min(5.5,length),'{\\an7\\pos(24,996)\\fs17\\1c&HC8D3DD&\\bord0.5\\3c&H131B24&\\fad(220,220)}'+escape(f'{number:02} · '+chapters.get(prefix,cue.get('chapter_title','KURULUM'))))
+  for offset,seconds,title,body in notes.get(prefix,cue.get('presentation_notes',[])):
    start=base+offset;end=min(base+length-.2,start+min(seconds,7))
    # Verified empty right gutter of this browser chapter: x>=1576, width320.
    x=1576;y=182;w=320;h=144
@@ -128,11 +128,17 @@ def build(out,report,duration):
    # Restrained hand-drawn-style underline reveals left to right, not blinking.
    emit(7,start+.36,end,'{\\an7\\pos(1594,248)\\clip(1594,246,1594,252)\\t(0,480,\\clip(1594,246,1712,252))\\p1\\bord0\\1c&H70D8FF&\\1a&H30&}m 0 0 b 24 2 74 -1 118 1 l 118 3 b 74 1 24 4 0 2')
    cards.append({'start':start,'end':end,'title':title,'body':body,'safe_rect':[x,y,w,h]})
+ native_marks=[]
+ for m in report.get('runtime_marks',[]):
+  x,y,w,h=m['rect'];assert x>=0 and y>=0 and x+w<1552 and y+h<1032,'Native annotation violates verified capture safe area'
+  color=m['color'];color=color[4:6]+color[2:4]+color[:2]
+  tag=f'\\an7\\pos({x-4},{y-4})\\p1\\bord2.1\\shad0\\1a&HFF&\\3c&H{color}&\\fad(140,220)'
+  emit(12,m['start'],m['end'],'{'+tag+'}'+rectangle(w+8,h+8,7));native_marks.append(m)
  import semantic_emphasis
  semantic_audit=semantic_emphasis.draw(out,report,duration,emit,rectangle,oval)
  focus_seconds=semantic_emphasis.union_length(focus_windows)
  events.sort(key=lambda e:e[0]);path=out/'presentation.ass';path.write_text(HEADER+''.join(e[1] for e in events),encoding='utf-8')
- audit={'status':'PASS','cursor_style':'26x18 dark amber, 3px centre dot; visible only briefly at important actual clicks','cursor_always_visible':False,'cursor_visible_seconds':round(focus_seconds,3),'cursor_duty_cycle':round(focus_seconds/duration,5),'semantic_emphasis':semantic_audit,'pointer_samples':len(samples),'cursor_keyframes':len(kept),'real_click_pulses':sum(e.get('action')=='real_mouse_click' for e in report.get('tutorial_browser_events',[])),'animated_note_count':len(cards),'notes':cards,'source_content_modified':False,'ui_interaction_affected':False,'note_layout_scope':'Verified browser right gutter only; GUI chapters require their own safe area, never blindly reuse','voice_rate':1.0}
+ audit={'status':'PASS','cursor_style':'26x18 dark amber, 3px centre dot; visible only briefly at important actual clicks','cursor_always_visible':False,'cursor_visible_seconds':round(focus_seconds,3),'cursor_duty_cycle':round(focus_seconds/duration,5),'semantic_emphasis':semantic_audit,'pointer_samples':len(samples),'cursor_keyframes':len(kept),'real_click_pulses':sum(e.get('action')=='real_mouse_click' for e in report.get('tutorial_browser_events',[])),'native_measured_marks':native_marks,'animated_note_count':len(cards),'notes':cards,'source_content_modified':False,'ui_interaction_affected':False,'note_layout_scope':'Verified browser right gutter only; GUI chapters require their own safe area, never blindly reuse','voice_rate':1.0}
  (out/'presentation-audit.json').write_text(json.dumps(audit,ensure_ascii=False,indent=2),encoding='utf-8');return path,audit
 
 def self_test():

@@ -1,0 +1,88 @@
+name: Film — four clean real Linux installation lessons
+on:
+  push:
+    branches: ['film-capture/**']
+    paths: ['capture/**', '.github/workflows/film-install-lessons.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: installation-film-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  install:
+    if: ${{ contains(github.event.head_commit.message, '[install-lessons]') || github.event_name == 'workflow_dispatch' }}
+    name: Clean real install (${{ matrix.mode }})
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [one, app, apt, gdebi]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Prepare desktop tools off camera, never the IDM package
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb xauth openbox xfdesktop4 xfce4-panel thunar dbus-x11 adwaita-icon-theme xclip xdotool wmctrl scrot ffmpeg python3-tk python3-venv python3-pil python3-gi gdebi xterm bsdutils libfuse2t64 fonts-dejavu-core fonts-dejavu-extra fonts-noto-core fonts-liberation locales feh xdg-utils curl
+          sudo locale-gen tr_TR.UTF-8
+          sudo update-locale LANG=tr_TR.UTF-8
+          sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
+          echo 'deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg arch=amd64] https://brave-browser-apt-release.s3.brave.com/ stable main' | sudo tee /etc/apt/sources.list.d/brave-browser-release.list > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq brave-browser
+          /usr/bin/python3 -m venv --system-site-packages .capture-venv
+          .capture-venv/bin/pip install -q requests pillow pyautogui cryptography websocket-client websockets fonttools
+          mkdir -p "$HOME/Downloads"
+          if dpkg-query -W -f='${Status}' idm-linux 2>/dev/null | grep -q 'install ok installed'; then echo 'Runner is not clean'; exit 1; fi
+      - name: Runtime-check the strict terminal scope, then record the actual installation
+        env:
+          LANG: tr_TR.UTF-8
+          LC_ALL: tr_TR.UTF-8
+          LANGUAGE: tr_TR:tr
+          DISPLAY: ':99'
+          XDG_SESSION_TYPE: x11
+          DESKTOP_SESSION: openbox
+          FILM_PRESENTATION: '1'
+          FILM_TUTORIAL_CHAPTER: install
+          FILM_INSTALL_MODE: ${{ matrix.mode }}
+          FILM_FUNCTIONAL: '1'
+        run: |
+          export XAUTHORITY="$RUNNER_TEMP/film.Xauthority"
+          touch "$XAUTHORITY"
+          chmod 600 "$XAUTHORITY"
+          xauth -f "$XAUTHORITY" add :99 . "$(mcookie)"
+          Xvfb :99 -screen 0 1920x1080x24 -auth "$XAUTHORITY" -nolisten tcp > /tmp/film-xvfb.log 2>&1 &
+          .capture-venv/bin/python -B - <<'PY'
+          import subprocess,time
+          deadline=time.monotonic()+20
+          while subprocess.run(['xdotool','getdisplaygeometry'],capture_output=True).returncode:
+              assert time.monotonic()<deadline,'Xvfb did not start'
+              time.sleep(.2)
+          PY
+          openbox > /tmp/film-openbox.log 2>&1 &
+          .capture-venv/bin/python -B capture/installation_guard_selftest.py
+          .capture-venv/bin/python -B capture/presentation_overlay.py
+          dbus-run-session -- .capture-venv/bin/python -B capture/native_probe.py linux
+      - name: Save original footage and all evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: film-install-native-${{ matrix.mode }}
+          path: |
+            evidence/
+            guard-selftest/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Save small review evidence separately
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: film-install-receipts-${{ matrix.mode }}
+          path: |
+            evidence/tutorial-receipts/
+            guard-selftest/console-visibility-audit.json
+          if-no-files-found: warn
+          retention-days: 14
