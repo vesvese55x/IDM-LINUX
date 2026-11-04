@@ -26,6 +26,7 @@ eşleşmezse meta yok sayılır (zehirli meta veri saldırısına karşı).
 """
 from __future__ import annotations
 
+import errno
 import hashlib
 import logging
 import os
@@ -360,7 +361,10 @@ class Storage:
         if fh is not None and not fh.closed:
             return fh
         try:
-            fh = open(path, "r+b")
+            # HAVE/bitfield is published after write(). The HTTP bridge reads
+            # through a different file descriptor, so buffered writes can expose
+            # sparse zeroes even though the piece was verified in memory.
+            fh = open(path, "r+b", buffering=0)
         except OSError as exc:  # pragma: no cover - disk hatası
             log.warning("Dosya açılamadı (%s): %s", path.name, exc)
             return None
@@ -402,17 +406,25 @@ class Storage:
                 local = pos - fstart
                 take = min(remaining.nbytes, f.length - local)
                 fh = self._get_handle(path)
-                if fh is not None:
+                if fh is None:
+                    raise OSError(errno.EIO, "Torrent parça dosyası açılamadı")
+                try:
+                    fh.seek(local)
+                    written = 0
+                    while written < take:
+                        count = fh.write(remaining[written:take])
+                        if not isinstance(count, int) or count <= 0 or count > take - written:
+                            raise OSError(errno.EIO, "Torrent parçası tamamen yazılamadı")
+                        written += count
+                except OSError as exc:
+                    log.warning("Parça yazılamadı (%s): %s", path.name, exc)
                     try:
-                        fh.seek(local)
-                        fh.write(remaining[:take])
-                    except OSError as exc:  # pragma: no cover - disk hatası
-                        log.warning("Parça yazılamadı (%s): %s", path.name, exc)
-                        try:
-                            fh.close()
-                        except OSError:
-                            pass
-                        self._handles.pop(path, None)
+                        fh.close()
+                    except OSError:
+                        pass
+                    self._handles.pop(path, None)
+                    # Never let _on_piece_downloaded mark an unwritten piece HAVE.
+                    raise
                 pos += take
                 remaining = remaining[take:]
 
