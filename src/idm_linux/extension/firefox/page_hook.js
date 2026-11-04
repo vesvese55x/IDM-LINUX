@@ -7,6 +7,7 @@
 
   window.__idmLinuxCaptureEnabled = () => Boolean(document.documentElement && document.documentElement.dataset.idmLinuxCaptureEnabled === "1");
   window.__idmLinuxCanTakeover = () => window.__idmLinuxCaptureEnabled() && document.documentElement.dataset.idmLinuxBlobReady === "1";
+  const workspaceFetch = typeof window.fetch === "function" ? window.fetch.bind(window) : null;
   const reported = new Set();
   const seriesCount = new Map(); // v2.8.7: segment seli bastırma sayaçları
 
@@ -365,14 +366,68 @@
     })();
     return true;
   }
+  // Workspace row links are authenticated HTTP downloads, unlike the viewer's
+  // Blob anchors. Fetch in the authenticated page, then use the existing bounded
+  // runtime-message upload; page -> localhost fetch is blocked by site CSP/PNA.
+  function tryInterceptArenaWorkspaceAnchor(anchor, event) {
+    if (!workspaceFetch || !window.__idmLinuxCanTakeover() || !anchor || anchor.__idmBypassWorkspace || (event && event.altKey)) return false;
+    let url;
+    try { url = new URL(anchor.getAttribute("href") || anchor.href || "", location.href); } catch (_e) { return false; }
+    if (!/(^|\.)arena\.ai$/.test(location.hostname) || url.origin !== location.origin || !/^\/api\/chat\/workspace\/cas\/user\/[^/]+$/.test(url.pathname)) return false;
+    if (event) { event.preventDefault(); event.stopImmediatePropagation(); }
+    const fallback = () => {
+      const copy = document.createElement("a"); copy.__idmBypassWorkspace = true;
+      copy.href = url.href; copy.download = anchor.getAttribute("download") || "";
+      (document.body || document.documentElement).appendChild(copy); copy.click(); copy.remove();
+    };
+    (async () => {
+      let transferId = "", reader = null, response = null;
+      try {
+        response = await workspaceFetch(url.href, { credentials: "include", redirect: "follow" });
+        const size = Number(response.headers.get("content-length"));
+        // Unknown/oversize bodies stay browser-owned; never buffer the full file.
+        if (!response.ok || !response.body || !Number.isSafeInteger(size) || size <= 0 || size > 1024 ** 3) throw new Error("Unsupported workspace response");
+        const disposition = response.headers.get("content-disposition") || "";
+        const encoded = disposition.match(/filename\*=UTF-8''([^;]+)/i);
+        const plain = disposition.match(/filename="([^"]+)"|filename=([^;]+)/i);
+        let filename = anchor.getAttribute("download") || "";
+        if (!filename && encoded) { try { filename = decodeURIComponent(encoded[1].trim()); } catch (_e) {} }
+        filename = filename || (plain && (plain[1] || plain[2]).trim()) || "workspace-download.bin";
+        const start = await blobRpc("begin", { filename, size, mimeType: response.headers.get("content-type") || "application/octet-stream" });
+        if (!start.ok || !start.transferId) throw new Error("Workspace transfer rejected");
+        transferId = start.transferId; reader = response.body.getReader(); let offset = 0;
+        for (;;) {
+          if (!window.__idmLinuxCaptureEnabled()) throw new Error("Capture disabled");
+          const { done, value } = await reader.read(); if (done) break;
+          if (offset + value.length > size) throw new Error("Workspace size exceeded");
+          for (let i = 0; i < value.length; i += 384 * 1024) {
+            if (!window.__idmLinuxCaptureEnabled()) throw new Error("Capture disabled");
+            const part = new Blob([value.subarray(i, i + 384 * 1024)]);
+            const reply = await blobRpc("chunk", { transferId, offset, dataBase64: await encodeBlobSlice(part) });
+            offset += part.size;
+            if (!reply.ok || reply.received !== offset) throw new Error("Workspace chunk rejected");
+          }
+        }
+        if (offset !== size) throw new Error("Workspace response truncated");
+        const finish = await blobRpc("finish", { transferId });
+        if (!finish.ok || !finish.takeover) throw new Error("Workspace handoff rejected");
+      } catch (_e) {
+        if (reader) { try { await reader.cancel(); } catch (_ignore) {} }
+        else if (response && response.body && response.body.cancel) { try { await response.body.cancel(); } catch (_ignore) {} }
+        if (transferId) { try { await blobRpc("cancel", { transferId }); } catch (_ignore) {} }
+        fallback();
+      }
+    })();
+    return true;
+  }
   window.addEventListener("click", (ev) => {
     if (!ev.isTrusted || ev.defaultPrevented || ev.button !== 0) return;
-    const a = ev.target && ev.target.closest ? ev.target.closest("a[download]") : null;
-    if (a) tryInterceptBlobAnchor(a, ev);
+    const a = ev.target && ev.target.closest ? ev.target.closest("a[href]") : null;
+    if (a && !tryInterceptArenaWorkspaceAnchor(a, ev)) tryInterceptBlobAnchor(a, ev);
   }, true);
   const nativeAnchorClick = HTMLAnchorElement.prototype.click;
   HTMLAnchorElement.prototype.click = function (...args) {
-    if (!tryInterceptBlobAnchor(this, null)) return nativeAnchorClick.apply(this, args);
+    if (!tryInterceptArenaWorkspaceAnchor(this, null) && !tryInterceptBlobAnchor(this, null)) return nativeAnchorClick.apply(this, args);
   };
 
   // v3.14.3 FIX: emitStream, kazıyıcı modüllerin okuyabilmesi için burada (tanım kapsamından) global'e açılır

@@ -135,6 +135,22 @@ async function textTrackCaptionTests(){
   }
   console.log('PASS external tracks avoid duplicate snapshots; embedded cues preserve milliseconds; oversize is not truncated');
 }
+async function arenaWorkspaceTests(){
+  for (const mode of ['ok','truncated','reject','passive','unknown-size','cross-origin']) {
+    const h=pageHarness('arena.ai',mode!=='passive',mode==='reject');const data=Buffer.alloc(1200000,43);let reads=0;
+    h.win.fetch=async(url,init)=>({ok:true,headers:{get(k){return k==='content-length'?(mode==='unknown-size'?'':String(data.length)):k==='content-disposition'?"attachment; filename*=UTF-8''workspace%20source.zip":'application/zip';}},body:{getReader(){return {async read(){if(reads++)return {done:true};return {done:false,value:mode==='truncated'?data.subarray(0,8):data};},async cancel(){}};}}});
+    h.load();const a=new h.Anchor();a.href=(mode==='cross-origin'?'https://other.test':'https://arena.ai')+'/api/chat/workspace/cas/user/opaque-key';a.click();
+    if(mode==='ok') {
+      await until(()=>h.posts.some(p=>p.action==='finish'));
+      assert.equal(h.clicks.length,0);assert.equal(h.posts.find(p=>p.action==='begin').filename,'workspace source.zip');
+      assert(Buffer.concat(h.chunks.map(p=>Buffer.from(p.dataBase64,'base64'))).equals(data));assert(h.chunks.every(p=>p.dataBase64.length<=524288));
+    } else {
+      await until(()=>h.clicks.length===1);assert(!h.posts.some(p=>p.action==='finish'));
+      if(mode==='truncated'||mode==='reject')assert(h.posts.some(p=>p.action==='cancel'));
+    }
+  }
+  console.log('PASS authenticated Arena row links stream via bounded runtime chunks; truncation, rejection, passive, unknown-size and cross-origin remain safe');
+}
 async function pageTests(){
   {
     const h=pageHarness('example.test',false);h.load();
@@ -223,4 +239,4 @@ async function probeRecoveryTest(){
   assert.equal(vm.runInContext('globalThis.probeCalls',h.context),2);
   console.log('PASS video probe recovers after bridge wake without assigning to const');
 }
-(async()=>{await pageTests();await backgroundTests();await probeRecoveryTest();await externalCaptionTests();await textTrackCaptionTests();await staleCaptionTests();await youtubeCaptionQueueTests();await youtubeCaptionTimeoutTest();await navigationCaptionTest();console.log('BROWSER_CAPTURE_HARNESS_PASS');})().catch(e=>{console.error(e);process.exitCode=1;});
+(async()=>{await arenaWorkspaceTests();await pageTests();await backgroundTests();await probeRecoveryTest();await externalCaptionTests();await textTrackCaptionTests();await staleCaptionTests();await youtubeCaptionQueueTests();await youtubeCaptionTimeoutTest();await navigationCaptionTest();console.log('BROWSER_CAPTURE_HARNESS_PASS');})().catch(e=>{console.error(e);process.exitCode=1;});
