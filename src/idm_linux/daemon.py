@@ -2875,9 +2875,9 @@ def make_http_handler(state: DaemonState):
                             if not blk:
                                 break
                             self.wfile.write(blk)
+                            job.add_served(len(blk))
                             remaining -= len(blk)
                         self.wfile.flush()
-                        job.add_served(length)
                 except (BrokenPipeError, ConnectionResetError, OSError):
                     pass
                 return
@@ -2951,6 +2951,7 @@ def make_http_handler(state: DaemonState):
                         if not chunk:
                             continue
                         self.wfile.write(chunk)
+                        job.add_served(len(chunk))
                         _pending += len(chunk)
                         # v3.10.1: her 1 MB'ta bir flush (her parçada flush = kasma)
                         if _pending >= 1_048_576:

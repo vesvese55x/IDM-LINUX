@@ -97,11 +97,72 @@ class HlsCompletenessTests(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError, 'segmenti boş'):
                     list(hs._iter_playlist_segments_parallel('https://example/video.m3u8', body, {}))
 
+    def test_captured_8192_prefix_refetches_complete_vod(self):
+        full = '#EXTM3U\n#EXT-X-PLAYLIST-TYPE:VOD\n' + ''.join('#EXTINF:10,\n' + ('x' * 100) + str(i) + '.ts\n' for i in range(564)) + '#EXT-X-ENDLIST\n'
+        prefix = full[:8192]
+        self.assertNotIn('#EXT-X-ENDLIST', prefix)
+        with patch.object(hs, 'fetch_url_bytes', return_value=full.encode()) as fetch:
+            _, body, _, _ = hs.resolve_media_playlists('https://example/video', {}, initial_manifest_text=prefix)
+        self.assertEqual(body.count('#EXTINF:'), 564)
+        self.assertIn('#EXT-X-ENDLIST', body)
+        fetch.assert_called_once()
+
+    def test_complete_captured_vod_remains_usable_without_network(self):
+        body = '#EXTM3U\n#EXTINF:10,\nseg.ts\n#EXT-X-ENDLIST\n'
+        with patch.object(hs, 'fetch_url_bytes') as fetch:
+            _, result, _, _ = hs.resolve_media_playlists('https://example/video', {}, initial_manifest_text=body)
+        self.assertEqual(result, body)
+        fetch.assert_not_called()
+
+    def test_failed_refresh_never_uses_captured_partial_vod(self):
+        prefix = '#EXTM3U\n#EXT-X-PLAYLIST-TYPE:VOD\n#EXTINF:10,\nseg.ts\n'
+        with patch.object(hs, 'fetch_url_bytes', side_effect=RuntimeError('unreachable')):
+            with self.assertRaisesRegex(RuntimeError, 'unreachable'):
+                hs.resolve_media_playlists('https://example/video', {}, initial_manifest_text=prefix)
+
+    def test_unfinished_vod_cannot_be_downloaded_as_complete_file(self):
+        body = '#EXTM3U\n#EXT-X-PLAYLIST-TYPE:VOD\n#EXTINF:10,\nseg.ts\n'
+        with self.assertRaisesRegex(RuntimeError, 'ENDLIST yok'):
+            list(hs.iter_playlist_segments_smart('https://example/video', body, {}, hls_mode='vod'))
+
     def test_live_refetch_exhaustion_is_not_end_of_broadcast(self):
         body = '#EXTM3U\n#EXT-X-TARGETDURATION:1\n#EXTINF:1,\na.ts\n'
         with patch.object(hs, 'fetch_url_bytes', side_effect=[b'G' * 4096, RuntimeError('network')]), patch.object(hs.time, 'sleep'):
             with self.assertRaisesRegex(RuntimeError, 'yayın sonu doğrulanmadı'):
                 list(hs.iter_playlist_segments_smart('https://example/live.m3u8', body, {}, hls_mode='live', max_refetch_fail=1))
+
+    def test_http_live_and_finished_range_account_delivered_bytes(self):
+        import urllib.request
+        from idm_linux.daemon import make_http_handler, ReusableThreadingHTTPServer
+        body = b'x' * 4096
+        self.job.ensure_started = Mock()
+        self.job.restart_for_resume = Mock(return_value=True)
+        self.job.client_disconnected = Mock()
+        def chunks(offset=0):
+            yield body[:2048]
+            yield body[2048:]
+            self.job.output_file.write_bytes(body)
+            self.job.completed = True
+        self.job.iter_bytes_from = chunks
+        engine = SimpleNamespace(get_ticket=lambda _: self.job.ticket, get_job=lambda _: self.job)
+        cfg = SimpleNamespace(http_port=0)
+        state = SimpleNamespace(stream_engine=engine, cfg=cfg)
+        server = ReusableThreadingHTTPServer(('127.0.0.1', 0), make_http_handler(state))
+        cfg.http_port = server.server_port
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        try:
+            url = f'http://127.0.0.1:{server.server_port}/stream/test-hls/movie.mp4'
+            with urllib.request.urlopen(url, timeout=5) as response:
+                self.assertEqual(response.read(), body)
+            self.assertEqual(self.job.served_bytes, 4096)
+            request = urllib.request.Request(url, headers={'Range': 'bytes=100-199'})
+            with urllib.request.urlopen(request, timeout=5) as response:
+                self.assertEqual(response.status, 206)
+                self.assertEqual(len(response.read()), 100)
+            self.assertEqual(self.job.served_bytes, 4196)
+        finally:
+            server.shutdown()
+            server.server_close()
 
 
 @unittest.skipUnless(shutil.which('ffmpeg') and shutil.which('ffprobe'), 'Real FFmpeg/ffprobe required')
@@ -152,6 +213,16 @@ class RealHlsCompletenessTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0)
         self.assertGreaterEqual(float(result.stdout.strip()), 3.9)
         self.assertEqual(self.failed_requests, 2)
+
+    def test_browser_clipped_manifest_still_downloads_entire_video(self):
+        full = (self.root / 'video.m3u8').read_text()
+        prefix = full[:full.index('seg2.ts')]
+        data = b''.join(hs.stream_hls_as_mp4(self.url, initial_manifest_text=prefix))
+        target = self.root / 'refreshed-full.mp4'
+        target.write_bytes(data)
+        result = subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'default=nw=1:nk=1', str(target)], capture_output=True, text=True, timeout=5)
+        self.assertEqual(result.returncode, 0)
+        self.assertGreaterEqual(float(result.stdout.strip()), 3.9)
 
     def test_permanent_segment_failure_is_reported_even_with_partial_output(self):
         self.always_fail = True

@@ -338,7 +338,8 @@ class ActiveStreamJob:
 
     def add_served(self, n: int) -> None:
         if n > 0:
-            self.served_bytes += n
+            with self._cond:
+                self.served_bytes += n
 
     def ensure_started(self) -> None:
         with self._cond:

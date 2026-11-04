@@ -322,6 +322,14 @@ def resolve_media_playlists(
     """
     if initial_manifest_text and is_hls_playlist_text(initial_manifest_text):
         text = initial_manifest_text
+        # The browser intentionally caps captured manifests at 8192 characters;
+        # the probe cache can also cap them. A prefix is NOT a complete VOD.
+        # Refresh unfinished media lists (including real live snapshots), and
+        # potentially clipped masters, from the ORIGINAL URL before downloading.
+        media_snapshot = "#EXT-X-STREAM-INF" not in text
+        if (media_snapshot and "#EXT-X-ENDLIST" not in text) or (not media_snapshot and len(text) >= 8192):
+            raw = fetch_url_bytes(m3u8_url, headers, timeout=10.0)
+            text = raw.decode("utf-8", errors="ignore")
     else:
         raw = fetch_url_bytes(m3u8_url, headers, timeout=10.0)
         text = raw.decode("utf-8", errors="ignore")
@@ -841,6 +849,9 @@ def iter_playlist_segments_smart(
     parsed = parse_media_playlist_body(playlist_url, playlist_body)
     if not parsed["items"]:
         raise RuntimeError("HLS çalma listesinde indirilebilir segment bulunamadı.")
+
+    if hls_mode not in ("dvr", "live") and not parsed["endlist"]:
+        raise RuntimeError("HLS VOD listesi eksik: ENDLIST yok; kısa liste tam video sayılmadı. Canlı yayın için DVR/Canlı modunu seçin.")
 
     if parsed["endlist"] or hls_mode not in ("dvr", "live"):
         yield from _iter_playlist_segments_parallel(
