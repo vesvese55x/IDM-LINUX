@@ -1702,13 +1702,13 @@ def make_http_handler(state: DaemonState):
                     return
                 try:
                     if action == "begin":
-                        result = store.begin(data.get("filename"), data.get("mimeType"), data.get("size"))
+                        result = store.begin(data.get("filename"), data.get("mimeType"), data.get("size"), streaming=data.get("streaming", False))
                     elif action == "chunk":
                         result = store.chunk(key, data.get("offset"), data.get("dataBase64"))
                     elif action == "cancel":
                         result = store.cancel(key)
                     elif action == "finish":
-                        upload = store.finish(key)
+                        upload = store.finish(key, final_size=data.get("size"))
                         try:
                             with upload["path"].open("rb") as reader:
                                 ticket, error = state.auth_proxy.create_blob_ticket_streamed(reader=reader, length=upload["size"], filename=upload["filename"], mime_type=upload["mime"])

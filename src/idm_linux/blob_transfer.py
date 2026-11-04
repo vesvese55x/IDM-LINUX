@@ -32,7 +32,10 @@ class BlobTransferStore:
             if now - job['touched'] > self.TTL:
                 self.cancel(key)
 
-    def begin(self, filename, mime, size):
+    def begin(self, filename, mime, size, streaming=False):
+        unknown = streaming is True and size is None
+        if unknown:
+            size = self.MAX_BYTES
         if isinstance(size, bool) or not isinstance(size, int) or not 0 < size <= self.MAX_BYTES:
             raise ValueError('Invalid blob size')
         with self._lock:
@@ -44,13 +47,14 @@ class BlobTransferStore:
             partials = [p for p in self.directory.glob('*.part') if re.fullmatch(r'[0-9a-f]{48}\.part', p.name)]
             if len(partials) >= self.MAX_ACTIVE:
                 raise ValueError('Previous blob uploads are still expiring')
-            reserved = sum(j['size'] - j['received'] for j in self._jobs.values())
-            if shutil.disk_usage(self.directory).free < size * 2 + reserved + 32 * 1024 ** 2:
+            reserved = sum(max(0, j['reservation'] - j['received']) for j in self._jobs.values())
+            reservation = min(size, 64 * 1024 ** 2) if unknown else size
+            if shutil.disk_usage(self.directory).free < reservation * 2 + reserved + 32 * 1024 ** 2:
                 raise ValueError('Insufficient staging space')
             key = secrets.token_hex(24)
             path = self.directory / (key + '.part')
             fh = path.open('xb')
-            self._jobs[key] = dict(path=path, fh=fh, size=size, received=0,
+            self._jobs[key] = dict(path=path, fh=fh, size=size, reservation=reservation, unknown=unknown, received=0,
                 filename=sanitize_filename(str(filename or 'download.bin')) or 'download.bin',
                 mime=str(mime or 'application/octet-stream')[:200], touched=time.monotonic(), sha=hashlib.sha256())
             return {'ok': True, 'transferId': key, 'chunkBytes': self.CHUNK_BYTES}
@@ -68,18 +72,26 @@ class BlobTransferStore:
                 raise ValueError('Missing or out-of-order blob upload')
             if job['received'] + len(raw) > job['size']:
                 raise ValueError('Blob length exceeded')
+            if job['unknown']:
+                reserved = sum(max(0, j['reservation'] - j['received']) for j in self._jobs.values())
+                if shutil.disk_usage(self.directory).free < len(raw) * 2 + reserved + 32 * 1024 ** 2:
+                    raise ValueError('Insufficient streaming space')
             job['fh'].write(raw)
             job['sha'].update(raw)
             job['received'] += len(raw)
             job['touched'] = time.monotonic()
             return {'ok': True, 'received': job['received']}
 
-    def finish(self, key):
+    def finish(self, key, final_size=None):
         with self._lock:
             self._cleanup()
             job = self._jobs.get(key)
-            if not job or job['received'] != job['size']:
+            if not job:
                 raise ValueError('Incomplete blob upload')
+            expected = final_size if job['unknown'] else job['size']
+            if isinstance(expected, bool) or not isinstance(expected, int) or not 0 < expected <= job['size'] or job['received'] != expected:
+                raise ValueError('Incomplete blob upload')
+            job['size'] = expected
             job['fh'].close()
             del self._jobs[key]
             return {k: job[k] for k in ('path', 'size', 'filename', 'mime')} | {'sha256': job['sha'].hexdigest()}

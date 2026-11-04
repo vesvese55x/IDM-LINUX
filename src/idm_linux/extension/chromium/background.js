@@ -1398,7 +1398,7 @@ extApi.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       }
       const result = await callBridge(`/api/blob-transfer/${msg.action}`, "POST", {
         transferId: msg.transferId, filename: msg.filename, mimeType: msg.mimeType,
-        size: msg.size, offset: msg.offset, dataBase64: msg.dataBase64
+        size: msg.size, streaming: msg.streaming, offset: msg.offset, dataBase64: msg.dataBase64
       });
       if (msg.action === "begin" && result && result.ok) blobUploadOwners.set(result.transferId, owner);
       if (msg.action === "finish" || msg.action === "cancel") blobUploadOwners.delete(msg.transferId);

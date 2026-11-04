@@ -373,7 +373,9 @@
     if (!workspaceFetch || !window.__idmLinuxCanTakeover() || !anchor || anchor.__idmBypassWorkspace || (event && event.altKey)) return false;
     let url;
     try { url = new URL(anchor.getAttribute("href") || anchor.href || "", location.href); } catch (_e) { return false; }
-    if (!/(^|\.)arena\.ai$/.test(location.hostname) || url.origin !== location.origin || !/^\/api\/chat\/workspace\/cas\/user\/[^/]+$/.test(url.pathname)) return false;
+    const justBeamIt = /(^|\.)justbeamit\.com$/.test(location.hostname) && /^\/[a-z0-9]{3,12}\/?$/i.test(new URL(location.href).pathname) && /(^|\.)justbeamit\.com$/.test(url.hostname) && url.pathname === "/download" && url.searchParams.get("token") === new URL(location.href).pathname.replace(/\//g, "");
+    const arena = /(^|\.)arena\.ai$/.test(location.hostname) && url.origin === location.origin && /^\/api\/chat\/workspace\/cas\/user\/[^/]+$/.test(url.pathname);
+    if (!arena && !justBeamIt) return false;
     if (event) { event.preventDefault(); event.stopImmediatePropagation(); }
     const fallback = () => {
       const copy = document.createElement("a"); copy.__idmBypassWorkspace = true;
@@ -383,23 +385,33 @@
     (async () => {
       let transferId = "", reader = null, response = null;
       try {
+        // Reserve bounded disk staging BEFORE consuming a one-use transfer URL.
+        if (justBeamIt) {
+          const start = await blobRpc("begin", { filename: anchor.getAttribute("download") || "beam-download.bin", size: null, streaming: true, mimeType: "application/octet-stream" });
+          if (!start.ok || !start.transferId) throw new Error("Transfer staging unavailable");
+          transferId = start.transferId;
+        }
         response = await workspaceFetch(url.href, { credentials: "include", redirect: "follow" });
-        const size = Number(response.headers.get("content-length"));
+        const headerSize = Number(response.headers.get("content-length"));
+        const size = justBeamIt && headerSize === 0 ? null : headerSize;
         // Unknown/oversize bodies stay browser-owned; never buffer the full file.
-        if (!response.ok || !response.body || !Number.isSafeInteger(size) || size <= 0 || size > 1024 ** 3) throw new Error("Unsupported workspace response");
+        if (!response.ok || !response.body || (size !== null && (!Number.isSafeInteger(size) || size <= 0 || size > 1024 ** 3))) throw new Error("Unsupported workspace response");
         const disposition = response.headers.get("content-disposition") || "";
         const encoded = disposition.match(/filename\*=UTF-8''([^;]+)/i);
         const plain = disposition.match(/filename="([^"]+)"|filename=([^;]+)/i);
         let filename = anchor.getAttribute("download") || "";
         if (!filename && encoded) { try { filename = decodeURIComponent(encoded[1].trim()); } catch (_e) {} }
         filename = filename || (plain && (plain[1] || plain[2]).trim()) || "workspace-download.bin";
-        const start = await blobRpc("begin", { filename, size, mimeType: response.headers.get("content-type") || "application/octet-stream" });
-        if (!start.ok || !start.transferId) throw new Error("Workspace transfer rejected");
-        transferId = start.transferId; reader = response.body.getReader(); let offset = 0;
+        if (!justBeamIt) {
+          const start = await blobRpc("begin", { filename, size, mimeType: response.headers.get("content-type") || "application/octet-stream" });
+          if (!start.ok || !start.transferId) throw new Error("Workspace transfer rejected");
+          transferId = start.transferId;
+        }
+        reader = response.body.getReader(); let offset = 0;
         for (;;) {
           if (!window.__idmLinuxCaptureEnabled()) throw new Error("Capture disabled");
           const { done, value } = await reader.read(); if (done) break;
-          if (offset + value.length > size) throw new Error("Workspace size exceeded");
+          if (offset + value.length > (size === null ? 1024 ** 3 : size)) throw new Error("Workspace size exceeded");
           for (let i = 0; i < value.length; i += 384 * 1024) {
             if (!window.__idmLinuxCaptureEnabled()) throw new Error("Capture disabled");
             const part = new Blob([value.subarray(i, i + 384 * 1024)]);
@@ -408,20 +420,34 @@
             if (!reply.ok || reply.received !== offset) throw new Error("Workspace chunk rejected");
           }
         }
-        if (offset !== size) throw new Error("Workspace response truncated");
-        const finish = await blobRpc("finish", { transferId });
+        if (!offset || (size !== null && offset !== size)) throw new Error("Workspace response truncated");
+        const finish = await blobRpc("finish", { transferId, size: offset });
         if (!finish.ok || !finish.takeover) throw new Error("Workspace handoff rejected");
+        if (justBeamIt && anchor.__idmButton) anchor.__idmButton.textContent = "IDM: aktarım hazır";
       } catch (_e) {
         if (reader) { try { await reader.cancel(); } catch (_ignore) {} }
         else if (response && response.body && response.body.cancel) { try { await response.body.cancel(); } catch (_ignore) {} }
         if (transferId) { try { await blobRpc("cancel", { transferId }); } catch (_ignore) {} }
-        fallback();
+        if (justBeamIt) {
+          // Never replay a consumed token or publish partial bytes as a complete file.
+          if (anchor.__idmButton) anchor.__idmButton.textContent = "IDM: aktarım başarısız; yeni bağlantı gerekli";
+        } else fallback();
       }
     })();
     return true;
   }
   window.addEventListener("click", (ev) => {
     if (!ev.isTrusted || ev.defaultPrevented || ev.button !== 0) return;
+    const beamButton = /(^|\.)justbeamit\.com$/.test(location.hostname) && ev.target && ev.target.closest ? ev.target.closest("#dl-button") : null;
+    if (beamButton && window.__idmLinuxCanTakeover() && !ev.altKey) {
+      if (beamButton.__idmTransferActive) { ev.preventDefault(); ev.stopImmediatePropagation(); return; }
+      const root = window.SERVER_ROOT || "https://eu.justbeamit.com:8443";
+      const a = document.createElement("a");
+      a.href = root + "/download?token=" + encodeURIComponent(new URL(location.href).pathname.replace(/\//g, ""));
+      const label = document.getElementById("dl-filename-text");
+      a.download = (label && label.textContent) || "beam-download.bin"; a.__idmButton = beamButton;
+      if (tryInterceptArenaWorkspaceAnchor(a, ev)) { beamButton.__idmTransferActive = true; beamButton.textContent = "IDM: dosya alınıyor, göndereni açık tutun..."; return; }
+    }
     const a = ev.target && ev.target.closest ? ev.target.closest("a[href]") : null;
     if (a && !tryInterceptArenaWorkspaceAnchor(a, ev)) tryInterceptBlobAnchor(a, ev);
   }, true);

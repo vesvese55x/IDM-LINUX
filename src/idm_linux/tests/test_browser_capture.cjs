@@ -151,6 +151,32 @@ async function arenaWorkspaceTests(){
   }
   console.log('PASS authenticated Arena row links stream via bounded runtime chunks; truncation, rejection, passive, unknown-size and cross-origin remain safe');
 }
+async function justBeamItTests(){
+  for (const mode of ['known','unknown','truncated','network-error','rejected','passive']) {
+    const h=pageHarness('justbeamit.com',mode!=='passive',mode==='rejected');h.location.href='https://justbeamit.com/abc12';h.win.SERVER_ROOT='https://eu.justbeamit.com:8443';
+    const data=Buffer.alloc(900000,61);let reads=0,gets=0,prevented=0;
+    const button={textContent:'Download',closest(selector){return selector==='#dl-button'?this:null;}};
+    h.doc.getElementById=id=>id==='dl-filename-text'?{textContent:'jbi-abc12.zip'}:null;
+    h.win.fetch=async()=>{
+      gets++;assert(h.posts.some(p=>p.action==='begin'),'Reserve staging before one-use GET');
+      if(mode==='network-error')throw new Error('Connection interrupted');
+      return {ok:true,headers:{get:k=>k==='content-length'?(mode==='unknown'?'':String(data.length)):'application/zip'},body:{getReader(){return {async read(){if(reads++)return {done:true};return {done:false,value:mode==='truncated'?data.subarray(0,17):data};},async cancel(){}};}}};
+    };
+    h.load();const event={isTrusted:true,defaultPrevented:false,button:0,target:button,preventDefault(){prevented++;this.defaultPrevented=true;},stopImmediatePropagation(){}};
+    h.fire('click',event);
+    if(mode==='passive'){assert.equal(gets,0);assert.equal(prevented,0);continue;}
+    if(mode==='known'||mode==='unknown'){
+      await until(()=>button.textContent==='IDM: aktarım hazır');
+      assert.equal(h.posts.find(p=>p.action==='finish').size,data.length);assert.equal(h.posts.find(p=>p.action==='begin').streaming,true);
+      assert(Buffer.concat(h.chunks.map(p=>Buffer.from(p.dataBase64,'base64'))).equals(data));
+    }else{
+      await until(()=>button.textContent.includes('başarısız'));assert(h.posts.some(p=>p.action==='cancel'));assert(!h.posts.some(p=>p.action==='finish'));
+    }
+    assert.equal(gets,1);assert.equal(h.clicks.length,0);assert.equal(prevented,1);
+    h.fire('click',{...event,defaultPrevented:false});assert.equal(gets,1,'Never replay the single-use token');
+  }
+  console.log('PASS JustBeamIt button reserves bounded staging before one GET; known/unknown length, interruption, rejection, passive and duplicate-click safety');
+}
 async function pageTests(){
   {
     const h=pageHarness('example.test',false);h.load();
@@ -239,4 +265,4 @@ async function probeRecoveryTest(){
   assert.equal(vm.runInContext('globalThis.probeCalls',h.context),2);
   console.log('PASS video probe recovers after bridge wake without assigning to const');
 }
-(async()=>{await arenaWorkspaceTests();await pageTests();await backgroundTests();await probeRecoveryTest();await externalCaptionTests();await textTrackCaptionTests();await staleCaptionTests();await youtubeCaptionQueueTests();await youtubeCaptionTimeoutTest();await navigationCaptionTest();console.log('BROWSER_CAPTURE_HARNESS_PASS');})().catch(e=>{console.error(e);process.exitCode=1;});
+(async()=>{await arenaWorkspaceTests();await justBeamItTests();await pageTests();await backgroundTests();await probeRecoveryTest();await externalCaptionTests();await textTrackCaptionTests();await staleCaptionTests();await youtubeCaptionQueueTests();await youtubeCaptionTimeoutTest();await navigationCaptionTest();console.log('BROWSER_CAPTURE_HARNESS_PASS');})().catch(e=>{console.error(e);process.exitCode=1;});
