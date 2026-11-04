@@ -14,7 +14,7 @@ on:
     branches: [main]
 concurrency:
   group: idm-linux-build
-  cancel-in-progress: true
+  cancel-in-progress: false
 permissions:
   contents: write
 jobs:
@@ -48,6 +48,8 @@ jobs:
                   paths = subprocess.check_output(['git','diff','--name-only',before,'HEAD'],text=True).splitlines()
               linux = any(p.startswith('src/') or p in ['pyproject.toml','belgeselsemo-idm-linux-installer'] or (p.startswith('packaging/') and not p.startswith('packaging/windows/')) for p in paths)
               windows = any(p == 'belgeselsemo-idm-windows-installer.bat' or p.startswith('packaging/windows/') or p == '.github/workflows/build.yml' for p in paths)
+              # Always rebuild the complete five-asset set after a product change.
+              linux = windows = linux or windows
           with open(os.environ['GITHUB_OUTPUT'],'a') as output:
               output.write('linux='+str(linux).lower()+'\nwindows='+str(windows).lower()+'\n')
           print('Linux:',linux,'Windows:',windows)
@@ -72,7 +74,17 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq rpm zstd file
 
-      - name: Test süiti (kalite kapısı — 208 test)
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Bounded Blob and browser-passthrough regressions
+        run: |
+          export PYTHONPATH="$GITHUB_WORKSPACE/src"
+          python3 -m unittest discover -s src/idm_linux/tests -p test_safe_capture.py -v
+          node src/idm_linux/tests/test_browser_capture.cjs
+          python3 packaging/rebuild_extensions.py --check
+          python3 -m unittest discover -s packaging/tests -v
+      - name: Test süiti (mevcut kalite kapısı)
         timeout-minutes: 12
         run: |
           export PYTHONPATH="$GITHUB_WORKSPACE/src"
@@ -113,17 +125,16 @@ jobs:
           [ "$(echo "$ZST_LIST" | sed -n 2p)" = ".MTREE" ] || { echo "HATA: .MTREE ikinci giriş değil/yok — pamac paketi reddeder"; exit 1; }
           echo "paket doğrulaması (deb-xz / rpm-header / zst-metadata) ✓"
 
-      - name: IDM-LINUX-1.0.0 release'ine yükle (aynı sürüm — asset'ler tazelenir)
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release upload v1.0.0 dist/IDM-LINUX-1.0.0-x86_64.AppImage \
-            dist/idm-linux_1.0.0_all.deb \
-            dist/idm-linux-1.0.0-1.noarch.rpm \
-            dist/idm-linux-1.0.0-1-any.pkg.tar.zst \
-            --clobber --repo "${GITHUB_REPOSITORY}"
-          echo "Release asset'leri (yeni build):"
-          gh release view v1.0.0 --repo "${GITHUB_REPOSITORY}" --json assets -q '.assets[] | .name + "  " + (.size|tostring) + " bayt"'
+      - name: Keep the four verified Linux packages (do not publish yet)
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-release-candidates
+          path: |
+            dist/IDM-LINUX-1.0.0-x86_64.AppImage
+            dist/idm-linux_1.0.0_all.deb
+            dist/idm-linux-1.0.0-1.noarch.rpm
+            dist/idm-linux-1.0.0-1-any.pkg.tar.zst
+          if-no-files-found: error
 
   windows:
     name: IDM SEMO x64 EXE + real Windows GUI screenshots
@@ -153,35 +164,42 @@ jobs:
             artifacts/windows/*smoke.json
             artifacts/windows/*.log
             promo/assets/screens/idm-semo/
-      - name: Add Windows EXE without deleting any existing release asset
-        shell: powershell
+      # Screenshots stay in the CI evidence artifact. Do not auto-push source/doc
+      # commits while the other platform's quality gate may still be failing.
+
+  publish:
+    name: Replace the same five assets only after both platforms pass
+    needs: [build, windows]
+    if: needs.build.result == 'success' && needs.windows.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: linux-release-candidates
+          path: release-assets
+      - uses: actions/download-artifact@v4
+        with:
+          name: IDM-SEMO-1.0.0-x86_64
+          path: windows-candidates
+      - name: Stage exactly the authoritative Windows EXE
+        run: |
+          set -euo pipefail
+          found=$(find windows-candidates -type f -name 'IDM-SEMO-1.0.0-x86_64.exe')
+          test "$(printf '%s\n' "$found" | grep -c .)" -eq 1
+          cp "$found" release-assets/IDM-SEMO-1.0.0-x86_64.exe
+          python3 packaging/publish_existing_release.py release-assets --verify-only
+      - name: Backup, replace, verify; no version or tag changes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          $ErrorActionPreference='Stop'
-          $file='artifacts/windows/IDM-SEMO-1.0.0-x86_64.exe'
-          $name=Split-Path $file -Leaf
-          $release=gh release view v1.0.0 --repo $env:GITHUB_REPOSITORY --json assets | ConvertFrom-Json
-          if($LASTEXITCODE -ne 0){throw 'Existing v1.0.0 release not accessible'}
-          if($release.assets.name -contains $name){
-            # Immutable release assets: preserve the original; publish a uniquely named rebuild.
-            $suffix=$env:GITHUB_SHA.Substring(0,8)+'-'+$env:GITHUB_RUN_ID
-            $name='IDM-SEMO-1.0.0-x86_64-'+$suffix+'.exe'
-            $new=Join-Path (Split-Path $file) $name
-            Copy-Item $file $new
-            $file=$new
-          }
-          gh release upload v1.0.0 $file --repo $env:GITHUB_REPOSITORY
-          if($LASTEXITCODE -ne 0){throw 'Windows asset upload failed; no assets were removed'}
-          Write-Host "Published $name without --clobber or delete"
-      - name: Publish native Windows screenshots only
-        shell: bash
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add promo/assets/screens/idm-semo
-          if ! git diff --cached --quiet; then
-            git commit -m 'docs: refresh native Windows SEMO screenshots [skip ci]'
-            git pull --rebase origin main
-            git push origin HEAD:main
-          fi
+        run: python3 packaging/publish_existing_release.py release-assets --backup release-backup
+      - name: Preserve pre-publication assets and integrity manifests
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-publication-backup-and-evidence
+          path: |
+            release-backup/
+            release-assets/build-sha256.json
+          if-no-files-found: warn

@@ -88,15 +88,39 @@
   let lastFormatInvalidate = 0;
   const gofileAsked = new Set();
   // v2.9.0: eklenti sağ tık menüsünden PASİF/AKTİF edilebilir
-  let extDisabled = false;
+  let extDisabled = true;
+  let blobBridgeReady = false;
+  function publishCaptureState() {
+    if (document.documentElement) {
+      const oldState = document.documentElement.dataset.idmLinuxCaptureEnabled;
+      document.documentElement.dataset.idmLinuxCaptureEnabled = !extDisabled && blobBridgeReady ? "1" : "0";
+      if (oldState !== document.documentElement.dataset.idmLinuxCaptureEnabled) window.dispatchEvent(new Event("idm-linux-capture-state"));
+      document.documentElement.dataset.idmLinuxBlobReady = !extDisabled && blobBridgeReady ? "1" : "0";
+    }
+    if (extDisabled && barHost) barHost.style.display = "none";
+  }
+  async function refreshCaptureReadiness() {
+    if (extDisabled) return;
+    const info = await sendMsg({ type: "IDM_GET_TAB_INFO", hostname: location.hostname });
+    if (info && info.ok) videoBarAllowed = info.videoBarEnabled !== false;
+    const st = info && info.state;
+    blobBridgeReady = Boolean(st && st.online && st.idm_installed && st.capture_downloads);
+    publishCaptureState();
+  }
   try {
-    chrome.storage.local.get(["extDisabled"], (r) => { extDisabled = Boolean(r && r.extDisabled); });
+    chrome.storage.local.get(["extDisabled"], (r) => { extDisabled = Boolean(r && r.extDisabled); publishCaptureState(); refreshCaptureReadiness(); });
     chrome.storage.onChanged.addListener((ch, area) => {
-      if (area === "local" && ch.extDisabled) extDisabled = Boolean(ch.extDisabled.newValue);
+      if (area === "local" && ch.extDisabled) {
+        extDisabled = Boolean(ch.extDisabled.newValue);
+        cachedFormats = null;
+        publishCaptureState();
+        if (!extDisabled) { refreshCaptureReadiness(); updateBarPosition(); }
+      }
     });
   } catch (_e) {}
 
   async function idmPostDownload(url, referer) {
+    if (extDisabled) return;
     try {
       // v2.8.8: tarayıcının kendi indirmesini bastır (IDM devraldı)
       sendMsg({ type: "IDM_TAKEOVER_URL", url, gofileWindowMs: 20000 });
@@ -142,7 +166,10 @@
         if (fr) lastPlayerFrameEl = fr;
       } catch (_e) {}
     }
-    if (extDisabled) return; // v2.9.0: pasif modda hiçbir yakalama iletilmez
+    if (extDisabled) {
+      if (d.__idmLinuxBlobRequest && d.reqId && ev.source === window) window.postMessage({ __idmLinuxBlobResult: true, reqId: d.reqId, ok: false, takeover: false }, "*");
+      return;
+    } // v2.9.0: pasif modda hiçbir yakalama iletilmez
 
     // v2.9.6: P2P sifonu — baytlar geldikçe daemon'a akıt, IDM ANINDA açılır
     if (d.__idmLinuxSiphonStart) {
@@ -190,22 +217,12 @@
       return;
     }
 
-    if (d.__idmLinuxBlobRequest && d.reqId && d.dataBase64) {
-      sendMsg({
-        type: "IDM_BLOB_DOWNLOAD",
-        dataBase64: d.dataBase64,
-        filename: d.filename || "download.bin",
-        mimeType: d.mimeType || "application/octet-stream",
-        pageUrl: d.pageUrl || location.href
+    if (d.__idmLinuxBlobRequest && d.reqId && ev.source === window) {
+      sendMsg({ type: "IDM_BLOB_TRANSFER", action: d.action, transferId: d.transferId,
+        filename: d.filename, mimeType: d.mimeType, size: d.size,
+        offset: d.offset, dataBase64: d.dataBase64, pageUrl: location.href
       }).then((res) => {
-        window.postMessage(
-          {
-            __idmLinuxBlobResult: true,
-            reqId: d.reqId,
-            takeover: Boolean(res && res.ok && res.takeover !== false)
-          },
-          "*"
-        );
+        window.postMessage(Object.assign({}, res || { ok: false }, { __idmLinuxBlobResult: true, reqId: d.reqId }), "*");
       });
       return;
     }
@@ -322,7 +339,11 @@
       }
       // v2.8.7 TOPLU KAYIT: segment başına mesaj yerine 1.2 sn'de bir tek paket
       pendingCaptureBatch.push(item);
-      if (!captureFlushTimer) {
+      // First usable source is available immediately; later segments stay batched.
+      if (hookedStreams.length === 1) {
+        const batch = pendingCaptureBatch.splice(0, pendingCaptureBatch.length);
+        sendMsg({ type: "IDM_REGISTER_CAPTURED_STREAMS", streams: batch });
+      } else if (!captureFlushTimer) {
         captureFlushTimer = setTimeout(() => {
           captureFlushTimer = null;
           const batch = pendingCaptureBatch.splice(0, pendingCaptureBatch.length);
@@ -1740,6 +1761,7 @@
   }
 
   function updateBarPosition() {
+    if (extDisabled) { if (barHost) barHost.style.display = "none"; return; }
     if (!videoBarAllowed || dismissedForPage) {
       if (uiRefs) uiRefs.wrap.style.display = "none";
       return;
@@ -2071,7 +2093,8 @@
       capturedNetworkCount = info.streamCount || 0;
       const st = info.state || {};
       if (st.online && st.idm_installed && st.capture_downloads !== false && location.hostname !== "127.0.0.1" && location.hostname !== "localhost") {
-        document.documentElement.dataset.idmLinuxBlobReady = "1";
+        blobBridgeReady = true;
+        publishCaptureState();
       }
     }
 

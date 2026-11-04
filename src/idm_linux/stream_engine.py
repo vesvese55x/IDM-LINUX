@@ -75,6 +75,10 @@ def _is_known_ytdlp_site(url: str) -> bool:
     Artık host-birebir VE sınır-farkındalıklı substring eşleşmesi BİRLİKTE değerlendirilir."""
     if not url:
         return False
+    # MediaFire hosts binary files; even video files use the direct file resolver.
+    from .mediafire_resolver import is_mediafire_url
+    if is_mediafire_url(url):
+        return False
     low_url = url.lower()
     host = (urllib.parse.urlparse(url).hostname or "").lower()
     for d in KNOWN_YTDLP_SITES:
@@ -96,7 +100,7 @@ def _is_known_ytdlp_site(url: str) -> bool:
 # v3.14.0: yt-dlp ASLA denememeli — bunlar dosya barındırıcıdır, video değil.
 # (Kullanıcı günlüğü: gofile linki her tıklamada yt-dlp'ye veriliyor, '[Piracy]
 # This website is no longer supported' gürültüsü + 3-6 sn boşa gecikme.)
-NEVER_YTDLP_PROBE = ("gofile.io", "gofile.is", "gofile")
+NEVER_YTDLP_PROBE = ("gofile.io", "gofile.is", "gofile", "mediafire.com")
 
 
 def _never_ytdlp_probe(url: str) -> bool:
@@ -2070,6 +2074,9 @@ _DASH_SEG_RE = re.compile(
 
 def segment_series_key(url: str) -> str:
     """v2.8.5: DASH segment URL'sinin seri anahtarı (index maskelenir). Seri değilse ''."""
+    host = (urllib.parse.urlparse(url or "").hostname or "").lower()
+    if any(host == d or host.endswith('.' + d) for d in ('hdslb.com', 'bilivideo.com')):
+        return ""  # Bilibili .m4s URLs are complete DASH representations, not segment counters.
     m = _DASH_SEG_RE.match(url or "")
     if not m:
         return ""
@@ -2861,12 +2868,16 @@ _BILI_QUALITY_NAMES = {
 
 
 def _bili_headers(cookies: str = "", user_agent: str = "") -> Dict[str, str]:
-    return {
+    headers = {
         "User-Agent": user_agent or _UA_CHROME,
         "Referer": "https://www.bilibili.com/",
         "Origin": "https://www.bilibili.com",
         "Accept": "application/json, text/plain, */*",
     }
+
+    if cookies:
+        headers["Cookie"] = cookies
+    return headers
 
 
 def _bili_cookie_with_fallback(cookies: str) -> str:
@@ -4183,7 +4194,7 @@ class StreamEngine:
         if not force_refresh:
             with self._lock:
                 cached = self._probe_cache.get(cache_key)
-                if cached and (time.time() - cached[0]) < 600:
+                if cached and (time.time() - cached[0]) < 600 and (cached[1].get("formats") or not captured_streams):
                     return cached[1]
 
         options: List[VideoFormatOption] = []
@@ -4407,7 +4418,7 @@ class StreamEngine:
                 _YTDP_PENDING_PAGES.append(page_url)
             # v3.10.1: İLK kullanımda kurulumu kısa süre BEKLE — kullanıcı boş bar
             # görmek yerine ilk denemede kaynakları görsün (köprü limiti 45 sn).
-            ytdlp_bin = wait_for_ytdlp(timeout=25.0)
+            ytdlp_bin = wait_for_ytdlp(timeout=0.0 if options else 25.0)
             if ytdlp_bin:
                 logger.info("yt-dlp hazır — ilk probe bu istekte çözümleniyor")
         is_live = False

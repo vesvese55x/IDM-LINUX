@@ -5,6 +5,8 @@
   if (window.__IDM_LINUX_PAGE_HOOK__) return;
   window.__IDM_LINUX_PAGE_HOOK__ = true;
 
+  window.__idmLinuxCaptureEnabled = () => Boolean(document.documentElement && document.documentElement.dataset.idmLinuxCaptureEnabled === "1");
+  window.__idmLinuxCanTakeover = () => window.__idmLinuxCaptureEnabled() && document.documentElement.dataset.idmLinuxBlobReady === "1";
   const reported = new Set();
   const seriesCount = new Map(); // v2.8.7: segment seli bastırma sayaçları
 
@@ -21,6 +23,7 @@
   }
 
   function emitStream(url, opts) {
+    if (!window.__idmLinuxCaptureEnabled()) return;
     if (!url || typeof url !== "string") return;
     if (__idmAbyssGuard(url, opts)) return;
     let absUrl = url.trim();
@@ -219,11 +222,12 @@
   if (typeof window.fetch === "function") {
     const origFetch = window.fetch;
     window.fetch = function (...args) {
+      if (!window.__idmLinuxCaptureEnabled()) return origFetch.apply(this, args);
       const p = origFetch.apply(this, args);
       try {
         p.then((resp) => {
           try {
-            if (!resp || !resp.ok) return;
+            if (!window.__idmLinuxCaptureEnabled() || !resp || !resp.ok) return;
             const rUrl = resp.url || (typeof args[0] === "string" ? args[0] : (args[0] && args[0].url)) || "";
             const ct = (resp.headers && resp.headers.get("content-type")) || "";
             const cl = parseInt((resp.headers && resp.headers.get("content-length")) || "0", 10) || 0;
@@ -252,10 +256,11 @@
     };
 
     XMLHttpRequest.prototype.send = function (...args) {
+      if (!window.__idmLinuxCaptureEnabled()) return origSend.apply(this, args);
       try {
         this.addEventListener("load", function () {
           try {
-            if (this.status < 200 || this.status >= 400) return;
+            if (!window.__idmLinuxCaptureEnabled() || this.status < 200 || this.status >= 400) return;
             const rUrl = this.responseURL || this.__idmUrl || "";
             if (/\.(ts|m4s|mp4|webm|mkv|woff2?)(\?|$)/i.test(rUrl)) return;
             const rType = this.responseType || "";
@@ -274,148 +279,101 @@
     };
   }
 
-  // 3. Modern SPA (arena.ai, GitHub, Bulut Editörler vb.) blob:https://... Bellek İndirme Kancası!
+  // Normal file Blobs only. MediaSource/DRM streams are not file blobs.
   const blobStore = new Map();
   const pendingBlobCallbacks = new Map();
-
-  if (typeof URL !== "undefined" && typeof URL.createObjectURL === "function") {
-    const origCreateObjUrl = URL.createObjectURL.bind(URL);
-    URL.createObjectURL = function (obj) {
-      const bUrl = origCreateObjUrl(obj);
-      try {
-        const isMediaSrc = typeof MediaSource !== "undefined" && obj instanceof MediaSource;
-        if (!isMediaSrc && obj && typeof Blob !== "undefined" && obj instanceof Blob) {
-          if (obj.size > 0 && obj.size <= 96 * 1024 * 1024) {
-            blobStore.set(bUrl, { blob: obj, ts: Date.now() });
-            if (blobStore.size > 25) {
-              blobStore.delete(blobStore.keys().next().value);
-            }
-          }
-        }
-      } catch (_e) {}
-      return bUrl;
-    };
+  const nativeCreateObjectURL = URL.createObjectURL.bind(URL);
+  const nativeRevokeObjectURL = URL.revokeObjectURL.bind(URL);
+  let trackedBlobBytes = 0;
+  window.addEventListener("idm-linux-capture-state", () => {
+    reported.clear(); seriesCount.clear();
+    if (!window.__idmLinuxCaptureEnabled()) { blobStore.clear(); trackedBlobBytes = 0; }
+  });
+  function forgetBlob(url) {
+    const value = blobStore.get(url);
+    if (value) { trackedBlobBytes -= value.size; blobStore.delete(url); }
   }
-
+  URL.createObjectURL = function (obj) {
+    const url = nativeCreateObjectURL(obj);
+    if (window.__idmLinuxCaptureEnabled() && typeof Blob !== "undefined" && obj instanceof Blob && obj.size > 0 && obj.size <= 1024 ** 3) {
+      blobStore.set(url, obj); trackedBlobBytes += obj.size;
+      while (blobStore.size > 8 || trackedBlobBytes > 1024 ** 3) forgetBlob(blobStore.keys().next().value);
+    }
+    return url;
+  };
+  URL.revokeObjectURL = function (url) { forgetBlob(url); return nativeRevokeObjectURL(url); };
   window.addEventListener("message", (ev) => {
     const d = ev && ev.data;
-    if (!d || !d.__idmLinuxBlobResult || !d.reqId) return;
+    if (ev.source !== window || !d || !d.__idmLinuxBlobResult) return;
     const cb = pendingBlobCallbacks.get(d.reqId);
-    if (cb) {
-      pendingBlobCallbacks.delete(d.reqId);
-      cb(Boolean(d.takeover));
-    }
+    if (cb) { pendingBlobCallbacks.delete(d.reqId); cb(d); }
   });
-
-  function tryInterceptBlobAnchor(anchorEl, clickEvent) {
-    try {
-      if (!anchorEl || anchorEl.__idmBypassBlob) return false;
-      if (clickEvent && clickEvent.altKey) return false;
-      if (!document.documentElement || document.documentElement.dataset.idmLinuxBlobReady !== "1") {
-        return false;
-      }
-      const href = anchorEl.getAttribute("href") || anchorEl.href || "";
-      if (!href.startsWith("blob:")) return false;
-      const dlAttr = anchorEl.getAttribute("download");
-      if (dlAttr === null) return false;
-
-      const filename = (dlAttr && dlAttr.trim()) || "download.bin";
-      if (clickEvent && typeof clickEvent.preventDefault === "function") {
-        clickEvent.preventDefault();
-        clickEvent.stopImmediatePropagation();
-      }
-
-      const fallbackNativeDownload = () => {
-        try {
-          const clone = document.createElement("a");
-          clone.__idmBypassBlob = true;
-          clone.href = href;
-          clone.download = filename;
-          clone.style.display = "none";
-          (document.body || document.documentElement).appendChild(clone);
-          clone.click();
-          setTimeout(() => clone.remove(), 1000);
-        } catch (_e) {}
-      };
-
-      const entry = blobStore.get(href);
-      const blobPromise = entry && entry.blob
-        ? Promise.resolve(entry.blob)
-        : fetch(href).then((r) => r.blob());
-
-      blobPromise
-        .then((blobObj) => {
-          if (!blobObj || blobObj.size <= 0 || blobObj.size > 96 * 1024 * 1024) {
-            fallbackNativeDownload();
-            return;
-          }
-          const reader = new FileReader();
-          reader.onload = () => {
-            const dataUrl = String(reader.result || "");
-            const commaIdx = dataUrl.indexOf(",");
-            if (commaIdx < 0) {
-              fallbackNativeDownload();
-              return;
-            }
-            const reqId = "blob_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
-            const timer = setTimeout(() => {
-              if (pendingBlobCallbacks.has(reqId)) {
-                pendingBlobCallbacks.delete(reqId);
-                fallbackNativeDownload();
-              }
-            }, 3500);
-
-            pendingBlobCallbacks.set(reqId, (tookOver) => {
-              clearTimeout(timer);
-              if (!tookOver) fallbackNativeDownload();
-            });
-
-            window.postMessage(
-              {
-                __idmLinuxBlobRequest: true,
-                reqId,
-                dataBase64: dataUrl.slice(commaIdx + 1),
-                filename,
-                mimeType: blobObj.type || "application/octet-stream",
-                pageUrl: location.href
-              },
-              "*"
-            );
-          };
-          reader.onerror = () => fallbackNativeDownload();
-          reader.readAsDataURL(blobObj);
-        })
-        .catch(() => fallbackNativeDownload());
-
-      return true;
-    } catch (_e) {
-      return false;
-    }
+  function blobRpc(action, payload) {
+    return new Promise((resolve, reject) => {
+      const reqId = `blob_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+      const timer = setTimeout(() => { pendingBlobCallbacks.delete(reqId); reject(new Error("Blob bridge timeout")); }, 45000);
+      pendingBlobCallbacks.set(reqId, (reply) => { clearTimeout(timer); resolve(reply); });
+      window.postMessage(Object.assign({}, payload, { __idmLinuxBlobRequest: true, action, reqId }), "*");
+    });
   }
-
-  // Kullanıcı tıklamasıyla tetiklenen <a download href="blob:...">
-  window.addEventListener(
-    "click",
-    (ev) => {
-      if (!ev.isTrusted || ev.defaultPrevented || ev.button !== 0) return;
-      const target = ev.target && ev.target.closest ? ev.target.closest("a[download]") : null;
-      if (target) {
-        tryInterceptBlobAnchor(target, ev);
-      }
-    },
-    true
-  );
-
-  // Programatik JS tıklamasıyla tetiklenen a.click() (React/Next.js/arena.ai dosya indirmeleri!)
-  if (typeof HTMLAnchorElement !== "undefined" && HTMLAnchorElement.prototype.click) {
-    const origAnchorClick = HTMLAnchorElement.prototype.click;
-    HTMLAnchorElement.prototype.click = function (...args) {
-      if (tryInterceptBlobAnchor(this, null)) {
-        return;
-      }
-      return origAnchorClick.apply(this, args);
+  function encodeBlobSlice(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result).split(",", 2)[1]);
+      reader.onerror = () => reject(new Error("Blob read failed"));
+      reader.readAsDataURL(blob);
+    });
+  }
+  function tryInterceptBlobAnchor(anchor, event) {
+    if (!window.__idmLinuxCanTakeover() || !anchor || anchor.__idmBypassBlob || (event && event.altKey)) return false;
+    const href = anchor.getAttribute("href") || anchor.href || "";
+    const filename = anchor.getAttribute("download");
+    const blob = blobStore.get(href);
+    // No safe local Blob reference? Do not cancel the browser's original click.
+    if (!href.startsWith("blob:") || filename === null || !blob) return false;
+    if (event) { event.preventDefault(); event.stopImmediatePropagation(); }
+    let fallbackDone = false;
+    const fallback = () => {
+      if (fallbackDone) return;
+      fallbackDone = true;
+      // React often revokes the original URL immediately after a.click().
+      const fresh = nativeCreateObjectURL(blob);
+      const copy = document.createElement("a");
+      copy.__idmBypassBlob = true; copy.href = fresh; copy.download = filename || "download.bin"; copy.style.display = "none";
+      (document.body || document.documentElement).appendChild(copy); copy.click(); copy.remove();
+      setTimeout(() => nativeRevokeObjectURL(fresh), 60000);
     };
+    (async () => {
+      let transferId = "";
+      try {
+        const start = await blobRpc("begin", { filename: filename || "download.bin", mimeType: blob.type, size: blob.size });
+        if (!start.ok || !start.transferId) { fallback(); return; }
+        transferId = start.transferId;
+        for (let offset = 0; offset < blob.size; offset += 384 * 1024) {
+          if (!window.__idmLinuxCaptureEnabled()) throw new Error("Capture disabled");
+          const part = blob.slice(offset, Math.min(blob.size, offset + 384 * 1024));
+          const dataBase64 = await encodeBlobSlice(part);
+          const reply = await blobRpc("chunk", { transferId, offset, dataBase64 });
+          if (!reply.ok || reply.received !== offset + part.size) throw new Error("Blob chunk rejected");
+        }
+        const result = await blobRpc("finish", { transferId });
+        if (!result.ok || !result.takeover) fallback();
+      } catch (_e) {
+        if (transferId) blobRpc("cancel", { transferId }).catch(() => {});
+        fallback();
+      } finally { forgetBlob(href); }
+    })();
+    return true;
   }
+  window.addEventListener("click", (ev) => {
+    if (!ev.isTrusted || ev.defaultPrevented || ev.button !== 0) return;
+    const a = ev.target && ev.target.closest ? ev.target.closest("a[download]") : null;
+    if (a) tryInterceptBlobAnchor(a, ev);
+  }, true);
+  const nativeAnchorClick = HTMLAnchorElement.prototype.click;
+  HTMLAnchorElement.prototype.click = function (...args) {
+    if (!tryInterceptBlobAnchor(this, null)) return nativeAnchorClick.apply(this, args);
+  };
 
   // v3.14.3 FIX: emitStream, kazıyıcı modüllerin okuyabilmesi için burada (tanım kapsamından) global'e açılır
   window.__idmEmitStream = emitStream;
@@ -429,7 +387,7 @@
     const origOpen = window.open;
     window.open = function (u, ...rest) {
       try {
-        if (typeof u === "string" && NAV_TAKEOVER.test(u)) {
+        if (window.__idmLinuxCanTakeover() && typeof u === "string" && NAV_TAKEOVER.test(u)) {
           window.postMessage({ __idmLinuxNavTakeover: true, url: u }, "*");
           return null;
         }
@@ -444,7 +402,7 @@
         get: desc.get,
         set(v) {
           try {
-            if (typeof v === "string" && NAV_TAKEOVER.test(v)) {
+            if (window.__idmLinuxCanTakeover() && typeof v === "string" && NAV_TAKEOVER.test(v)) {
               window.postMessage({ __idmLinuxNavTakeover: true, url: v }, "*");
               return;
             }
@@ -462,7 +420,7 @@
     const origAssign = Location.prototype.assign;
     Location.prototype.assign = function (u, ...rest) {
       try {
-        if (typeof u === "string" && NAV_TAKEOVER.test(u)) {
+        if (window.__idmLinuxCanTakeover() && typeof u === "string" && NAV_TAKEOVER.test(u)) {
           window.postMessage({ __idmLinuxNavTakeover: true, url: u }, "*");
           return undefined;
         }
@@ -472,7 +430,7 @@
     const origReplace = Location.prototype.replace;
     Location.prototype.replace = function (u, ...rest) {
       try {
-        if (typeof u === "string" && NAV_TAKEOVER.test(u)) {
+        if (window.__idmLinuxCanTakeover() && typeof u === "string" && NAV_TAKEOVER.test(u)) {
           window.postMessage({ __idmLinuxNavTakeover: true, url: u }, "*");
           return undefined;
         }
@@ -494,7 +452,7 @@
     };
     window.addEventListener("click", (ev) => {
       try {
-        if (!ev.isTrusted || ev.button !== 0 || ev.altKey) return;
+        if (!window.__idmLinuxCanTakeover() || !ev.isTrusted || ev.button !== 0 || ev.altKey) return;
         let a = ev.target && ev.target.closest ? ev.target.closest(ANCHOR_SEL) : null;
         if (!a && typeof ev.composedPath === "function") {
           for (const el of ev.composedPath()) {
@@ -519,7 +477,7 @@
 // v2.9.4: bilibili __playinfo__ kazıyıcı — YENİDEN DENYENELİ (player geç açılabilir)
 (function () {
   try {
-    if (!/bilibili\.com|b23\.tv/.test(location.host)) return;
+    if (!/(^|\.)bilibili\.com$|(^|\.)b23\.tv$/.test(location.hostname)) return;
     let tries = 0, done = false;
     const emit = window.__idmEmitStream;
     if (!emit) return;
@@ -538,7 +496,7 @@
       try { return JSON.parse(txt.slice(j, end)); } catch (_e) { return null; }
     };
     const tick = () => {
-      if (done || ++tries > 40) return;
+      if (!window.__idmLinuxCaptureEnabled() || done || ++tries > 40) return;
       let obj = window.__playinfo__ || null;
       if (!obj && document.documentElement) obj = scrape(document.documentElement.innerHTML || "");
       const dash = obj && obj.data && obj.data.dash;
@@ -553,7 +511,15 @@
       }
     };
     tick();
-    const iv = setInterval(() => { tick(); if (done) clearInterval(iv); }, 1500);
+    let iv = null;
+    const startPolling = () => {
+      if (iv) clearInterval(iv);
+      done = false; tries = 0; tick();
+      iv = setInterval(() => { tick(); if (done || tries > 40) { clearInterval(iv); iv = null; } }, 1500);
+    };
+    startPolling();
+    window.addEventListener("idm-linux-capture-state", () => { if (window.__idmLinuxCaptureEnabled()) startPolling(); });
+    window.addEventListener("popstate", startPolling);
   } catch (_e) {}
 })();
 
@@ -734,6 +700,8 @@
 (function () {
   try {
     if (!/(^|\.)youtube\.com$|(^|\.)youtube-nocookie\.com$|(^|\.)youtu\.be$/i.test(location.hostname)) return;
+    const emitStream = window.__idmEmitStream;
+    if (typeof emitStream !== "function") return;
     const seen = new Set();
     const seenSubText = new Set();
 
@@ -755,6 +723,7 @@
     };
 
     const emitTracks = (resp) => {
+      if (!window.__idmLinuxCaptureEnabled()) return;
       try {
         mineStreamingData(resp);
         const renderer = resp && resp.captions && resp.captions.playerCaptionsTracklistRenderer;
@@ -799,7 +768,8 @@
       } catch (_e) {}
     };
     // 1) Sayfa ilk açılışındaki global player yanıtı (SPA gezinmelerinde yenilenmez — poll ile taze)
-    const poll = setInterval(() => {
+    const scanPlayerResponse = () => {
+      if (!window.__idmLinuxCaptureEnabled()) return;
       try {
         let resp = window.ytInitialPlayerResponse || null;
         if (!resp && window.ytplayer && window.ytplayer.config) {
@@ -814,7 +784,12 @@
           if (live) emitTracks(live);
         }
       } catch (_e) {}
-    }, 2000);
+    };
+    scanPlayerResponse();
+    const poll = setInterval(scanPlayerResponse, 2000);
+    window.addEventListener("idm-linux-capture-state", scanPlayerResponse);
+    window.addEventListener("yt-player-updated", scanPlayerResponse, true);
+    window.addEventListener("yt-page-data-updated", scanPlayerResponse, true);
     // v3.6.0: poll ömrü 60 -> 180 sn (uzun videolarda/çalma listelerinde bar altyazı
     // görmeye devam etsin) + SPA gezinmelerinde ('yt-navigate-finish') anında tazele.
     setTimeout(() => clearInterval(poll), 180000);
@@ -847,6 +822,7 @@
       let bytes = 0;
       ch.addEventListener("message", (ev) => {
         try {
+          if (!window.__idmLinuxCaptureEnabled()) return;
           const d = ev.data;
           if (typeof d === "string") return;
           const buf = d instanceof ArrayBuffer ? d : (d && d.buffer instanceof ArrayBuffer ? d.buffer : null);

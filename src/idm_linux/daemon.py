@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import base64
+from dataclasses import replace
+from .blob_transfer import BlobTransferStore
+from .mediafire_resolver import is_mediafire_url, resolve_mediafire
 import concurrent.futures
 import tempfile
 from collections import deque
@@ -172,6 +175,33 @@ WS_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 class ReusableThreadingHTTPServer(ThreadingHTTPServer):
     allow_reuse_address = True
     daemon_threads = True
+    max_request_threads = 128
+
+    def __init__(self, *args, **kwargs):
+        self._request_slots = threading.BoundedSemaphore(self.max_request_threads)
+        super().__init__(*args, **kwargs)
+
+    def process_request(self, request, client_address):
+        if not self._request_slots.acquire(blocking=False):
+            try:
+                request.settimeout(0.2)
+                request.sendall(b"HTTP/1.1 503 Service Unavailable\r\nRetry-After: 1\r\nContent-Length: 0\r\nConnection: close\r\n\r\n")
+            except OSError:
+                pass
+            finally:
+                self.shutdown_request(request)
+            return
+        try:
+            super().process_request(request, client_address)
+        except BaseException:
+            self._request_slots.release()
+            raise
+
+    def process_request_thread(self, request, client_address):
+        try:
+            super().process_request_thread(request, client_address)
+        finally:
+            self._request_slots.release()
 
 
 class DaemonState:
@@ -185,6 +215,7 @@ class DaemonState:
         except Exception:
             pass
         self.sender = WineIdmSender(self.cfg)
+        self.blob_transfers = BlobTransferStore(get_cache_dir() / "blob-uploads")
         self.stream_engine = StreamEngine(self.cfg)
         self.auth_vault = AuthContextVault()
         self.diag: Deque[str] = deque(maxlen=400)  # v2.9.1 uzak-log halkası
@@ -594,6 +625,14 @@ class DaemonState:
         if dedup and self.is_duplicate_burst(req.url, window_sec=2.5):
             logger.info("Çift yakalama koruması: %s zaten az önce IDM'ye gönderildi.", req.url[:80])
             return True, "Zaten IDM'ye iletildi (çift pencere engellendi)."
+
+        # File-hosting pages are not video streams. Keep the original file extension.
+        if is_mediafire_url(req.url):
+            try:
+                direct, filename = resolve_mediafire(req.url, req.user_agent, req.cookies)
+                req = replace(req, url=direct, filename=req.filename or filename, referer=req.referer or req.url)
+            except Exception as exc:
+                return False, f"MediaFire dosya bağlantısı çözümlenemedi: {exc}"
 
         # v2.8.0: YouTube / Dailymotion / Twitch vb. ana akım siteler veya oynatma listesi
         # URL'leri HAM halde IDM'ye GİDEMEZ -> otomatik video/stream motoru bileti açılır.
@@ -1609,7 +1648,53 @@ def make_http_handler(state: DaemonState):
         def _do_post_inner(self) -> None:
             parsed = urllib.parse.urlparse(self.path)
 
+            if parsed.path.startswith("/api/blob-transfer/"):
+                length = int(self.headers.get("Content-Length") or "0")
+                if not 0 < length <= 1024 * 1024:
+                    self._send_json({"ok": False, "takeover": False}, status=413)
+                    return
+                data = self._read_json()
+                store = state.blob_transfers
+                action = parsed.path.rsplit("/", 1)[-1]
+                key = data.get("transferId") or ""
+                if state.ext_disabled or not state.cfg.capture_downloads:
+                    if isinstance(key, str): store.cancel(key)
+                    self._send_json({"ok": False, "takeover": False, "disabled": True})
+                    return
+                try:
+                    if action == "begin":
+                        result = store.begin(data.get("filename"), data.get("mimeType"), data.get("size"))
+                    elif action == "chunk":
+                        result = store.chunk(key, data.get("offset"), data.get("dataBase64"))
+                    elif action == "cancel":
+                        result = store.cancel(key)
+                    elif action == "finish":
+                        upload = store.finish(key)
+                        try:
+                            with upload["path"].open("rb") as reader:
+                                ticket, error = state.auth_proxy.create_blob_ticket_streamed(reader=reader, length=upload["size"], filename=upload["filename"], mime_type=upload["mime"])
+                            if not ticket: raise ValueError(error or "Blob proxy unavailable")
+                            if state.ext_disabled or not state.cfg.capture_downloads:
+                                result = {"ok": False, "takeover": False}
+                            else:
+                                url = f"http://127.0.0.1:{state.cfg.http_port}/proxy/{ticket.ticket_id}/{urllib.parse.quote(ticket.filename)}"
+                                ok, message = state.sender.send_download(DownloadRequest(url=url, filename=ticket.filename, source="companion-blob"))
+                                if ok:
+                                    with state.lock: state.downloads_dispatched += 1
+                                result = {"ok": ok, "takeover": ok, "filename": ticket.filename, "sha256": upload["sha256"], "message": message}
+                        finally:
+                            upload["path"].unlink(missing_ok=True)
+                    else:
+                        raise ValueError("Unknown blob operation")
+                    self._send_json(result)
+                except (ValueError, TypeError, KeyError, OSError) as exc:
+                    self._send_json({"ok": False, "takeover": False, "error": str(exc)}, status=400)
+                return
+
             if parsed.path == "/api/blob-upload":
+                if state.ext_disabled or not state.cfg.capture_downloads:
+                    self._send_json({"ok": False, "takeover": False, "disabled": True})
+                    return
                 ctype = (self.headers.get("Content-Type") or "").lower()
                 length = int(self.headers.get("Content-Length") or "0")
                 if length <= 0 or length > 1024 * 1024 * 1024:

@@ -41,7 +41,10 @@ function getActiveTab() {
   const st = (res && res.state) || {};
   let excludedDomains = Array.isArray(st.excluded_domains) ? st.excluded_domains.slice() : [];
 
-  if (st.online) {
+  if (st.extension_disabled) {
+    badge.textContent = "● Pasif — Tarayıcı indirir";
+    badge.className = "status-pill";
+  } else if (st.online) {
     badge.textContent = st.idm_installed ? "● Aktif (IDM Hazır)" : "● Köprü Açık";
     badge.className = "status-pill ok";
   } else {

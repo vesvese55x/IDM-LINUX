@@ -19,6 +19,16 @@ $generated = Join-Path $OutputDirectory 'Launcher.generated.cs'
 [IO.File]::WriteAllText($generated, $source, (New-Object Text.UTF8Encoding($false)))
 $csc = Join-Path ([Runtime.InteropServices.RuntimeEnvironment]::GetRuntimeDirectory()) 'csc.exe'
 if (!(Test-Path $csc)) { $csc = "$env:WINDIR/Microsoft.NET/Framework64/v4.0.30319/csc.exe" }
+# Compile the actual CAB sources and exercise routing without starting IDM or altering its registry.
+$sourceCheck = Join-Path $OutputDirectory 'WindowsSources.dll'
+$payloadSources = @(Get-ChildItem (Join-Path $payload 'IDM_SEMO_*.cs') | ForEach-Object { $_.FullName })
+& $csc /nologo /target:library /codepage:65001 "/out:$sourceCheck" /r:System.dll /r:System.Drawing.dll /r:System.Windows.Forms.dll $payloadSources
+if ($LASTEXITCODE -ne 0) { throw 'Authoritative CAB source compilation failed' }
+$routeTest = Join-Path $OutputDirectory 'RouteRegression.exe'
+& $csc /nologo /target:exe "/out:$routeTest" "/r:$sourceCheck" /r:System.dll /r:System.Drawing.dll /r:System.Windows.Forms.dll (Join-Path $PSScriptRoot 'RouteRegression.cs')
+if ($LASTEXITCODE -ne 0) { throw 'Windows routing test compilation failed' }
+& $routeTest
+if ($LASTEXITCODE -ne 0) { throw 'Windows routing regressions failed' }
 $exe = Join-Path $OutputDirectory 'IDM-SEMO-1.0.0-x86_64.exe'
 & $csc /nologo /target:winexe /platform:x64 /codepage:65001 "/out:$exe" "/win32icon:$PSScriptRoot/idm-semo.ico" "/win32manifest:$PSScriptRoot/launcher.manifest" "/resource:$BatFile,SEMO.Installer.bat" "/resource:$PSScriptRoot/idm-semo.ico,SEMO.Icon.ico" /r:System.dll /r:System.Drawing.dll /r:System.Windows.Forms.dll $generated
 if ($LASTEXITCODE -ne 0) { throw 'Windows EXE build failed' }

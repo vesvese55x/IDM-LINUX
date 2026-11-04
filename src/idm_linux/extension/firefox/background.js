@@ -2,6 +2,25 @@
 "use strict";
 
 const extApi = typeof browser !== "undefined" ? browser : chrome;
+// Fail open until persisted state is loaded. Disabling must not intercept browser downloads.
+let extensionDisabled = true;
+function setCaptureDisabled(value) {
+  const wasDisabled = extensionDisabled;
+  extensionDisabled = Boolean(value);
+  if (wasDisabled && !extensionDisabled) refreshDaemonState().catch(() => {});
+  callBridge("/api/ext-state", "POST", { disabled: extensionDisabled }, null).catch(() => {});
+  if (extensionDisabled) {
+    interceptedDownloadIds.clear();
+    blobUploadOwners.clear();
+    _takeoverUrls.clear();
+    _gofileTakeoverUntil = 0;
+  }
+}
+extApi.storage.local.get(["extDisabled"], (r) => setCaptureDisabled(r && r.extDisabled));
+extApi.storage.onChanged.addListener((changes, area) => {
+  if (area === "local" && changes.extDisabled) setCaptureDisabled(changes.extDisabled.newValue);
+});
+
 const BRIDGE_HTTP = "http://127.0.0.1:17802";
 const NATIVE_HOSTS = ["com.idmlinux.companion", "com.tonec.idm"];
 
@@ -44,6 +63,7 @@ const MEDIA_EXT_REGEX = /\.(mp4|webm|mkv|flv|mov|m4v|m3u8|mpd|mp3|m4a|flac|ogg)(
 
 // Sekme bazlı yakalanan medya akışları: tabId -> Map<url, {url, mime, size, referer, origin, detectedAt}>
 const tabStreams = new Map();
+const blobUploadOwners = new Map();
 // v3.11.0: YouTube videoplayback segment-seri sayacı (tabId -> Map(seriesKey -> count))
 const ytSeriesCount = new Map();
 // İstek bazlı gerçek Referer / Origin önbelleği: requestId -> {referer, origin}
@@ -93,6 +113,7 @@ function sendNativePromise(hostName, payload) {
 // v2.9.7: KÖPRÜ BEKÇİSİ — bridge yoksa native host ile UYANDIR, sonra yeniden dene
 let lastWakeAt = 0;
 async function wakeDaemon(force = false) {
+  if (extensionDisabled) return false;
   const now = Date.now();
   if (!force && now - lastWakeAt < 15000) return false;
   lastWakeAt = now;
@@ -106,6 +127,7 @@ async function wakeDaemon(force = false) {
 }
 
 setInterval(async () => {
+  if (extensionDisabled) return;
   try {
     await fetch(`${BRIDGE_HTTP}/api/status`, { method: "GET", headers: { "X-IDM-Linux": "1" } });
     cachedState.online = true;
@@ -188,6 +210,7 @@ async function callBridge(endpoint, method = "POST", body = null, nativeAction =
 let lastAutoReloadCheckTs = 0;
 
 async function refreshDaemonState() {
+  if (extensionDisabled) return cachedState;
   const st = await callBridge("/api/status", "GET", null, "status");
   if (st && st.ok) {
     cachedState = {
@@ -333,6 +356,16 @@ function getCachedExtraHeaders(targetUrl) {
   );
 }
 
+async function fetchJsonBounded(url, timeout = 6000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
+  try {
+    const response = await fetch(url, { credentials: "include", signal: controller.signal });
+    if (!response.ok) throw new Error(`HTTP ${response.status}; browser verification may be required`);
+    return await response.json();
+  } finally { clearTimeout(timer); }
+}
+
 async function getMergedCookies(urls) {
   const parts = [];
   const primaryTop = urls.find((u) => u && u.startsWith("http")) || "";
@@ -391,6 +424,7 @@ try {
   }
   extApi.webRequest.onBeforeSendHeaders.addListener(
     (details) => {
+      if (extensionDisabled) return;
       const reqUrl = details.url || "";
       if (!reqUrl.startsWith("http") || reqUrl.startsWith(BRIDGE_HTTP)) return;
 
@@ -480,6 +514,7 @@ try {
 
 extApi.webRequest.onHeadersReceived.addListener(
   (details) => {
+    if (extensionDisabled) return;
     if (details.tabId < 0 || details.statusCode >= 400) return;
     const url = details.url || "";
     if (!url.startsWith("http") || url.startsWith(`${BRIDGE_HTTP}/stream/`)) return;
@@ -635,6 +670,7 @@ try {
 
 extApi.tabs.onRemoved.addListener((tabId) => {
   tabStreams.delete(tabId);
+  for (const [id, owner] of blobUploadOwners) if (owner.startsWith(`${tabId}:`)) blobUploadOwners.delete(id);
   ytSeriesCount.delete(tabId); // v3.11.0: sekme kapanınca sayaç da düşsün
 });
 
@@ -668,6 +704,7 @@ function isStrictAuthDomain(urlStr) {
 }
 
 function evaluateInterceptSync(item) {
+  if (extensionDisabled) return { intercept: false };
   const url = item.finalUrl || item.url || "";
   if (!url.startsWith("http://") && !url.startsWith("https://")) return { intercept: false };
   if (
@@ -751,7 +788,8 @@ function evaluateInterceptSync(item) {
   return { intercept: true, url, referer, forced };
 }
 
-function purgeBrowserDownload(downloadId) {
+function purgeBrowserDownload(downloadId, alreadyOwned = false) {
+  if (extensionDisabled && !alreadyOwned) return;
   try {
     extApi.downloads.cancel(downloadId, () => {
       void extApi.runtime.lastError;
@@ -771,14 +809,16 @@ function purgeBrowserDownload(downloadId) {
 if (extApi.downloads && extApi.downloads.onDeterminingFilename) {
   try {
     extApi.downloads.onDeterminingFilename.addListener((item, suggest) => {
+      if (extensionDisabled) { suggest(); return; }
       if (interceptedDownloadIds.has(item.id)) {
-        purgeBrowserDownload(item.id);
+        suggest();
         return;
       }
       const check = evaluateInterceptSync(item);
       if (check.intercept && cachedState.online && cachedState.idm_installed) {
         interceptedDownloadIds.add(item.id);
-        purgeBrowserDownload(item.id);
+        try { extApi.downloads.pause(item.id, () => { void extApi.runtime.lastError; }); } catch (_e) {}
+        suggest();
         // v3.14.2: içerik-tipi torrent -> DOSYA olarak değil onay penceresiyle
         if (check.torrent) {
           dispatchTorrentPopup(item, check);
@@ -793,6 +833,10 @@ if (extApi.downloads && extApi.downloads.onDeterminingFilename) {
 }
 
 async function dispatchInterceptedToIdm(item, check) {
+  if (extensionDisabled) {
+    try { extApi.downloads.resume(item.id, () => { void extApi.runtime.lastError; }); } catch (_e) {}
+    return;
+  }
   if (processedDownloadIds.has(item.id)) return;
   processedDownloadIds.add(item.id);
   setTimeout(() => {
@@ -801,6 +845,10 @@ async function dispatchInterceptedToIdm(item, check) {
   }, 30000);
 
   const cookies = await getCookiesHeader(check.url, check.referer);
+  if (extensionDisabled) {
+    try { extApi.downloads.resume(item.id, () => { void extApi.runtime.lastError; }); } catch (_e) {}
+    return;
+  }
   const extraHeaders = getCachedExtraHeaders(check.url);
   let origin = "";
   try {
@@ -826,17 +874,14 @@ async function dispatchInterceptedToIdm(item, check) {
 
   if (res && res.ok && res.takeover !== false) {
     // IDM devraldı -> tarayıcı indirmesini ve varsa inmiş parçayı tamamen temizle!
-    purgeBrowserDownload(item.id);
+    purgeBrowserDownload(item.id, true);
   } else {
     // Köprü devralmadıysa veya kapalıysa tarayıcı indirmesini devam ettir
     interceptedDownloadIds.delete(item.id);
     try {
       extApi.downloads.resume(item.id, () => {
-        if (extApi.runtime.lastError) {
-          // Eğer 0.ms'de cancel edildiyse bypass ile tarayıcıda yeniden başlat
-          bypassCaptureUntil = Date.now() + 4000;
-          extApi.downloads.download({ url: check.url }, () => { void extApi.runtime.lastError; });
-        }
+        // Resume the original item: do not replay expired/authenticated/object URLs.
+        void extApi.runtime.lastError;
       });
     } catch (_e) {}
   }
@@ -846,6 +891,8 @@ async function dispatchInterceptedToIdm(item, check) {
 // DOSYA olarak IDM'ye gitmez; başlatan sekmede 'Torrent İndirme Onayı' penceresi açılır.
 // Sekme bulunamazsa / içerik betiği yoksa eski dosya akışına geri düşer.
 async function dispatchTorrentPopup(item, check) {
+  if (extensionDisabled) { try { extApi.downloads.resume(item.id, () => {}); } catch (_e) {} return; }
+  purgeBrowserDownload(item.id);
   if (processedDownloadIds.has(item.id)) return;
   processedDownloadIds.add(item.id);
   setTimeout(() => {
@@ -875,6 +922,7 @@ async function dispatchTorrentPopup(item, check) {
     } catch (_e) {}
   }
   // İçerik betiği yok (mağaza sayfası vb.) -> eski davranış: .torrent dosyasını IDM'ye ver
+  processedDownloadIds.delete(item.id);
   dispatchInterceptedToIdm(item, check);
 }
 
@@ -911,16 +959,7 @@ extApi.downloads.onCreated.addListener((item) => {
   // 0. MİLİSANIYEDE SENKRON MÜDAHALE (HİÇ await YOK!):
   // Tarayıcının küçük dosyaları (örn. 7-Zip 1.5MB) arkada indirip bitirmesini anında durdurur!
   interceptedDownloadIds.add(item.id);
-  try {
-    if (cachedState.online && cachedState.idm_installed) {
-      extApi.downloads.cancel(item.id, () => {
-        void extApi.runtime.lastError;
-        extApi.downloads.erase({ id: item.id }, () => { void extApi.runtime.lastError; });
-      });
-    } else {
-      extApi.downloads.pause(item.id, () => { void extApi.runtime.lastError; });
-    }
-  } catch (_e) {}
+  try { extApi.downloads.pause(item.id, () => { void extApi.runtime.lastError; }); } catch (_e) {}
 
   // v3.14.2: içerik-tipi torrent -> DOSYA olarak değil onay penceresiyle
   if (check.torrent) {
@@ -1019,6 +1058,9 @@ extApi.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   const topTabTitle = (sender && sender.tab && sender.tab.title) || "";
 
   (async () => {
+    if (extensionDisabled && !["IDM_POPUP_STATUS", "IDM_GET_TAB_INFO", "IDM_GET_STATE", "IDM_UPDATE_CONFIG"].includes(msg.type)) {
+      sendResponse({ ok: false, takeover: false, disabled: true }); return;
+    }
 
     // v3.10.0: OYNATICIYA GÖMÜLÜ ALTYAZI — daemon kasasına yaz, yerel URL'yi akış
     // listesine ekle (böylece bar "📝 Türkçe Altyazı" olarak listeler ve IDM indirir).
@@ -1111,7 +1153,7 @@ extApi.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       const excluded = isDomainExcluded(`https://${host}/`, topTabUrl);
       sendResponse({
         ok: true,
-        videoBarEnabled: cachedState.video_bar_enabled && !excluded,
+        videoBarEnabled: !extensionDisabled && cachedState.video_bar_enabled && !excluded,
         streamCount: sMap.size,
         streams: Array.from(sMap.values()),
         tabTitle: topTabTitle,
@@ -1140,33 +1182,31 @@ extApi.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       for (const st of mergedStreams.slice(0, 5)) {
         if (st && st.url) cookieUrls.push(st.url);
       }
-      // v2.9.4: bilibili playurl API'si (sayfa çerezleriyle) — player açılmamışsa bile kaynak bulunur
-      if (/bilibili\.com|b23\.tv/.test(effectivePageUrl)) {
+      // Prefer sources already captured by the browser. No challenge-bypass retries.
+      const hasBiliSources = mergedStreams.some((st) => { try { return /(^|\.)hdslb\.com$|(^|\.)bilivideo\.com$/.test(new URL(st.url).hostname); } catch (_e) { return false; } });
+      let isBiliPage = false;
+      try { isBiliPage = /(^|\.)bilibili\.com$/.test(new URL(effectivePageUrl).hostname); } catch (_e) {}
+      if (!hasBiliSources && isBiliPage) {
         try {
           const bm = effectivePageUrl.match(/\/video\/(BV[0-9A-Za-z]+)/);
           if (bm) {
             let cid = msg.biliCid || "";
             if (!cid) {
-              let vr = await fetch(`https://api.bilibili.com/x/web-interface/view?bvid=${bm[1]}`, { credentials: "include" });
-              if (vr.status === 412) {
-                // v2.9.5: risk kontrolü -> önce ana sayfayla çerez ısıt, bir kez daha dene
-                try { await fetch("https://www.bilibili.com/", { credentials: "include" }); } catch (_e2) {}
-                vr = await fetch(`https://api.bilibili.com/x/web-interface/view?bvid=${bm[1]}`, { credentials: "include" });
-              }
-              const view = await vr.json().catch(() => null);
-              cid = view && view.data ? String(view.data.cid || "") : "";
+              const view = await fetchJsonBounded(`https://api.bilibili.com/x/web-interface/view?bvid=${bm[1]}`);
+              const part = Math.max(1, Number(new URL(effectivePageUrl).searchParams.get("p")) || 1);
+              const pages = view && view.data && view.data.pages;
+              cid = String((pages && pages[part - 1] && pages[part - 1].cid) || (part === 1 && view && view.data && view.data.cid) || "");
             }
             if (cid) {
-              const pl = await fetch(`https://api.bilibili.com/x/player/playurl?bvid=${bm[1]}&cid=${cid}&fnval=16&fnver=0&fourk=1`, { credentials: "include" }).then((r) => r.json());
-              const dash = pl && pl.data ? pl.data.dash : null;
-              const added = [];
+              const pl = await fetchJsonBounded(`https://api.bilibili.com/x/player/playurl?bvid=${bm[1]}&cid=${cid}&fnval=16&fnver=0&fourk=1`);
+              const data = pl && pl.code === 0 && pl.data;
+              const dash = data && data.dash;
               if (dash) {
-                (dash.video || []).slice(0, 6).forEach((v) => added.push({ url: v.baseUrl || v.base_url || "", mime: v.mimeType || "video/mp4", referer: "https://www.bilibili.com/", origin: "https://www.bilibili.com", isHls: false }));
-                (dash.audio || []).slice(0, 2).forEach((a) => added.push({ url: a.baseUrl || a.base_url || "", mime: a.mimeType || "audio/mp4", referer: "https://www.bilibili.com/", origin: "https://www.bilibili.com", isHls: false }));
-              } else if (pl && pl.data && pl.data.durl) {
-                pl.data.durl.slice(0, 3).forEach((d0) => added.push({ url: d0.url, mime: "video/mp4", referer: "https://www.bilibili.com/", origin: "https://www.bilibili.com", isHls: false }));
+                (dash.video || []).slice(0, 6).forEach((v) => mergedStreams.push({ url: v.baseUrl || v.base_url || "", mime: v.mimeType || "video/mp4", referer: "https://www.bilibili.com/", isHls: false }));
+                (dash.audio || []).slice(0, 2).forEach((v) => mergedStreams.push({ url: v.baseUrl || v.base_url || "", mime: v.mimeType || "audio/mp4", referer: "https://www.bilibili.com/", isHls: false }));
+              } else if (data && data.durl) {
+                data.durl.slice(0, 3).forEach((v) => mergedStreams.push({ url: v.url, mime: "video/mp4", referer: "https://www.bilibili.com/", isHls: false }));
               }
-              for (const a of added) if (a.url) mergedStreams.push(a);
             }
           }
         } catch (_e) {}
@@ -1316,20 +1356,44 @@ extApi.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     if (msg.type === "IDM_POPUP_STATUS") {
       const st = await refreshDaemonState();
-      sendResponse({ ok: true, state: st });
+      sendResponse({ ok: true, state: Object.assign({}, st, { extension_disabled: extensionDisabled, capture_downloads: !extensionDisabled && st.capture_downloads !== false }) });
       return;
     }
 
     if (msg.type === "IDM_UPDATE_CONFIG") {
+      if (msg.config && typeof msg.config.capture_downloads === "boolean") {
+        setCaptureDisabled(!msg.config.capture_downloads);
+        await new Promise((resolve) => extApi.storage.local.set({ extDisabled: extensionDisabled }, resolve));
+      }
       const res = await callBridge(
         "/api/config",
         "POST",
         msg.config || {},
-        "update_config"
+        extensionDisabled ? null : "update_config"
       );
       await refreshDaemonState();
       sendResponse(res);
       return;
+    }
+
+    if (msg.type === "IDM_BLOB_TRANSFER") {
+      if (!cachedState.online) await refreshDaemonState();
+      if (extensionDisabled || !cachedState.online || !cachedState.idm_installed || !cachedState.capture_downloads || isDomainExcluded(msg.pageUrl || topTabUrl, topTabUrl)) {
+        sendResponse({ ok: false, takeover: false }); return;
+      }
+      const actions = new Set(["begin", "chunk", "finish", "cancel"]);
+      if (!actions.has(msg.action)) { sendResponse({ ok: false }); return; }
+      const owner = `${tabId}:${sender.frameId || 0}`;
+      if (msg.action !== "begin" && blobUploadOwners.get(msg.transferId) !== owner) {
+        sendResponse({ ok: false, error: "Unknown blob owner" }); return;
+      }
+      const result = await callBridge(`/api/blob-transfer/${msg.action}`, "POST", {
+        transferId: msg.transferId, filename: msg.filename, mimeType: msg.mimeType,
+        size: msg.size, offset: msg.offset, dataBase64: msg.dataBase64
+      });
+      if (msg.action === "begin" && result && result.ok) blobUploadOwners.set(result.transferId, owner);
+      if (msg.action === "finish" || msg.action === "cancel") blobUploadOwners.delete(msg.transferId);
+      sendResponse(result || { ok: false }); return;
     }
 
     if (msg.type === "IDM_BLOB_DOWNLOAD") {
@@ -1532,6 +1596,7 @@ extApi.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 // v2.8.6: daemon'onay kuyruğunu poll'la -> sayfada confirm() -> sonucu bildir
 const _idmConfirmSeen = new Set();
 setInterval(async () => {
+  if (extensionDisabled) return;
   try {
     const cfg = await chrome.storage.local.get(["httpPort"]);
     const port = cfg.httpPort || 17802;
@@ -1567,6 +1632,7 @@ const _takeoverUrls = new Set();
 let _gofileTakeoverUntil = 0;
 chrome.runtime.onMessage.addListener((msg, _s, sendResponse) => {
   if (msg && msg.type === "IDM_TAKEOVER_URL") {
+    if (extensionDisabled) { sendResponse({ ok: false, disabled: true }); return false; }
     if (msg.url) {
       _takeoverUrls.add(msg.url);
       if (_takeoverUrls.size > 300) _takeoverUrls.clear();
@@ -1580,6 +1646,7 @@ chrome.runtime.onMessage.addListener((msg, _s, sendResponse) => {
 try {
   chrome.downloads.onCreated.addListener((dl) => {
     const u = dl && dl.url ? dl.url : "";
+    if (extensionDisabled) return;
     const inTakeover = _takeoverUrls.has(u);
     const gofileWin = Date.now() < _gofileTakeoverUntil && /gofile\.io\/(download|contents)\//i.test(u);
     if (inTakeover || gofileWin) {
@@ -1591,12 +1658,14 @@ try {
 
 // v2.8.8: arena.ai vb. HttpOnly/CF korumalı dosyaları BIZZAT TARAYICI çeker, daemon'a besler
 setInterval(async () => {
+  if (extensionDisabled) return;
   try {
     const cfg = await chrome.storage.local.get(["httpPort"]);
     const port = cfg.httpPort || 17802;
     const res = await fetch(`http://127.0.0.1:${port}/api/assist/pending`, { headers: { Origin: `http://127.0.0.1:${port}` } });
     const data = await res.json();
     for (const a of (data.pending || [])) {
+      if (extensionDisabled) break;
       // v2.9.1: ÖNCE aynı origin'li sekmede content-script'e çektir (CORS duvarını aşar)
       try {
         const host = new URL(a.url).hostname;
@@ -1622,6 +1691,7 @@ setInterval(async () => {
           await fetch(`http://127.0.0.1:${port}/api/assist/chunk`, { method: "POST", headers: { "Content-Type": "application/json", Origin: `http://127.0.0.1:${port}` }, body: JSON.stringify({ id: a.id, b64: btoa(bin) }) });
         };
         for (;;) {
+          if (extensionDisabled) { await reader.cancel(); throw new Error("Capture disabled"); }
           const { done, value } = await reader.read();
           if (done) break;
           const merged = new Uint8Array(buf.length + value.length);
@@ -1655,6 +1725,7 @@ try {
     if (info.menuItemId !== "idm-toggle-enabled") return;
     chrome.storage.local.get(["extDisabled"], (r) => {
       const next = !Boolean(r && r.extDisabled);
+      setCaptureDisabled(next);
       chrome.storage.local.set({ extDisabled: next }, async () => {
         try {
           const cfg2 = await chrome.storage.local.get(["httpPort"]);
