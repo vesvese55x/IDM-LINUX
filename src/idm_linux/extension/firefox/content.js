@@ -225,7 +225,7 @@
 
     if (d.__idmLinuxBlobRequest && d.reqId && ev.source === window) {
       sendMsg({ type: "IDM_BLOB_TRANSFER", action: d.action, transferId: d.transferId,
-        filename: d.filename, mimeType: d.mimeType, size: d.size,
+        filename: d.filename, mimeType: d.mimeType, size: d.size, streaming: d.streaming,
         offset: d.offset, dataBase64: d.dataBase64, pageUrl: location.href
       }).then((res) => {
         window.postMessage(Object.assign({}, res || { ok: false }, { __idmLinuxBlobResult: true, reqId: d.reqId }), "*");

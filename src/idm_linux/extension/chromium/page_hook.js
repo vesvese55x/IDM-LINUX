@@ -395,7 +395,8 @@
         const headerSize = Number(response.headers.get("content-length"));
         const size = justBeamIt && headerSize === 0 ? null : headerSize;
         // Unknown/oversize bodies stay browser-owned; never buffer the full file.
-        if (!response.ok || !response.body || (size !== null && (!Number.isSafeInteger(size) || size <= 0 || size > 1024 ** 3))) throw new Error("Unsupported workspace response");
+        const maxSize = justBeamIt ? 64 * 1024 ** 3 : 1024 ** 3;
+        if (!response.ok || !response.body || (size !== null && (!Number.isSafeInteger(size) || size <= 0 || size > maxSize))) throw new Error("Unsupported workspace response");
         const disposition = response.headers.get("content-disposition") || "";
         const encoded = disposition.match(/filename\*=UTF-8''([^;]+)/i);
         const plain = disposition.match(/filename="([^"]+)"|filename=([^;]+)/i);
@@ -407,19 +408,28 @@
           if (!start.ok || !start.transferId) throw new Error("Workspace transfer rejected");
           transferId = start.transferId;
         }
-        reader = response.body.getReader(); let offset = 0;
+        reader = response.body.getReader(); let offset = 0, used = 0;
+        const pending = new Uint8Array(384 * 1024);
+        const flush = async () => {
+          if (!used) return;
+          if (!window.__idmLinuxCaptureEnabled()) throw new Error("Capture disabled");
+          const part = new Blob([pending.subarray(0, used)]);
+          const reply = await blobRpc("chunk", { transferId, offset, dataBase64: await encodeBlobSlice(part) });
+          offset += part.size; used = 0;
+          if (!reply.ok || reply.received !== offset) throw new Error("Workspace chunk rejected");
+          if (justBeamIt && anchor.__idmButton) anchor.__idmButton.textContent = "IDM: " + (offset / 1024 ** 2).toFixed(1) + " MiB alındı; göndereni açık tutun";
+        };
         for (;;) {
           if (!window.__idmLinuxCaptureEnabled()) throw new Error("Capture disabled");
           const { done, value } = await reader.read(); if (done) break;
-          if (offset + value.length > (size === null ? 1024 ** 3 : size)) throw new Error("Workspace size exceeded");
-          for (let i = 0; i < value.length; i += 384 * 1024) {
-            if (!window.__idmLinuxCaptureEnabled()) throw new Error("Capture disabled");
-            const part = new Blob([value.subarray(i, i + 384 * 1024)]);
-            const reply = await blobRpc("chunk", { transferId, offset, dataBase64: await encodeBlobSlice(part) });
-            offset += part.size;
-            if (!reply.ok || reply.received !== offset) throw new Error("Workspace chunk rejected");
+          if (offset + used + value.length > (size === null ? maxSize : size)) throw new Error("Workspace size exceeded");
+          for (let i = 0; i < value.length;) {
+            const take = Math.min(pending.length - used, value.length - i);
+            pending.set(value.subarray(i, i + take), used); used += take; i += take;
+            if (used === pending.length) await flush();
           }
         }
+        await flush();
         if (!offset || (size !== null && offset !== size)) throw new Error("Workspace response truncated");
         const finish = await blobRpc("finish", { transferId, size: offset });
         if (!finish.ok || !finish.takeover) throw new Error("Workspace handoff rejected");
@@ -430,7 +440,7 @@
         if (transferId) { try { await blobRpc("cancel", { transferId }); } catch (_ignore) {} }
         if (justBeamIt) {
           // Never replay a consumed token or publish partial bytes as a complete file.
-          if (anchor.__idmButton) anchor.__idmButton.textContent = "IDM: aktarım başarısız; yeni bağlantı gerekli";
+          if (anchor.__idmButton) { anchor.__idmButton.textContent = "IDM: aktarım başarısız; yeni bağlantı gerekli"; anchor.__idmButton.title = String(_e.message || "Transfer failed"); }
         } else fallback();
       }
     })();

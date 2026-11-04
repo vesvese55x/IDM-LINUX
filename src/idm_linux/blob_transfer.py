@@ -12,6 +12,7 @@ from .wine_sender import sanitize_filename
 
 class BlobTransferStore:
     MAX_BYTES = 1024 ** 3
+    STREAM_MAX_BYTES = 64 * 1024 ** 3
     CHUNK_BYTES = 384 * 1024
     MAX_ACTIVE = 4
     TTL = 120.0
@@ -35,8 +36,9 @@ class BlobTransferStore:
     def begin(self, filename, mime, size, streaming=False):
         unknown = streaming is True and size is None
         if unknown:
-            size = self.MAX_BYTES
-        if isinstance(size, bool) or not isinstance(size, int) or not 0 < size <= self.MAX_BYTES:
+            size = self.STREAM_MAX_BYTES
+        limit = self.STREAM_MAX_BYTES if unknown else self.MAX_BYTES
+        if isinstance(size, bool) or not isinstance(size, int) or not 0 < size <= limit:
             raise ValueError('Invalid blob size')
         with self._lock:
             self._cleanup()
