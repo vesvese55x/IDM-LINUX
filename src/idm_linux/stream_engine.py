@@ -190,6 +190,7 @@ class VideoFormatOption:
     filesize_exact: bool = False   # v2.8.4: Content-Length olarak declare edilebilir kesin boyut
     abyss_slug: str = ""           # v2.9.4: abyss.to çözücü kimliği
     abyss_label: str = ""          # v2.9.4: çözünürlük etiketi (720p...)
+    subtitle_state: str = ""       # ready/checking/unavailable; detected is not downloaded
     sub_lang: str = ""             # v2.9.4: yt-dlp altyazı dili
     segment_urls: List[str] = field(default_factory=list)        # v2.8.5: DASH segment serisi
     audio_segment_urls: List[str] = field(default_factory=list)  # v2.8.5: ayrık ses segment serisi
@@ -801,12 +802,14 @@ class ActiveStreamJob:
             if not (txt or "").strip():
                 raise RuntimeError("boş altyazı metni")
             kind = detect_subtitle_kind(txt)
+            if kind == "vtt" and not vtt_to_srt(txt).strip():
+                raise RuntimeError("Altyazı zamanlı metin içermiyor")
             if not kind:
                 raise RuntimeError(
                     "kaynak altyazı değil (HTML/hata sayfası) — altyazı bağlantısı ölmüş olabilir"
                 )
             _EXT_OF_KIND = {"vtt": "vtt", "srt": "srt", "ass": "ass", "ssa": "ssa",
-                            "ttml": "ttml", "sami": "sami", "sbv": "sbv", "mpl2": "srt"}
+                            "ttml": "ttml", "sami": "sami", "sbv": "sbv", "mpl2": "sub"}
             want_ext = ""
             if "." in t.filename:
                 want_ext = t.filename.rsplit(".", 1)[-1].lower()
@@ -1310,7 +1313,7 @@ class ActiveStreamJob:
             cmd.extend(["--referer", t.referer])
         if t.user_agent:
             cmd.extend(["--user-agent", t.user_agent])
-        cmd.append(t.source_url)
+        cmd.append(_extractor_page_url(t.source_url))
 
         # v3.2.0: YouTube -J çözümlemesi 20-90 sn sürebilir; 18 sn'de TIMEOUT'a düşüp canlı
         # motorları boşuna atlıyordu -> 50 sn (içeride ytdlp_record yedek duruyor)
@@ -1406,7 +1409,7 @@ class ActiveStreamJob:
             cmd.extend(["--referer", t.referer])
         if t.origin:
             cmd.extend(["--add-header", f"Origin:{t.origin}"])
-        cmd.append(t.source_url)
+        cmd.append(_extractor_page_url(t.source_url))
 
         yt_proc = subprocess.Popen(
             cmd,
@@ -2021,7 +2024,7 @@ class ActiveStreamJob:
             cmd.extend(["--referer", t.referer])
         if t.sub_lang:
             cmd.extend(["--write-subs", "--write-auto-subs", "--sub-langs", re.escape(t.sub_lang), "--sub-format", "srt/vtt", "--skip-download"])
-        cmd.append(t.source_url)
+        cmd.append(_extractor_page_url(t.source_url))
         logger.info("yt-dlp birleştirme kaydı başlatıldı: %s", t.source_url[:80])
         try:
             proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=(subprocess.PIPE if t.sub_lang else subprocess.DEVNULL))
@@ -2868,6 +2871,46 @@ def _race_ytdlp_cmds(
     return None, last_err, False
 
 
+def _extractor_page_url(url: str) -> str:
+    """Canonical public VK video alias for extractors predating vkvideo.ru.
+
+    Same video ID and query; never used to change an authentication decision.
+    """
+    try:
+        parsed = urllib.parse.urlsplit(url)
+        if parsed.hostname in ("vkvideo.ru", "www.vkvideo.ru", "m.vkvideo.ru", "vk.ru", "www.vk.ru") and re.fullmatch(r"/video-?\d+_\d+/?", parsed.path):
+            return urllib.parse.urlunsplit(("https", "vk.com", parsed.path.rstrip("/"), parsed.query, ""))
+    except ValueError:
+        pass
+    return url
+
+
+def _extracted_subtitle_streams(info: Dict[str, Any], page_url: str) -> List[Dict[str, Any]]:
+    """External subtitle URLs from any supported extractor, including OK/VK.
+
+    Route through the same validation/delivery path as player/iframe tracks.
+    """
+    streams = []
+    seen = set()
+    for field in ("subtitles", "automatic_captions"):
+        for lang, tracks in (info.get(field) or {}).items():
+            if lang == "live_chat" or lang in seen or not isinstance(tracks, list):
+                continue
+            candidates = [t for t in tracks if isinstance(t, dict) and str(t.get("url", "")).startswith(("http://", "https://"))]
+            if not candidates:
+                continue
+            ranking = {"vtt":0,"srt":1,"ass":2,"ssa":3,"ttml":4,"json3":5,"srv3":6}
+            track = min(candidates,key=lambda t:ranking.get(str(t.get("ext") or "").lower(),20))
+            headers = {**(info.get("http_headers") or {}), **(track.get("http_headers") or {})}
+            seen.add(lang)
+            streams.append({"url":track["url"],"mime":"text/vtt", "sub_label":"lang:"+lang,
+                            "referer":headers.get("Referer") or page_url,"origin":headers.get("Origin") or "",
+                            "user_agent":headers.get("User-Agent") or ""})
+            if len(streams) >= 300:
+                return streams
+    return streams
+
+
 def _run_ytdlp_probe(
     ytdlp_bin: str,
     page_url: str,
@@ -2912,7 +2955,7 @@ def _run_ytdlp_probe(
             cmd.extend(["--user-agent", user_agent])
         if referer:
             cmd.extend(["--referer", referer])
-        cmd.append(page_url)
+        cmd.append(_extractor_page_url(page_url))
         return cmd
 
     if is_youtube:
@@ -3187,41 +3230,51 @@ def fetch_bilibili_playurl_streams(
 
 
 def parse_hls_subtitles(manifest_text: str, base_url: str = "") -> List[Tuple[str, str]]:
-    """v2.9.4: HLS master'dan SUBTITLES gruplarını çıkar (isim, mutlak URL)."""
-    out: List[Tuple[str, str]] = []
-    for m in re.finditer(r"#EXT-X-MEDIA:([^\n]*)", manifest_text or ""):
-        attrs = m.group(1)
-        if "TYPE=SUBTITLES" not in attrs:
+    """HLS external subtitle groups with RFC URL resolution, not file-as-directory."""
+    out = []
+    for line in (manifest_text or "").splitlines():
+        if not line.startswith("#EXT-X-MEDIA:"):
             continue
-        nm = re.search(r'NAME="([^"]*)"', attrs)
-        ur = re.search(r'URI="([^"]*)"', attrs)
-        if not ur:
+        attrs = {m.group(1).upper():(m.group(2) if m.group(2) is not None else m.group(3)).strip()
+                 for m in re.finditer(r'([A-Za-z0-9-]+)=(?:"([^"]*)"|([^,]*))',line.split(":",1)[1])}
+        if attrs.get("TYPE", "").upper() != "SUBTITLES" or not attrs.get("URI"):
             continue
-        url = ur.group(1)
-        if url.startswith("/"):
-            url = urllib.parse.urljoin(base_url or "https://x.invalid/", url)
-        elif not url.startswith("http"):
-            url = urllib.parse.urljoin((base_url or "") + "/", url)
-        out.append((nm.group(1) if nm else "altyazı", url))
+        name = attrs.get("NAME") or ("lang:"+attrs["LANGUAGE"] if attrs.get("LANGUAGE") else "altyazı")
+        out.append((name, urllib.parse.urljoin(base_url or "https://x.invalid/", attrs["URI"])))
+        if len(out) >= 300:
+            break
     return out
 
 
 def parse_dash_subtitles(manifest_text: str, base_url: str = "") -> List[Tuple[str, str]]:
-    """v2.9.4: MPD'de contentType=text / text/* AdaptationSet'lerinin tek dosya BaseURL'leri."""
-    out: List[Tuple[str, str]] = []
-    for m in re.finditer(r"<AdaptationSet\b([^>]*)>(.*?)</AdaptationSet>", manifest_text or "", re.S):
-        attrs, body = m.group(1), m.group(2)
-        if 'contentType="text"' not in attrs and "text/" not in attrs:
-            continue
-        lang = re.search(r'lang="([^"]*)"', attrs)
-        bu = re.search(r"<BaseURL>([^<]+)</BaseURL>", body)
-        if not bu:
-            continue
-        url = bu.group(1).strip()
-        if not url.startswith("http"):
-            url = urllib.parse.urljoin(base_url or "https://x.invalid/", url)
-        out.append((lang.group(1) if lang else "altyazı", url))
-    return out
+    """Namespace-aware standalone DASH text tracks with inherited BaseURL/language.
+
+    Fragmented MP4 wvtt/stpp tracks need demuxing and are not falsely advertised as VTT files.
+    """
+    import xml.etree.ElementTree as ET
+    text = manifest_text or ""
+    if len(text)>2000000 or "<!DOCTYPE" in text.upper() or "<!ENTITY" in text.upper():
+        return []
+    try:
+        root = ET.fromstring(text)
+    except ET.ParseError:
+        return []
+    out=[]
+    def local(node):return node.tag.rsplit("}",1)[-1]
+    def walk(node, base, lang="", is_text=False, mime="", has_base=False, depth=0):
+        if depth>12 or len(out)>=300:return
+        lang=node.get("lang") or lang
+        mime=node.get("mimeType") or mime
+        is_text=is_text or node.get("contentType")=="text" or mime.startswith("text/") or mime=="application/ttml+xml"
+        own=next((c.text.strip() for c in node if local(c)=="BaseURL" and c.text and c.text.strip()),"")
+        if own:base=urllib.parse.urljoin(base,own);has_base=True
+        children=[c for c in node if local(c) in ("Period","AdaptationSet","Representation")]
+        fragmented=any(local(c) in ("SegmentTemplate","SegmentList") for c in node)
+        if is_text and has_base and not children and not fragmented and mime!="application/mp4":
+            out.append((lang or "altyazı",base))
+        for child in children:walk(child,base,lang,is_text,mime,has_base,depth+1)
+    walk(root,base_url or "https://x.invalid/")
+    return list(dict.fromkeys(out))
 
 
 # v3.4.0 YOUTUBE ANINDA HIZLI KAYNAKLAR: kullanıcının en büyük şikayeti "YouTube kaynakları
@@ -3536,7 +3589,8 @@ def _bar_subs_header_text() -> str:
 
 
 def _subtitle_options(
-    captured_streams: List[Dict[str, Any]], referer: str, page_url: str, validate: bool = True
+    captured_streams: List[Dict[str, Any]], referer: str, page_url: str, validate: bool = True,
+    probe_cache=None, cookies: str = "", user_agent: str = ""
 ) -> List[VideoFormatOption]:
     """v2.9.4: manifest/<track> altyazıları IDM barında tıklayıp indirilebilir.
     v3.2.2: TÜM altyazılar 'subs' teslimiyle SRT olarak iner — HLS segmentli
@@ -3614,12 +3668,16 @@ def _subtitle_options(
 
     # 1) TEKİLLEŞTİRME — aynı (host+yol) için en iyi etiketli aday kazanır
     for url, lbl in raw_candidates:
-        key = _norm_sub_dedup_key(url)
+        ctx = context_by_url.get(url, {})
+        key = _norm_sub_dedup_key(ctx.get("original_url") or url)
+        is_vault = bool(ctx.get("original_url")) and urllib.parse.urlsplit(url).hostname in ("127.0.0.1", "localhost")
         prev = cand_by_key.get(key)
         if prev is None:
-            cand_by_key[key] = {"url": url, "label": lbl, "score": _label_score(lbl)}
+            cand_by_key[key] = {"url": url, "label": lbl, "score": _label_score(lbl), "vault": is_vault}
         else:
-            prev["url"] = url  # Prefer the newest signed URL for the same track.
+            if is_vault or not prev["vault"]:
+                prev["url"] = url  # Prefer verified local text, else the newest signed URL.
+                prev["vault"] = is_vault
             if _label_score(lbl) > prev["score"]:
                 prev["label"] = lbl
                 prev["score"] = _label_score(lbl)
@@ -3634,9 +3692,12 @@ def _subtitle_options(
         def headers_for(url: str) -> Dict[str, str]:
             context = context_by_url.get(url, {})
             return build_stream_headers(context.get("referer") or referer or page_url or "",
-                                        context.get("origin") or origin, "", context.get("user_agent") or "")
-        keys = list(cand_by_key.keys())[:14]
-        if keys:
+                                        context.get("origin") or origin, context.get("cookie_header", cookies if urllib.parse.urlsplit(url).hostname == urllib.parse.urlsplit(page_url).hostname else ""), context.get("user_agent") or user_agent)
+        keys = list(cand_by_key.keys())[:300]
+        if probe_cache is not None:
+            for k in keys:
+                probe_results[k] = probe_cache.get(cand_by_key[k]["url"], headers_for(cand_by_key[k]["url"]))
+        elif keys:
             with concurrent.futures.ThreadPoolExecutor(max_workers=min(5, len(keys))) as px:
                 fut_map = {
                     px.submit(fetch_subtitle_probe, cand_by_key[k]["url"], headers_for(cand_by_key[k]["url"]), 6.0): k
@@ -3678,13 +3739,13 @@ def _subtitle_options(
         if not lbl:
             lbl = "altyazı"
         seen.add(key)
-        if len(seen) > 16:
+        if len(seen) > 300:
             break
         # v3.10.0 UZANTI DÜRÜSTLÜĞÜ (kullanıcı kararı): altyazı HANGİ biçimdeyse
         # bar'da O biçimde görünür ve O biçimde iner. Önceki sürüm her şeyi "srt"
         # diye etiketliyordu; kullanıcı "1.vtt altyazısı srt olarak sahte
         # gösteriliyor" diye bildirdi. Artık VTT → vtt, SRT → srt, ASS → ass...
-        ext = sub_kind if sub_kind in ("vtt", "srt", "ass", "ttml") else ""
+        ext = {"mpl2":"sub"}.get(sub_kind, sub_kind) if sub_kind in ("vtt", "srt", "ass", "ssa", "ttml", "sami", "sbv", "mpl2") else ""
         if not ext:
             for cand_ext in ("vtt", "srt", "ass", "ssa", "ttml", "sbv", "sami"):
                 if f".{cand_ext}" in url.lower():
@@ -3695,6 +3756,7 @@ def _subtitle_options(
         opts.append(
             VideoFormatOption(
                 id=f"sub_{len(seen)}",
+                subtitle_state=("ready" if status == "ok" else "checking" if status in ("checking", "deferred") else "unavailable" if validate else ""),
                 label=get_i18n().t("bar.sub_label", name=lbl, fmt=ext.upper()),
                 ext=ext,
                 delivery="subs",
@@ -3986,6 +4048,9 @@ class StreamEngine:
         self._probe_cache: Dict[str, Tuple[float, Dict[str, Any]]] = {}
         self._probe_pending: Dict[str, float] = {}  # v3.1.0: arka plan probe'u yürüyen sayfalar
         self._lock = threading.Lock()
+        from .subtitle_probe_cache import SubtitleProbeCache
+        self._subtitle_probe_cache = SubtitleProbeCache()
+        self._extractor_failures = OrderedDict()
 
     def clear_cache(self) -> None:
         with self._lock:
@@ -4602,7 +4667,11 @@ class StreamEngine:
         run_probe_inline = True
         # v3.14.0: dosya barındırıcılar (gofile vb.) yt-dlp'ye ASLA verilmez —
         # '[Piracy]' gürültüsü + 3-6 sn boşa gecikme (kullanıcı günlüğü vakası).
-        if _never_ytdlp_probe(page_url):
+        with self._lock:
+            last_failure = self._extractor_failures.get(page_url, 0)
+        if last_failure and time.time() - last_failure < 60 and not force_refresh:
+            run_probe_inline = False
+        elif _never_ytdlp_probe(page_url):
             run_probe_inline = False
         elif (
             ytdlp_bin
@@ -4659,6 +4728,8 @@ class StreamEngine:
                     ytdlp_bin, page_url, cookie_file, user_agent, referer
                 )
                 if info is not None:
+                    with self._lock:
+                        self._extractor_failures.pop(page_url, None)
                     _remember_media_availability(info)
                     title = info.get("title") or ""
                     ytdlp_live_status = str(info.get("live_status") or "")
@@ -4671,9 +4742,18 @@ class StreamEngine:
                         options = extracted + options
                     # v2.9.4: çok dilli sesler + altyazı dosyaları bara listelenir
                     lang_opts = _youtube_lang_options(info, page_url)
+                    if not any(h in low_page for h in ("youtube.com", "youtu.be", "youtube-nocookie.com")):
+                        external_subs = _extracted_subtitle_streams(info, page_url)
+                        captured_streams += external_subs
+                        available_langs = {st["sub_label"][5:] for st in external_subs}
+                        lang_opts = [opt for opt in lang_opts if opt.delivery != "yt_subs" or opt.sub_lang not in available_langs]
                     if lang_opts:
                         options = options + lang_opts
                 elif probe_err:
+                    with self._lock:
+                        self._extractor_failures[page_url] = time.time()
+                        while len(self._extractor_failures) > 64:
+                            self._extractor_failures.popitem(last=False)
                     logger.info("yt-dlp probe başarısız (%s): %s", page_url[:80], probe_err[:200])
                     if "DRM" in probe_err.upper():
                         drm_flag = True
@@ -4749,7 +4829,7 @@ class StreamEngine:
         options = apply_delivery_guard(options, referer, page_url)
 
         # v2.9.4: altyazı parçaları (HLS SUBTITLES / MPD text / <track> yakalamaları)
-        sub_opts = _subtitle_options(captured_streams, referer, page_url)
+        sub_opts = _subtitle_options(captured_streams, referer, page_url, probe_cache=self._subtitle_probe_cache, cookies=cookies, user_agent=user_agent)
         if sub_opts:
             options = options + sub_opts
         # v2.9.4: abyss.to (v3.1.0: iframe/short.icu sayfa çözücüsüyle birlikte)
@@ -4774,6 +4854,7 @@ class StreamEngine:
             "ytdlp_missing": bool(should_run_ytdlp and not ytdlp_bin),
             "ytdlp_updating": bool(ytdlp_updating),
             "ytdlp_pending": bool(probe_pending),
+            "subtitle_pending": any(o.subtitle_state == "checking" for o in options),
             "subs_header": (_bar_subs_header_text() if _has_subs else ""),
             "formats": [
                 {
@@ -4805,6 +4886,7 @@ class StreamEngine:
                     "abyss_slug": o.abyss_slug,
                     "abyss_label": o.abyss_label,
                     "sub_lang": o.sub_lang,
+                    "subtitle_state": o.subtitle_state,
                 }
                 for o in options
             ],
@@ -4812,7 +4894,7 @@ class StreamEngine:
 
         # v3.1.0: KISMİ sonuç (yt-dlp arka planda) ÖNBELLEĞE YAZILMAZ — 10 dakika boyunca
         # yarım bar gösterilmesin. Tam sonuç (inline) önbelleğe girer.
-        if options and not probe_pending:
+        if options and not probe_pending and not result_payload["subtitle_pending"]:
             _CACHE_SEG_CAP = 400
 
             def _cache_fmt(f: Dict[str, Any]) -> Dict[str, Any]:

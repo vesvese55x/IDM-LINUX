@@ -39,6 +39,9 @@
   // v2.8.3: probe meta (canlı mı? DRM mi? yt-dlp eksik mi?)
   let probeMeta = { isLive: false, isDvr: false, drm: false, ytdlpMissing: false, ytdlpPending: false };
   let emptyAutoRetries = 0; // v2.9.10: boş bar otomatik tazeleme sayacı
+  let subtitlePollTimer = null;
+  let subtitlePollPage = "";
+  let subtitlePollCount = 0;
   let emptyReprobeTimer = null; // v3.0.0: self-healing bar — yeni akış gelince otomatik yeniden tara
   let cachedProbeUrl = "";
   let pendingProbePromise = null;
@@ -259,7 +262,7 @@
     if (d.__idmLinuxSubtitleText && d.vtt) {
       // v3.10.0: oynatıcıya gömülü (blob/MSE) altyazı — daemon kasasına gönderilir
       if (String(d.vtt).length > 40) {
-        sendMsg({ type: "IDM_SUBTITLE_TEXT", vtt: d.vtt, label: d.label || "altyazı", lang: d.lang || "" });
+        sendMsg({ type: "IDM_SUBTITLE_TEXT", vtt: d.vtt, label: d.label || "altyazı", lang: d.lang || "", sourceUrl:d.sourceUrl || "", pageUrl:location.href });
       }
       return;
     }
@@ -1459,7 +1462,7 @@
   }
 
   function fetchFormatsShared(forceRefresh = false) {
-    if (!forceRefresh && cachedFormats && cachedProbeUrl === location.href && cachedFormats.length > 0) {
+    if (!forceRefresh && !probeMeta.subtitlesPending && cachedFormats && cachedProbeUrl === location.href && cachedFormats.length > 0) {
       return Promise.resolve({ ok: true, formats: cachedFormats });
     }
     if (!forceRefresh && pendingProbePromise && cachedProbeUrl === location.href) {
@@ -1485,14 +1488,15 @@
       if (res && res.ok) {
         const pageTitle = (res.title || document.title || "video").trim();
         const formats = Array.isArray(res.formats) ? res.formats.slice() : [];
-        if (formats.length === 0 && domStreams.length > 0) {
+        const fallbackVideo = domStreams.find(st => !/^text\//i.test(st.mime || "") && !/\.(vtt|srt|ass|ssa|ttml|dfxp|smi)(?:[?#]|$)|timedtext/i.test(st.url || ""));
+        if (formats.length === 0 && fallbackVideo) {
           formats.push({
             id: "dom_0",
             label: "Mevcut Video Akışı (MP4 • Doğrudan)",
             ext: "mp4",
             delivery: "direct",
-            direct_url: domStreams[0].url,
-            source_url: domStreams[0].url
+            direct_url: fallbackVideo.url,
+            source_url: fallbackVideo.url
           });
         }
         if (formats.length > 0) {
@@ -1514,12 +1518,26 @@
           drm: Boolean(res.drm),
           ytdlpMissing: Boolean(res.ytdlp_missing),
           ytdlpUpdating: Boolean(res.ytdlp_updating),
+          subtitlesPending: Boolean(res.subtitle_pending),
           ytdlpPending: Boolean(res.ytdlp_pending), // v3.1.0: arka plan probe sürüyor
           // v3.4.0: abyss pasifken daemon'un yerelleştirilmiş aktivasyon notu (20 dil)
           abyssNote: String(res.abyss_note || ""),
           // v3.5.0: yerelleştirilmiş altyazı grup başlığı (altyazı varsa dolu)
           subsHeader: String(res.subs_header || "")
         };
+        if (res.subtitle_pending && !subtitlePollTimer && !extDisabled) {
+          if (subtitlePollPage !== location.href) { subtitlePollPage = location.href; subtitlePollCount = 0; }
+          if (++subtitlePollCount <= 90) {
+            const page = location.href;
+            subtitlePollTimer = setTimeout(() => {
+              subtitlePollTimer = null;
+              if (page !== location.href || extDisabled || dismissedForPage) return;
+              fetchFormatsShared(false).then(next => {
+                if (next && next.ok && dropdownOpen && uiRefs) renderFormatItems(next.formats || []);
+              }).catch(() => {});
+            }, 2000);
+          }
+        }
         return { ok: true, formats: cachedFormats || [] };
       }
       return res || { ok: false };
@@ -1563,7 +1581,7 @@
 
   async function loadFormatsIntoMenu(forceRefresh = false) {
     if (!uiRefs) return;
-    if (!forceRefresh && cachedFormats && cachedProbeUrl === location.href && cachedFormats.length > 0) {
+    if (!forceRefresh && !probeMeta.subtitlesPending && cachedFormats && cachedProbeUrl === location.href && cachedFormats.length > 0) {
       renderFormatItems(cachedFormats);
       return;
     }
@@ -1703,6 +1721,12 @@
       const tagSpan = document.createElement("span");
       tagSpan.className = "idm-item-tag";
       tagSpan.textContent = (fmt.ext || "MP4").toUpperCase();
+      if (isSubFmt(fmt) && ["checking", "unavailable"].includes(fmt.subtitle_state)) {
+        btn.disabled = true;
+        btn.style.opacity = "0.65";
+        btn.title = fmt.subtitle_state === "checking" ? "Altyazı doğrulanıyor…" : "Kaynağa erişilemedi — ↻ Yenile ile tekrar kontrol edin.";
+        tagSpan.textContent = fmt.subtitle_state === "checking" ? "…" : "!";
+      }
 
       btn.appendChild(labelSpan);
       btn.appendChild(tagSpan);

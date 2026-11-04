@@ -95,6 +95,51 @@ def is_hls_playlist_text(text: str) -> bool:
 _SUB_SNIFF_CAP = 262144  # doğrulama için 256 KB yeter (ilk 4 cursor)
 
 
+def normalize_caption_payload(raw: bytes) -> bytes:
+    """Convert actual YouTube JSON3/SRV timed captions to WebVTT, not arbitrary JSON/XML.
+
+    No network access. Invalid/empty/error documents remain invalid caption bodies.
+    """
+    import json
+    import xml.etree.ElementTree as ET
+    if len(raw) > 8 * 1024 * 1024:
+        raise ValueError("Altyazı gövdesi güvenlik sınırını aşıyor")
+    text = raw.decode("utf-8-sig", errors="replace").strip()
+    cues = []
+    try:
+        if text.startswith("{"):
+            obj = json.loads(text)
+            for event in (obj.get("events") or [])[:60000]:
+                start = event.get("tStartMs")
+                dur = event.get("dDurationMs")
+                body = "".join(str(seg.get("utf8") or "") for seg in (event.get("segs") or []) if isinstance(seg, dict)).strip()
+                if isinstance(start, (int,float)) and isinstance(dur, (int,float)) and start >= 0 and dur > 0 and body:
+                    cues.append((start, start+dur, body))
+        elif "<transcript" in text[:400] or "<timedtext" in text[:400]:
+            if "<!DOCTYPE" in text.upper() or "<!ENTITY" in text.upper():
+                return raw
+            root = ET.fromstring(text)
+            for node in list(root.iter())[:60000]:
+                tag = node.tag.rsplit('}',1)[-1]
+                if tag == "text" and "start" in node.attrib:
+                    start = float(node.get("start"))*1000; dur = float(node.get("dur", "0"))*1000
+                elif tag == "p" and "t" in node.attrib:
+                    start = float(node.get("t")); dur = float(node.get("d", "0"))
+                else:
+                    continue
+                body = "".join(node.itertext()).strip()
+                if start >= 0 and dur > 0 and body:
+                    cues.append((start,start+dur,body))
+    except (ValueError, TypeError, AttributeError, ET.ParseError):
+        return raw
+    if not cues:
+        return raw
+    def stamp(value):
+        value = int(round(value)); hours,value = divmod(value,3600000); minutes,value = divmod(value,60000); seconds,ms = divmod(value,1000)
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d}.{ms:03d}"
+    return ("WEBVTT\n\n" + "\n\n".join(f"{stamp(a)} --> {stamp(b)}\n{body}" for a,b,body in cues) + "\n").encode("utf-8")
+
+
 def looks_like_subtitle_bytes(data: bytes) -> bool:
     """Baytların gerçek bir altyazı (WebVTT/SRT/ASS/TTML/SAMI) olup olmadığını anlar.
     HTML hata sayfaları, boş yanıtlar ve JSON hata gövdeleri REDDEDİLİR."""
@@ -105,7 +150,13 @@ def looks_like_subtitle_bytes(data: bytes) -> bool:
     except Exception:
         return False
     low = head.lower()
-    if low.startswith("webvtt") or low.startswith("itel") or low.startswith("[script info]"):
+    if low.startswith("webvtt"):
+        # Thumbnail/storyboard VTT is metadata, not dialogue subtitles.
+        bodies = re.findall(r"-->[^\n]*\n([^\n]+)", head)
+        if bodies and all(re.search(r"\.(?:jpe?g|png|webp|gif)(?:[?#]|$)", body.strip(), re.I) for body in bodies):
+            return False
+        return True
+    if low.startswith("itel") or low.startswith("[script info]"):
         return True
     if low.startswith(("<?xml", "<tt", "<ttml")) and ("tt" in low[:200]):
         return True
@@ -154,43 +205,41 @@ def fetch_subtitle_probe(
     - ("bad", 0, "")                     -> CDN yanıt verdi AMA içerik altyazı değil (sahte!)
     - ("unknown", 0, "")                 -> ağ/timeout (karar verilemedi — girdi tutulur)
     Yanıt tam metin olarak toplanmaz — ilk _SUB_SNIFF_CAP bayt okunup bağlantı kapanır."""
-    got_any_response = False
+    got_invalid_body = False
+    deadline = time.monotonic() + max(0.1, timeout)
     for hdrs in _subtitle_header_variants(headers):
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            break
         try:
             req = urllib.request.Request(sub_url, headers=hdrs)
-            with urllib.request.urlopen(req, timeout=timeout) as resp:
-                code = int(getattr(resp, "status", 200) or 200)
-                if code >= 400:
-                    # v3.10.0: HTTP hatası "içerik altyazı değil" DEMEK DEĞİLDİR —
-                    # CDN bize 403/404 verip tarayıcıya içerik sunuyor olabilir
-                    # (YouTube timedtext, token'lı altyazı CDN'leri). Eskiden bu
-                    # durum 'bad' sayılıp girdi bar'dan SİLİNİYORDU; kullanıcı
-                    # raporu: "altyazı hiç görünmüyor". Artık yalnız 2xx alıp
-                    # içerik altyazı DEĞİLSE elenir.
-                    got_any_response = True
-                    continue
-                enc = resp.headers.get("Content-Encoding") or ""
-                clen = resp.headers.get("Content-Length") or ""
+            with urllib.request.urlopen(req, timeout=remaining) as resp:
+                if int(getattr(resp, "status", 200) or 200) >= 400:
+                    return "unknown", 0, ""
                 raw = resp.read(_SUB_SNIFF_CAP)
-                data = _decompress_http_body(raw, enc)
+                data = normalize_caption_payload(_decompress_http_body(raw, resp.headers.get("Content-Encoding") or ""))
+                if is_hls_playlist_text(data.decode("utf-8", errors="replace")):
+                    # This is a subtitle playlist, not a fake non-caption HTML body.
+                    return "ok", 0, "vtt"
                 if not looks_like_subtitle_bytes(data):
-                    got_any_response = True
+                    got_invalid_body = True
                     continue
-                size = int(clen) if clen.isdigit() and int(clen) > 0 else len(data)
-                sub_kind = "vtt"
-                head = data[:512].decode("utf-8", errors="replace").lstrip().lower()
-                if head.startswith("[script info]") or head.startswith("kelvin"):
-                    sub_kind = "ass"
-                elif head.startswith(("<?xml", "<tt")) or "<sami" in head:
-                    sub_kind = "ttml"
-                elif "-->" in head and not head.startswith("webvtt"):
-                    sub_kind = "srt"
-                return "ok", size, sub_kind
+                kind = detect_subtitle_kind(data)
+                if not kind:
+                    got_invalid_body = True
+                    continue
+                clen = resp.headers.get("Content-Length") or ""
+                # A sniffed prefix is NOT the exact size of an unbounded/chunked body.
+                size = int(clen) if clen.isdigit() and not resp.headers.get("Content-Encoding") else 0
+                return "ok", size, kind
+        except urllib.error.HTTPError as exc:
+            exc.close()
+            # Do not retry authentication or authorization failures with stripped headers.
+            if exc.code in (401, 403, 404, 429):
+                return "unknown", 0, ""
         except Exception:
             continue
-    if got_any_response:
-        return "bad", 0, ""
-    return "unknown", 0, ""
+    return ("bad", 0, "") if got_invalid_body else ("unknown", 0, "")
 
 
 def fetch_subtitle_bytes_smart(
@@ -199,21 +248,30 @@ def fetch_subtitle_bytes_smart(
     """Altyazı gövdesini 4 başlık varyantıyla getirir; ilki başarısız olursa sıradaki
     varyant denenir (rapidvid/fullhdfilmizlesene '0 bayt' düzeltmesi)."""
     last_exc: Optional[Exception] = None
+    deadline = time.monotonic() + max(.1, timeout)
     for hdrs in _subtitle_header_variants(headers):
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            break
         try:
-            raw = fetch_url_bytes(sub_url, hdrs, timeout=timeout, retries=2)
+            with urllib.request.urlopen(urllib.request.Request(sub_url, headers=hdrs), timeout=remaining) as response:
+                raw = response.read(8 * 1024 * 1024 + 1)
+                if len(raw) > 8 * 1024 * 1024:
+                    raise ValueError("Altyazı boyutu güvenlik sınırını aşıyor")
+                raw = normalize_caption_payload(_decompress_http_body(raw, response.headers.get("Content-Encoding") or ""))
+        except urllib.error.HTTPError as exc:
+            exc.close()
+            last_exc = exc
+            if exc.code in (401,403,404,429):
+                break
+            continue
         except Exception as exc:
             last_exc = exc
             continue
-        # v3.10.0: yalnız "bir şey indi" demek yetmez — gövde GERÇEKTEN altyazı
-        # olmalı. Önceki sürüm 404/403 HTML hata sayfasını altyazı sanıp
-        # 'Video [Altyazı].srt' içine HTML yazıyordu (kullanıcı: "fake srt").
-        if looks_like_subtitle_bytes(raw):
+        if looks_like_subtitle_bytes(raw) or is_hls_playlist_text(raw.decode("utf-8", errors="ignore")):
             return raw
-        if is_hls_playlist_text(raw.decode("utf-8", errors="ignore")):
-            return raw  # segmentli altyazı: assemble_subtitle_text işleyecek
         last_exc = RuntimeError("indirilen içerik altyazı değil (HTML/hata sayfası)")
-    raise RuntimeError(f"Altyazı kaynağı hiçbir başlık varyantıyla okunamadı: {last_exc}")
+    raise RuntimeError(f"Altyazı kaynağı okunamadı: {last_exc}")
 
 
 def looks_like_hls_url(url: str) -> bool:
@@ -1153,6 +1211,7 @@ def assemble_subtitle_text(
     initial_text: str = "",
     concurrency: int = 8,
     smart_fetch=None,
+    _depth: int = 0,
 ) -> str:
     """Altyazı kaynağını TEK metne indirir:
     - Tek .vtt/.srt dosyası -> olduğu gibi döner
@@ -1161,6 +1220,8 @@ def assemble_subtitle_text(
     AES-128 şifreli segmentler de desteklenir.
     v3.9.0: smart_fetch verildiğinde TEK dosyalık altyazı 4 başlık varyantıyla
     getirilir (rapidvid gibi hotlink korumalı CDN'lerin '0 bayt' vakası biter)."""
+    if _depth > 6:
+        raise RuntimeError("Altyazı manifest döngüsü/derinlik sınırı")
     text = (initial_text or "").strip()
     if not is_hls_playlist_text(text):
         try:
@@ -1199,7 +1260,7 @@ def assemble_subtitle_text(
                     break
         if not sub_uri:
             raise RuntimeError("Master listede altyazı grubu bulunamadı.")
-        return assemble_subtitle_text(sub_uri, headers, initial_text="", concurrency=concurrency, smart_fetch=smart_fetch)
+        return assemble_subtitle_text(sub_uri, headers, initial_text="", concurrency=concurrency, smart_fetch=smart_fetch, _depth=_depth+1)
 
     parsed = parse_media_playlist_body(sub_url, text)
     items = parsed["items"]
@@ -1220,10 +1281,14 @@ def assemble_subtitle_text(
                 if k_uri not in key_cache:
                     key_cache[k_uri] = fetch_url_bytes(k_uri, headers, timeout=10.0)
                 kb = key_cache[k_uri]
-            if len(kb) == 16:
-                ivb = k_iv if k_iv is not None else _seq.to_bytes(16, byteorder="big")
-                data = _decrypt_aes128_cbc(data, kb, ivb)
-        return data.decode("utf-8", errors="ignore")
+            if len(kb) != 16:
+                raise RuntimeError("Altyazı AES anahtarı geçersiz")
+            ivb = k_iv if k_iv is not None else _seq.to_bytes(16, byteorder="big")
+            data = _decrypt_aes128_cbc(data, kb, ivb)
+        data = normalize_caption_payload(data)
+        if not looks_like_subtitle_bytes(data):
+            raise RuntimeError("Altyazı segmenti boş veya altyazı değil")
+        return data.decode("utf-8-sig", errors="strict")
 
     # Sıra korunur: pencere paralel (8x), sonuç seq sırasına göre dizilir
     results: List[Optional[str]] = [None] * len(items)
@@ -1235,6 +1300,8 @@ def assemble_subtitle_text(
                 results[pos] = fut.result()
             except Exception as exc:
                 logger.info("Altyazı segmenti atlandı (%s/%s): %s", pos + 1, len(items), exc)
+    if any(r is None for r in results):
+        raise RuntimeError("Altyazı eksik: bütün segmentler alınmadan tamamlandı sayılmadı")
     parts = [r for r in results if r and (r or "").strip()]
     if not parts:
         raise RuntimeError("Altyazı segmentlerinin hiçbiri indirilemedi.")

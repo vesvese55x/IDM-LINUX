@@ -607,7 +607,7 @@ extApi.webRequest.onHeadersReceived.addListener(
       detectedAt: Date.now()
     });
 
-    if (streamMap.size > 30) {
+    if (streamMap.size > 300) {
       const firstKey = streamMap.keys().next().value;
       streamMap.delete(firstKey);
     }
@@ -1040,7 +1040,7 @@ extApi.contextMenus.onClicked.addListener(async (info, tab) => {
 
 // v2.9.4: sekme içi gezinmede eski sayfanın kaynaklarını SIFIRLA (bar karışmasın)
 try {
-  chrome.webNavigation.onCompleted.addListener((d) => {
+  chrome.webNavigation.onBeforeNavigate.addListener((d) => {
     if (d.frameId === 0) tabStreams.delete(d.tabId);
   });
   chrome.webNavigation.onHistoryStateUpdated.addListener((d) => {
@@ -1085,6 +1085,7 @@ extApi.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           referer: msg.pageUrl || "",
           origin: "",
           sub_label: label,
+          original_url: msg.sourceUrl || "",
           detectedAt: Date.now()
         });
         while (streamMap.size > 300) streamMap.delete(streamMap.keys().next().value);
@@ -1119,6 +1120,7 @@ extApi.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             size: s.size || null,
             referer: s.referer || "",
             origin: s.origin || "",
+            user_agent: s.user_agent || s.userAgent || navigator.userAgent,
             sub_label: s.sub_label || "", // v3.2.1: altyazı adı bar'a taşınır
             detectedAt: Date.now()
           });
@@ -1213,6 +1215,11 @@ extApi.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       }
 
       const cookies = await getMergedCookies(cookieUrls);
+      await Promise.all(mergedStreams.slice(-300).map(async st => {
+        if (!st || !/^https?:/.test(st.url || "") || !(/^text\//i.test(st.mime || "") || /timedtext|\.(vtt|srt|ass|ssa|ttml|dfxp|smi)(?:[?#]|$)/i.test(st.url))) return;
+        st.cookie_header = await queryCookiesPromise({url: st.url});
+        st.user_agent = st.user_agent || navigator.userAgent;
+      }));
 
       let res = await callBridge(
         "/api/video/probe",
@@ -1266,7 +1273,9 @@ extApi.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         ? topTabTitle
         : (rawTitle || "video");
 
-      const cookies = await getMergedCookies([
+      const cookies = msg.delivery === "subs" && msg.directUrl
+        ? await queryCookiesPromise({url:msg.directUrl})
+        : await getMergedCookies([
         msg.directUrl,
         msg.sourceUrl,
         msg.streamReferer,

@@ -42,6 +42,52 @@ function pageHarness(host='example.test', enabled=true, rejectChunks=false) {
     XMLHttpRequest:XHR,fetch:win.fetch,console,navigator:{userAgent:'test'},setTimeout:timeout,clearTimeout,setInterval(){return 1;},clearInterval(){},MutationObserver:class{observe(){} disconnect(){}},performance:{getEntriesByType(){return[];}},btoa:s=>Buffer.from(s,'binary').toString('base64'),atob:s=>Buffer.from(s,'base64').toString('binary')});
   return {win,doc,location,context,clicks,posts,created,revoked,chunks,Anchor,URL:TestURL,fire,load(){vm.runInContext(fs.readFileSync(path.join(root,'page_hook.js'),'utf8'),context);}};
 }
+function captionResponse(url, body, type='application/json') {
+  return {ok:true,url,headers:{get(k){return k==='content-type'?type:k==='content-length'?String(Buffer.byteLength(body)):'';}},clone(){return this;},text:async()=>body};
+}
+async function externalCaptionTests(){
+  for(const [host,body,expected] of [
+    ['ok.ru',JSON.stringify({flashvars:{metadata:JSON.stringify({subtitles:[{lang:'tr',url:'../caption?id=7'}]})}}),'/caption?id=7'],
+    ['vkvideo.ru',JSON.stringify({payload:{subs:{tr:{url:'/api/subtitle?id=4'}}}}),'/api/subtitle?id=4'],
+    ['player.example.test',JSON.stringify({captions:{'pt-BR':'./captions?id=8'}}),'/config/captions?id=8'],
+    ['film.example.test',JSON.stringify({tracks:[{kind:'captions',src:'../tr.vtt',label:'Turkce'}]}),'/tr.vtt']
+  ]) {
+    const h=pageHarness(host);h.win.fetch=async()=>captionResponse(`https://${host}/config/player.json`,body);h.load();
+    await h.win.fetch(`https://${host}/config/player.json`);await flush();
+    assert(h.posts.some(p=>p.__idmLinuxSubtitle&&p.url===`https://${host}${expected}`),host+' caption not discovered');
+  }
+  {
+    const h=pageHarness('www.youtube.com');const body=JSON.stringify({events:[{tStartMs:1000,dDurationMs:2000,segs:[{utf8:'Merhaba dunya'}]}]});
+    h.win.fetch=async()=>captionResponse('https://www.youtube.com/api/timedtext?lang=tr&fmt=json3',body);h.load();
+    await h.win.fetch('https://www.youtube.com/api/timedtext?lang=tr&fmt=json3');await flush();
+    const captured=h.posts.find(p=>p.__idmLinuxSubtitleText);
+    assert(captured);assert(captured.vtt.startsWith('WEBVTT'));assert(captured.vtt.includes('00:00:01.000 --> 00:00:03.000'));assert.equal(captured.lang,'tr');
+  }
+  {
+    const h=pageHarness();h.win.fetch=async()=>captionResponse('https://example.test/api',JSON.stringify({error:'login required'}));h.load();await h.win.fetch('https://example.test/api');await flush();
+    assert(!h.posts.some(p=>p.__idmLinuxSubtitleText));
+  }
+  {
+    const h=pageHarness('vkvideo.ru',false);h.win.fetch=async()=>captionResponse('https://vkvideo.ru/api',JSON.stringify({subs:[{url:'/api/subtitle?id=7'}]}));h.load();await h.win.fetch('https://vkvideo.ru/api');await flush();
+    assert(!h.posts.some(p=>p.__idmLinuxSubtitle||p.__idmLinuxSubtitleText));
+  }
+  console.log('PASS OK/VK stringified metadata, relative external captions, JSON3 capture, invalid/passive rejection');
+}
+async function textTrackCaptionTests(){
+  for(const mode of ['external','embedded','oversized']) {
+    const h=pageHarness();
+    const cue={startTime:0.123,endTime:0.456,text:'Full caption'};
+    const tr={kind:'subtitles',label:'English',language:'en',cues:mode==='oversized'?Array(6001).fill(cue):[cue]};
+    const video={textTracks:[tr],querySelectorAll:()=>mode==='external'?[{track:tr,src:'https://example.test/en.vtt'}]:[]};
+    h.doc.querySelectorAll=selector=>selector==='video'?[video]:[];
+    h.context.setTimeout=(fn,ms)=>{if(ms===2200){queueMicrotask(fn);return 1;}const t=setTimeout(fn,ms);t.unref();return t;};
+    h.load();await flush();
+    const captions=h.posts.filter(p=>p.__idmLinuxSubtitleText);
+    assert.equal(captions.length,mode==='embedded'?1:0);
+    if(captions.length)assert(captions[0].vtt.includes('00:00:00.123 --> 00:00:00.456'));
+  }
+  console.log('PASS external tracks avoid duplicate snapshots; embedded cues preserve milliseconds; oversize is not truncated');
+}
 async function pageTests(){
   {
     const h=pageHarness('example.test',false);h.load();
@@ -94,7 +140,7 @@ function backgroundHarness(){
   const response=data=>({ok:true,status:200,json:async()=>data});
   const api={storage:{local:{get(keys,cb){const data={...values};if(cb){queueMicrotask(()=>cb(data));return;}return Promise.resolve(data);},set(data,cb){Object.assign(values,data);queueMicrotask(()=>{for(const fn of ev('storage').listeners)fn(Object.fromEntries(Object.entries(data).map(([k,v])=>[k,{newValue:v}])),'local');if(cb)cb();});}},onChanged:ev('storage')},
     runtime:{lastError:null,onMessage:ev('message'),onInstalled:ev('installed'),getManifest(){return{version:'1.0.0'};},sendNativeMessage(host,data,cb){cb({ok:false});}},
-    webRequest:{onBeforeSendHeaders:ev('headers'),onHeadersReceived:ev('response'),onCompleted:ev('completed')},webNavigation:{onCompleted:ev('navigation'),onHistoryStateUpdated:ev('history')},
+    webRequest:{onBeforeSendHeaders:ev('headers'),onHeadersReceived:ev('response'),onCompleted:ev('completed')},webNavigation:{onBeforeNavigate:ev('beforeNavigation'),onCompleted:ev('navigation'),onHistoryStateUpdated:ev('history')},
     tabs:{onRemoved:ev('tabRemoved'),onUpdated:ev('tabUpdated'),sendMessage(id,data,cb){if(cb)cb({ok:true});},query(q,cb){cb([]);}},
     cookies:{getAll(q,cb){cb([]);}},contextMenus:{onClicked:ev('menu'),removeAll(cb){cb();},create(){},update(){}},notifications:{create(){}},
     downloads:{onCreated:ev('created'),onDeterminingFilename:ev('filename'),pause(id,cb){paused.push(id);if(cb)cb();},cancel(id,cb){cancelled.push(id);if(cb)cb();},erase(q,cb){if(cb)cb();},removeFile(id,cb){if(cb)cb();},resume(id,cb){resumed.push(id);if(cb)cb();},download(q,cb){replayed.push(q);if(cb)cb();},search(q,cb){cb([]);}}};
@@ -109,6 +155,17 @@ async function backgroundTests(){
   h.toggle(true);await flush();h.fire({id:4,url:'https://arena.ai/api/new.zip',mime:'application/zip'});await flush();assert(!h.paused.includes(4));assert(!h.cancelled.includes(4));
   console.log('PASS background passive listeners, pause-before-ACK, accepted purge and original-item resume');
 }
+async function navigationCaptionTest(){
+  const h=backgroundHarness();await flush();h.toggle(false);await flush();
+  let registered;
+  for(const fn of h.events.message.listeners)fn({type:'IDM_REGISTER_CAPTURED_STREAMS',streams:[{url:'https://example.test/caption.vtt',mime:'text/vtt'}]},{tab:{id:41,url:'https://example.test/watch'},frameId:0},r=>{registered=r;});
+  await until(()=>registered!==undefined);
+  for(const fn of h.events.navigation.listeners)fn({tabId:41,frameId:0});
+  assert.equal(vm.runInContext('tabStreams.get(41).size',h.context),1);
+  for(const fn of h.events.beforeNavigation.listeners)fn({tabId:41,frameId:0});
+  assert.equal(vm.runInContext('tabStreams.has(41)',h.context),false);
+  console.log('PASS early captions survive navigation completion; next navigation clears stale captures');
+}
 async function probeRecoveryTest(){
   const h=backgroundHarness();await flush();h.toggle(false);await flush();
   vm.runInContext('globalThis.probeCalls=0;wakeDaemon=async()=>true;callBridge=async()=>++globalThis.probeCalls===1?{ok:false}:{ok:true,title:"Recovered",formats:[]};',h.context);
@@ -119,4 +176,4 @@ async function probeRecoveryTest(){
   assert.equal(vm.runInContext('globalThis.probeCalls',h.context),2);
   console.log('PASS video probe recovers after bridge wake without assigning to const');
 }
-(async()=>{await pageTests();await backgroundTests();await probeRecoveryTest();console.log('BROWSER_CAPTURE_HARNESS_PASS');})().catch(e=>{console.error(e);process.exitCode=1;});
+(async()=>{await pageTests();await backgroundTests();await probeRecoveryTest();await externalCaptionTests();await textTrackCaptionTests();await navigationCaptionTest();console.log('BROWSER_CAPTURE_HARNESS_PASS');})().catch(e=>{console.error(e);process.exitCode=1;});

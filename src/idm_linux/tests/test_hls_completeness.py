@@ -135,6 +135,15 @@ class HlsCompletenessTests(unittest.TestCase):
         import urllib.request
         from idm_linux.daemon import make_http_handler, ReusableThreadingHTTPServer
         body = b'x' * 4096
+        # Content-Length lets the client finish before the server's post-write
+        # accounting. Synchronize with that operation instead of racing its thread.
+        range_accounted = threading.Event()
+        original_add_served = self.job.add_served
+        def account(n):
+            original_add_served(n)
+            if self.job.served_bytes >= 4196:
+                range_accounted.set()
+        self.job.add_served = account
         self.job.ensure_started = Mock()
         self.job.restart_for_resume = Mock(return_value=True)
         self.job.client_disconnected = Mock()
@@ -159,6 +168,7 @@ class HlsCompletenessTests(unittest.TestCase):
             with urllib.request.urlopen(request, timeout=5) as response:
                 self.assertEqual(response.status, 206)
                 self.assertEqual(len(response.read()), 100)
+            self.assertTrue(range_accounted.wait(2), "Range delivery accounting did not finish")
             self.assertEqual(self.job.served_bytes, 4196)
         finally:
             server.shutdown()

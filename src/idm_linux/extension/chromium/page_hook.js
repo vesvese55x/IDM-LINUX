@@ -617,10 +617,10 @@
         if (!(declaredCaption || subExtRe.test(u) || subNameRe.test(u))) return;
         if (u.startsWith("blob:") || u.startsWith("data:")) return;
         let abs = u;
-        try { abs = new URL(u, baseUrl).href; } catch (_e) { return; }
+        try { abs = new URL(u, baseUrl).href; if (!/^https?:\/\//i.test(abs)) return; } catch (_e) { return; }
         if (subSeen.has(abs)) return;
         subSeen.add(abs);
-        if (subSeen.size > 200) subSeen.clear();
+        if (subSeen.size > 600) subSeen.delete(subSeen.values().next().value);
         window.postMessage({ __idmLinuxSubtitle: true, url: abs, label: hintLabel || "altyazı" }, "*");
       } catch (_e) {}
     };
@@ -629,16 +629,32 @@
         if (!window.__idmLinuxCaptureEnabled() || !text || typeof text !== "string" || text.length > 2000000) return;
         // Player JSON often stores relative, escaped, or extensionless caption
         // URLs. Parse data only; never evaluate page scripts/configuration.
-        const walk = (value, parentKey = "", depth = 0, budget = {left: 2500}) => {
-          if (!value || typeof value !== "object" || depth > 10 || --budget.left < 0) return;
-          if (Array.isArray(value)) { for (const item of value.slice(0, 100)) walk(item, parentKey, depth + 1, budget); return; }
-          const kind = String(value.kind || value.type || "").toLowerCase();
-          const declared = /^(subtitles?|captions?)$/.test(kind) || /^(subtitles?|captions?)$/i.test(parentKey);
-          const label = value.label || value.name || (value.srclang || value.lang || value.language ? "lang:" + (value.srclang || value.lang || value.language) : "");
-          for (const key of ["file", "src", "url"]) {
-            if (typeof value[key] === "string" && (declared || subExtRe.test(value[key]))) emitSub(value[key], String(label).slice(0,80), declared, baseUrl);
+        const captionKey = key => /^(subtitles?|captions?|subs|captionTracks|subtitleTracks|textTracks)$/i.test(key);
+        const walk = (value, parentKey = "", depth = 0, budget = {left: 4000}, inherited = false, inheritedLabel = "") => {
+          if (value == null || depth > 12 || --budget.left < 0) return;
+          const declaredParent = inherited || captionKey(parentKey);
+          if (typeof value === "string") {
+            if (value.length > 2000000) return;
+            if (/^[\s]*[\[{]/.test(value)) {
+              try { walk(JSON.parse(value), parentKey, depth+1, budget, declaredParent, inheritedLabel); } catch (_json) {}
+            } else if (declaredParent && (/^(?:https?:|\/\/|\/|\.{1,2}\/)|[/?]/i.test(value) || subExtRe.test(value))) emitSub(value, inheritedLabel, true, baseUrl);
+            return;
           }
-          for (const [key, child] of Object.entries(value).slice(0,100)) if (child && typeof child === "object") walk(child,key,depth+1,budget);
+          if (typeof value !== "object") return;
+          if (Array.isArray(value)) { for (const item of value.slice(0,300)) walk(item,parentKey,depth+1,budget,declaredParent,inheritedLabel); return; }
+          const kind = String(value.kind || value.type || "").toLowerCase();
+          if (/^(metadata|thumbnails?|chapters)$/.test(kind)) return;
+          const declared = declaredParent || /^(subtitles?|captions?)$/.test(kind);
+          const rawLabel = value.label || value.title || value.name;
+          const label = (typeof rawLabel === "string" ? rawLabel : "") || (value.srclang || value.lang || value.language || value.languageCode ? "lang:" + (value.srclang || value.lang || value.language || value.languageCode) : inheritedLabel);
+          for (const key of ["file","src","url","baseUrl","base_url","vtt_url","srt_url"]) {
+            if (typeof value[key] === "string" && (declared || subExtRe.test(value[key]))) emitSub(value[key],String(label).slice(0,80),declared,baseUrl);
+          }
+          for (const [key,child] of Object.entries(value).slice(0,300)) {
+            if (["file","src","url","baseUrl","base_url","vtt_url","srt_url","label","title","name","lang","language","kind","type"].includes(key)) continue;
+            const langLabel = declared && /^[a-z]{2,3}(?:[-_][A-Za-z0-9]{2,8})?$/.test(key) ? "lang:"+key : label;
+            if (child && (typeof child === "object" || (typeof child === "string" && (declared || /metadata|config|player|params/i.test(key))))) walk(child,key,depth+1,budget,declared,langLabel);
+          }
         };
         try { walk(JSON.parse(text)); } catch (_json) {}
         text = text.replace(/\\\//g, "/").replace(/\\u0026/gi, "&");
@@ -657,6 +673,28 @@
           emitSub(m[0], detectSubLabelFromContext(ctx));
         }
       } catch (_e) {}
+    };
+    const captureCaptionText = (text, sourceUrl) => {
+      if (!window.__idmLinuxCaptureEnabled() || typeof text !== "string" || text.length > 2000000) return;
+      let vtt = text.trimStart().replace(/^\uFEFF/, "");
+      if (vtt.startsWith("{")) {
+        try {
+          const events = JSON.parse(vtt).events;
+          if (!Array.isArray(events)) return;
+          const stamp = ms => { ms=Math.round(ms); return `${String(Math.floor(ms/3600000)).padStart(2,"0")}:${String(Math.floor(ms/60000)%60).padStart(2,"0")}:${String(Math.floor(ms/1000)%60).padStart(2,"0")}.${String(ms%1000).padStart(3,"0")}`; };
+          const cues=[];
+          for (const ev of events.slice(0,30000)) {
+            const body=(Array.isArray(ev.segs)?ev.segs:[]).map(seg=>typeof seg.utf8 === "string"?seg.utf8:"").join("").trim();
+            if (Number.isFinite(ev.tStartMs) && ev.tStartMs>=0 && Number.isFinite(ev.dDurationMs) && ev.dDurationMs>0 && body) cues.push(`${stamp(ev.tStartMs)} --> ${stamp(ev.tStartMs+ev.dDurationMs)}\n${body}`);
+          }
+          if (!cues.length) return;
+          vtt="WEBVTT\n\n"+cues.join("\n\n")+"\n";
+        } catch (_json) { return; }
+      }
+      if (!vtt.startsWith("WEBVTT") || !/\d{2}:\d{2}(?::\d{2})?\.\d{3}\s+-->/.test(vtt) || vtt.length>2000000) return;
+      let lang="";
+      try { const u=new URL(sourceUrl,location.href); lang=u.searchParams.get("tlang")||u.searchParams.get("lang")||""; } catch (_url) {}
+      window.postMessage({__idmLinuxSubtitleText:true,vtt,label:lang?"lang:"+lang:"altyazı",lang,sourceUrl},"*");
     };
     const scanPlayerConfigs = () => {
       if (!window.__idmLinuxCaptureEnabled()) return;
@@ -707,7 +745,7 @@
                     return "";
                   } finally { try { reader.cancel().catch(() => {}); } catch (_cancel) {} }
                 };
-                readTextBounded().then((txt) => { try { scanSubUrls(txt, resp.url || location.href); } catch (_e2) {} }).catch(() => {});
+                readTextBounded().then((txt) => { try { scanSubUrls(txt, resp.url || location.href); captureCaptionText(txt,resp.url || location.href); } catch (_e2) {} }).catch(() => {});
               } catch (_e) {}
             }).catch(() => {});
           } catch (_e) {}
@@ -725,9 +763,10 @@
           this.addEventListener("load", () => {
             try {
               const rt = this.responseType;
-              if (rt && rt !== "text") return;
-              const txt = this.responseText;
-              if (txt && txt.length < 2000000) scanSubUrls(txt, this.responseURL || location.href);
+              if (!window.__idmLinuxCaptureEnabled() || this.status < 200 || this.status >= 300) return;
+              if (rt && rt !== "text" && rt !== "json") return;
+              const txt = rt === "json" ? JSON.stringify(this.response) : this.responseText;
+              if (txt && txt.length < 2000000) { scanSubUrls(txt, this.responseURL || location.href); captureCaptionText(txt,this.responseURL || location.href); }
             } catch (_e) {}
           });
         } catch (_e) {}
@@ -738,8 +777,8 @@
     let subScanTimer = null;
     try {
       new MutationObserver(() => {
-        if (subScanTimer) clearTimeout(subScanTimer);
-        subScanTimer = setTimeout(() => { scan(); scanPlayerConfigs(); }, 1200);
+        if (subScanTimer) return; // throttle: continuous player mutations must not starve scanning
+        subScanTimer = setTimeout(() => { subScanTimer = null; scan(); scanPlayerConfigs(); }, 1200);
       }).observe(document.documentElement, { childList: true, subtree: true });
     } catch (_e) {}
     setTimeout(scan, 6000);
@@ -807,6 +846,7 @@
             const emitUrlEntry = () => {
               try { window.postMessage({ __idmLinuxSubtitle: true, url: base, label: label }, "*"); } catch (_e) {}
             };
+            emitUrlEntry();
             try {
               fetch(base, { credentials: "include" })
                 .then((r) => (r.ok ? r.text() : Promise.reject(new Error(String(r.status)))))
@@ -814,7 +854,7 @@
                   if (txt && txt.slice(0, 6) === "WEBVTT" && txt.length > 40) {
                     if (!seenSubText.has(key)) {
                       seenSubText.add(key);
-                      window.postMessage({ __idmLinuxSubtitleText: true, vtt: txt.slice(0, 2000000), label: label, lang: lang }, "*");
+                      window.postMessage({ __idmLinuxSubtitleText: true, vtt: txt.slice(0, 2000000), label: label, lang: lang, sourceUrl: base }, "*");
                     }
                   } else {
                     emitUrlEntry();
@@ -1061,7 +1101,7 @@
     const sentKeys = new Set();
     const pad = (n, w) => String(Math.floor(n)).padStart(w, "0");
     const stamp = (t) => {
-      const ms = Math.max(0, Math.round((t || 0) * 100) * 10);
+      const ms = Math.max(0, Math.round((t || 0) * 1000));
       return `${pad(ms / 3600000, 2)}:${pad((ms / 60000) % 60, 2)}:${pad((ms / 1000) % 60, 2)}.${pad(ms % 1000, 3)}`;
     };
     const cueText = (cue) => String(cue.text || "").replace(/\r/g, "").trim();
@@ -1077,7 +1117,12 @@
             const kind = String(tr.kind || "").toLowerCase();
             if (kind && kind !== "subtitles" && kind !== "captions") continue;
             const cues = tr.cues;
-            if (!cues || !cues.length) continue;
+            if (!cues || !cues.length || cues.length > 6000) continue;
+            // External <track> has a complete source; do not create a second,
+            // potentially partial TextTrack snapshot under an unrelated vault URL.
+            const external = Array.from(video.querySelectorAll("track")).some(el =>
+              el.track === tr && /^https?:\/\//i.test(el.src || ""));
+            if (external) continue;
             const label = tr.label || tr.language || (kind === "captions" ? "Altyazı" : "altyazı");
             const lines = [];
             for (let c = 0; c < cues.length && c < 6000; c += 1) {

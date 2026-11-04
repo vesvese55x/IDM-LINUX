@@ -2552,7 +2552,7 @@ def make_http_handler(state: DaemonState):
                         # v3.10.0: altyazı HANGİ biçimdeyse O uzantıyla iner (kullanıcı:
                         # "1.vtt altyazısı srt diye sahte gösteriliyor"). SRT'ye çeviri
                         # yalnız .srt hedeflendiğinde motorda GERÇEKTEN yapılır.
-                        _SUB_EXTS = ("srt", "vtt", "ass", "ssa", "ttml", "sbv", "sami")
+                        _SUB_EXTS = ("srt", "vtt", "ass", "ssa", "ttml", "sbv", "sami", "sub", "smi", "dfxp")
                         _want_ext = (ext or "").lower()
                         if _want_ext not in _SUB_EXTS:
                             _want_ext = "vtt"
@@ -2568,6 +2568,10 @@ def make_http_handler(state: DaemonState):
                             manifest_text=payload.get("manifestText") or "",
                             final_dir=_categorized_final_dir(filename, Path(state.cfg.download_dir)),
                         )
+                        job = state.stream_engine.get_job(tk.ticket_id)
+                        if not job or not job.wait_complete(timeout=20) or job.failed or job.final_size <= 0:
+                            self._send_json({"ok":False,"error": "Altyazı hazırlanamadı; erişim veya kaynak doğrulaması başarısız. IDM'ye boş dosya gönderilmedi."}, status=422)
+                            return
                         quoted_tk = urllib.parse.quote(tk.filename)
                         relay_stream = f"http://127.0.0.1:{state.cfg.http_port}/stream/{tk.ticket_id}/{quoted_tk}"
                         ok, msg = state.sender.send_download(
@@ -2586,6 +2590,8 @@ def make_http_handler(state: DaemonState):
                         return
                     except Exception as subs_exc:
                         logger.warning("Altyazı biletı açılamadı: %s", subs_exc)
+                        self._send_json({"ok":False,"error":"Altyazı hazırlanamadı; indirme başlatılmadı."},status=422)
+                        return
 
                 # 1) Doğrudan gerçek CDN / MP4 / WebM / M4A linki mevcutsa -> v3.2.0: KOPMA-DİRİLTME
                 #    RELAY biletı üzerinden IDM'ye AKITILIR. Baytlar yine IDM'den NATİVE geçer
@@ -2729,6 +2735,10 @@ def make_http_handler(state: DaemonState):
                         sub_lang=sub_lang,
                         final_dir=_categorized_final_dir(filename, Path(state.cfg.download_dir)),
                     )
+                    job = state.stream_engine.get_job(ticket.ticket_id)
+                    if not job or not job.wait_complete(timeout=20) or job.failed or job.final_size <= 0:
+                        self._send_json({"ok":False,"error":"Altyazı kaynağı doğrulanamadı; IDM'ye boş dosya gönderilmedi."},status=422)
+                        return
                     quoted_fn = urllib.parse.quote(ticket.filename)
                     local_stream_url = f"http://127.0.0.1:{state.cfg.http_port}/stream/{ticket.ticket_id}/{quoted_fn}"
                     ok, msg = state.dispatch_download(DownloadRequest(url=local_stream_url, filename=ticket.filename, source="video-bar-subs"), dedup=False)
