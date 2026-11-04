@@ -10,6 +10,7 @@ import tempfile
 import threading
 import time
 import urllib.parse
+import urllib.error
 import urllib.request
 import zlib
 from pathlib import Path
@@ -73,6 +74,8 @@ def fetch_url_bytes(url: str, headers: Dict[str, str], timeout: float = 12.0, re
                 raw = resp.read()
                 return _decompress_http_body(raw, enc)
         except Exception as exc:
+            if isinstance(exc, urllib.error.HTTPError):
+                exc.close()
             last_err = exc
     raise RuntimeError(f"HLS kaynağı indirilemedi ({url[:80]}): {last_err}")
 
@@ -469,7 +472,10 @@ def _iter_playlist_segments_parallel(
             if len(key_bytes) == 16:
                 iv_bytes = k_iv if k_iv is not None else seq_num.to_bytes(16, byteorder="big")
                 data = _decrypt_aes128_cbc(data, key_bytes, iv_bytes)
-        return strip_disguised_image_header(data)
+        data = strip_disguised_image_header(data)
+        if not data or data.lstrip().lower().startswith((b"<!doctype html", b"<html", b"<head", b"<body")):
+            raise RuntimeError("HLS segmenti boş veya medya yerine HTML hata sayfası döndü.")
+        return data
 
     window_size = max(concurrency * 2, 24)
     with concurrent.futures.ThreadPoolExecutor(max_workers=concurrency) as pool:
@@ -666,6 +672,10 @@ def stream_hls_as_mp4(
             bufsize=0,
         )
 
+        feeder_errors: List[Exception] = []
+        video_done = threading.Event()
+        audio_done = threading.Event()
+
         def _feed_video() -> None:
             assert proc.stdin is not None
             try:
@@ -676,9 +686,10 @@ def stream_hls_as_mp4(
                         break
                     proc.stdin.write(seg)
                     proc.stdin.flush()
-            except (BrokenPipeError, OSError):
-                pass
+            except Exception as exc:
+                feeder_errors.append(exc)
             finally:
+                video_done.set()
                 try:
                     proc.stdin.close()
                 except OSError:
@@ -692,19 +703,22 @@ def stream_hls_as_mp4(
                         if stop_ev.is_set():
                             break
                         afh.write(aseg)
-            except (BrokenPipeError, OSError):
-                pass
             except Exception as exc:
-                logger.debug("Ayrık ses HLS besleyici kapandı: %s", exc)
+                feeder_errors.append(exc)
+            finally:
+                audio_done.set()
 
-        threading.Thread(target=_feed_video, name="hls-video-feeder", daemon=True).start()
+        video_thread = threading.Thread(target=_feed_video, name="hls-video-feeder", daemon=True)
+        video_thread.start()
+        audio_thread = None
         if audio_fifo_path and a_iter is not None and first_a:
-            threading.Thread(
+            audio_thread = threading.Thread(
                 target=_feed_audio,
                 args=(audio_fifo_path, first_a, a_iter),
                 name="hls-audio-feeder",
                 daemon=True,
-            ).start()
+            )
+            audio_thread.start()
 
         try:
             assert proc.stdout is not None
@@ -714,6 +728,17 @@ def stream_hls_as_mp4(
                 if not out_chunk:
                     break
                 yield out_chunk
+            # stdout EOF alone proves nothing: FFmpeg can exit successfully after
+            # an upstream feeder exception and leave a playable but truncated file.
+            video_thread.join(timeout=2)
+            if audio_thread:
+                audio_thread.join(timeout=2)
+            if feeder_errors:
+                raise RuntimeError("HLS ses/video segment aktarımı yarıda kesildi.") from feeder_errors[0]
+            if not video_done.is_set() or (audio_thread and not audio_done.is_set()):
+                raise RuntimeError("HLS dönüştürücü bütün segmentler tüketilmeden kapandı.")
+            if proc.wait(timeout=5) != 0:
+                raise RuntimeError("HLS dönüştürücü hata ile kapandı; dosya tamamlanmadı.")
         finally:
             stop_ev.set()
             if proc.stdout is not None:
@@ -898,8 +923,8 @@ def iter_playlist_segments_smart(
             # v3.2.0: üstel geri çekilme — token ölümünde hızlıca pes etme (20 deneme ≈ 2-3 dk)
             time.sleep(min(1.5 * fails, 8.0))
             if fails >= max_refetch_fail:
-                logger.warning("Canlı HLS playlist yeniden çekilemedi (%s) — kayıt sonlandırılıyor.", playlist_url[:80])
-                break
+                logger.warning("Canlı HLS playlist yeniden çekilemedi (%s) — kayıt eksik.", playlist_url[:80])
+                raise RuntimeError("Canlı HLS listesi tekrar denemelerden sonra okunamadı; yayın sonu doğrulanmadı.")
 
 
 # ---------------------------------------------------------------------------

@@ -1024,10 +1024,15 @@ class ActiveStreamJob:
             if not self.final_dir:
                 return
             self.final_dir.mkdir(parents=True, exist_ok=True)
-            dest = self.final_dir / self.ticket.filename
-            if dest.exists():
-                stem = dest.stem
-                dest = self.final_dir / f"{stem}_kayit{dest.suffix}"
+            name = Path(self.ticket.filename)
+            if not self.completed:
+                name = name.with_name(f"{name.stem}.partial{name.suffix}")
+            dest = self.final_dir / name.name
+            stem, suffix = dest.stem, dest.suffix
+            counter = 0
+            while dest.exists():
+                counter += 1
+                dest = self.final_dir / f"{stem}_kayit{counter}{suffix}"
             shutil.copy2(src, dest)
             logger.info("Canlı kayıt arşivlendi: %s", dest)
         except Exception as exc:
@@ -1051,10 +1056,13 @@ class ActiveStreamJob:
         cur_manifest = initial_manifest
         append_mode = "wb"
         seq_tracker: Dict[str, int] = {"last": -1}  # v3.2.0: kopya segment önleme
+        cycle_complete = False
+        last_error = None
         for cycle in range(max_cycles):
             if self.stop_event.is_set():
                 break
             written_cycle = 0
+            cycle_complete = False
             try:
                 with self.stream_file.open(append_mode) as fh:
                     for chunk in stream_hls_as_mp4(
@@ -1079,8 +1087,12 @@ class ActiveStreamJob:
                         written_cycle += len(chunk)
                         written_total += len(chunk)
                         self._notify_all()
+                cycle_complete = not self.stop_event.is_set()
             except Exception as exc:
+                last_error = exc
                 logger.warning("Native 16x HLS akış hatası (tur %s, %s): %s", cycle + 1, cur_target[:80], exc)
+            if cycle_complete and written_cycle > 1024:
+                break
             if written_cycle > 1024 and self.stream_file.exists() and not self.stop_event.is_set():
                 # dvr/live: akış sürerken bağlantı bitti mi yoksa yayın mı sona erdi?
                 if hls_mode in ("dvr", "live") and cycle + 1 < max_cycles:
@@ -1113,7 +1125,13 @@ class ActiveStreamJob:
                 break
             if written_cycle <= 1024 and cycle == 0:
                 break  # ilk turda hiç veri yok -> zincirdeki diğer motorlara düş
-        if written_total > 1024 and self.stream_file.exists():
+        if self.stop_event.is_set():
+            return False  # Keep partial bytes for pause/resume; cancellation is not EOF.
+        if written_total > 0 and not cycle_complete:
+            # Do not run another engine over bytes already delivered to IDM.
+            # The worker's outer error handler marks this failed and HTTP uses RST.
+            raise RuntimeError("HLS kaydı eksik kaldı; bütün segmentler alınmadan tamamlandı sayılmadı.") from last_error
+        if written_total > 1024 and cycle_complete and self.stream_file.exists():
             self.stream_file.replace(self.output_file)
             with self._cond:
                 self.final_size = self.output_file.stat().st_size
