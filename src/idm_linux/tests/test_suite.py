@@ -1057,11 +1057,10 @@ class TestIdmLinuxSuite(unittest.TestCase):
 
     def test_19_idman_integrity_check_zero_missing_files_and_valid_pe_stubs(self) -> None:
         """
-        Gerçek idman643build16.exe çıkarılıp neutralize_windows_hook_binaries() çalıştırıldığında:
-        1) IDMan.exe'nin sub_45F3B0 ('5 dosyayı bulamıyor' uyarısını üreten bütünlük denetçisi!)
-           tarafından aranan 24 dosyanın TAMAMININ klasörde mevcut olduğunu (missing == 0),
-        2) Üretilen tüm PE32/PE32+ stub dosyalarının objdump tarafından hatasız doğrulandığını,
-        3) Kernel .sys sürücülerinin kaldırıldığını kanıtlar!
+        Güncel resmi SFX manifestindeki tüm dosyalar korunur; yalnız belgelenmiş
+        Wine hook/driver dönüşümleri hariç payload baytları değişmez. İki emekli DLL
+        ancak hem vendor manifestinde hem IDMan.exe başvurularında yoksa beklenmez.
+        PE stub doğrulaması ve kernel sürücüsü kaldırma kontrolleri ayrıca sürer.
         """
         import subprocess
         from idm_linux.installer import download_idm_installer
@@ -1099,12 +1098,34 @@ class TestIdmLinuxSuite(unittest.TestCase):
             exe = tmp / "idman.exe"
             download_idm_installer(IdmLinuxConfig().idm_installer_url, exe)
             idm_dir = tmp / "IDM"
-            unpack_idm_installer(exe, idm_dir)
+            import hashlib
+            from idm_linux.installer import PROBLEMATIC_WIN_STUB_TARGETS, PROBLEMATIC_WIN_DRIVERS
+            vendor_files = unpack_idm_installer(exe, idm_dir)
+            self.assertIn("IDMan.exe", {Path(name).name for name in vendor_files})
+            before = {path.relative_to(idm_dir).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+                      for path in vendor_files.values()}
+            vendor_names = {Path(name).name.lower() for name in before}
+            idman_bytes = next(p for p in vendor_files.values() if p.name.lower() == "idman.exe").read_bytes().lower()
+            # The vendor's mutable build16 URL now serves a newer payload. Do not
+            # manufacture retired conversion/network DLLs simply to satisfy an old fixture.
+            retired = set()
+            for name in ("idmvconv.dll", "idmnmcl.dll"):
+                if name not in vendor_names and name.encode() not in idman_bytes and name.encode("utf-16le") not in idman_bytes:
+                    retired.add(name)
             neutralize_windows_hook_binaries(idm_dir)
-
             present_lower = {p.name.lower(): p for p in idm_dir.iterdir() if p.is_file()}
-            missing = [req for req in idman_sub45f3b0_required if req.lower() not in present_lower]
-            self.assertEqual(missing, [], f"IDMan.exe bütünlük denetiminde eksik dosya kalmamalı: {missing}")
+            missing = [req for req in idman_sub45f3b0_required if req.lower() not in retired and req.lower() not in present_lower]
+            self.assertEqual(missing, [], f"Vendor/IDMan bütünlük denetiminde eksik: {missing}")
+            allowed_changes = {n.lower() for n, _, _ in PROBLEMATIC_WIN_STUB_TARGETS} | {n.lower() for n in PROBLEMATIC_WIN_DRIVERS}
+            # Stronger than the historical 24-name presence-only check: every vendor
+            # payload file (including language/resources) must survive byte-for-byte.
+            for relative, digest in before.items():
+                if Path(relative).name.lower() in allowed_changes:
+                    continue
+                target = idm_dir / relative
+                self.assertTrue(target.is_file(), f"Vendor payload kayboldu: {relative}")
+                self.assertEqual(hashlib.sha256(target.read_bytes()).hexdigest(), digest,
+                                 f"Yetkisiz vendor payload değişikliği: {relative}")
 
             # Kernel .sys dosyaları silinmiş olmalı
             self.assertFalse((idm_dir / "idmwfp64.sys").exists())

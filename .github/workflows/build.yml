@@ -10,6 +10,10 @@ on:
         description: Build the no-console Windows EXE and native screenshots
         type: boolean
         default: true
+      publish_release:
+        description: Publish only after reviewed Linux and Windows validation; main only
+        type: boolean
+        default: false
   push:
     branches: [main]
 concurrency:
@@ -72,7 +76,8 @@ jobs:
       - name: Sistem bağımlılıkları (rpm, zstd)
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq rpm zstd file
+          sudo apt-get install -y -qq rpm zstd file xvfb xauth python3-tk libtk8.6 libxcb1
+          python3 -m pip install pillow
 
       - uses: actions/setup-node@v4
         with:
@@ -88,7 +93,20 @@ jobs:
         timeout-minutes: 12
         run: |
           export PYTHONPATH="$GITHUB_WORKSPACE/src"
-          python3 src/idm_linux/tests/test_suite.py
+          mkdir -p artifacts/linux-gui
+          xvfb-run -a -s "-screen 0 1600x1000x24" python3 src/idm_linux/tests/test_suite.py > artifacts/linux-gui/existing-tests.log 2>&1 || { tail -70 artifacts/linux-gui/existing-tests.log; exit 1; }
+          tail -10 artifacts/linux-gui/existing-tests.log
+
+      - name: Observe nine real production GUI pages under Xvfb
+        timeout-minutes: 6
+        run: xvfb-run -a -s "-screen 0 1600x1000x24" python3 packaging/linux/capture_gui.py
+      - name: Keep real Linux GUI screenshots and regression evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-xvfb-gui-evidence
+          path: artifacts/linux-gui/
+          if-no-files-found: warn
 
       - name: DEB derle (gdebi-uyumlu postinst)
         run: bash src/idm_linux/packaging/deb/build.sh
@@ -170,7 +188,7 @@ jobs:
   publish:
     name: Replace the same five assets only after both platforms pass
     needs: [build, windows]
-    if: needs.build.result == 'success' && needs.windows.result == 'success'
+    if: needs.build.result == 'success' && needs.windows.result == 'success' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.publish_release
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
