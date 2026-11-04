@@ -56,7 +56,10 @@
   function normSubKey(u) {
     try {
       const p = new URL(u, location.href);
-      return p.host + p.pathname.replace(/\/+$/, "");
+      const identity = new Set(["lang", "tlang", "language", "srclang", "v", "kind", "id", "track", "trackid", "sub", "subid", "subtitle", "file", "filename"]);
+      const pairs = [...p.searchParams.entries()].filter(([k]) => identity.has(k.toLowerCase())).map(([k,v]) => [k.toLowerCase(),v]).sort((a,b) => a[0].localeCompare(b[0]) || a[1].localeCompare(b[1]));
+      const query = new URLSearchParams(pairs).toString();
+      return p.host + p.pathname.replace(/\/+$/, "") + (query ? "?" + query : "");
     } catch (_e) {
       return String(u || "").toLowerCase();
     }

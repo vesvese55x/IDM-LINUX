@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections import deque
+
 import json
 import os
 import re
@@ -835,7 +837,7 @@ class ActiveStreamJob:
                         if self._run_ytdlp_record_resilient():
                             return True
                         self.failed = True
-                        self.error_msg = f"Altyazı indirilemedi: {exc}"
+                        self.error_msg = self.error_msg or f"Altyazı indirilemedi: {exc}"
                         logger.warning("timedtext yt-dlp yedeği de başarısız (%s)", t.source_url[:80])
                 except Exception as fb_exc:
                     logger.debug("timedtext yedeği istisnası: %s", fb_exc)
@@ -1872,6 +1874,8 @@ class ActiveStreamJob:
             if self._run_ytdlp_record(extractor_args=ex_args, live_attempt=idx):
                 return True
             last_err = self.error_msg or last_err
+            if t.sub_lang and any(marker in (last_err or "").lower() for marker in ("sign in", "not a bot", "login required", "oturum doğrulaması")):
+                return False  # Authentication/CAPTCHA is not an alternate-client retry target.
             logger.info("yt-dlp kayıt denemesi %s/%s başarısız (%s): %s", idx, len(attempts), t.source_url[:60], (last_err or "bilinmiyor")[:120])
         return False
 
@@ -1912,7 +1916,7 @@ class ActiveStreamJob:
             "--concurrent-fragments",
             "8",
             "--retries",
-            "10",
+            "2" if t.sub_lang else "10",
             "--fragment-retries",
             "10",
             "--socket-timeout",
@@ -1934,14 +1938,28 @@ class ActiveStreamJob:
         if t.referer:
             cmd.extend(["--referer", t.referer])
         if t.sub_lang:
-            cmd.extend(["--write-subs", "--sub-langs", t.sub_lang, "--sub-format", "srt/best", "--skip-download"])
+            cmd.extend(["--write-subs", "--write-auto-subs", "--sub-langs", re.escape(t.sub_lang), "--sub-format", "srt/vtt", "--skip-download"])
         cmd.append(t.source_url)
         logger.info("yt-dlp birleştirme kaydı başlatıldı: %s", t.source_url[:80])
         try:
-            proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=(subprocess.PIPE if t.sub_lang else subprocess.DEVNULL))
         except OSError as exc:
             logger.warning("yt-dlp başlatılamadı: %s", exc)
             return False
+        subtitle_errors: deque = deque(maxlen=32)
+        stderr_thread = None
+        if t.sub_lang and getattr(proc, "stderr", None) is not None:
+            def drain_subtitle_errors() -> None:
+                try:
+                    while True:
+                        chunk = proc.stderr.read(2048)
+                        if not chunk:
+                            break
+                        subtitle_errors.append(chunk.decode("utf-8", errors="replace"))
+                except (OSError, ValueError):
+                    pass
+            stderr_thread = threading.Thread(target=drain_subtitle_errors, daemon=True)
+            stderr_thread.start()
         part_path = out_path.with_suffix(out_path.suffix + ".part")
         last_size = 0
         try:
@@ -1974,18 +1992,45 @@ class ActiveStreamJob:
                 pass
             rc = proc.poll()
             if t.sub_lang:  # v2.9.4: altyazı dosyasını bul ve teslim et
+                if stderr_thread is not None:
+                    stderr_thread.join(timeout=1)
+                detail = "".join(subtitle_errors)
+                if any(marker in detail.lower() for marker in ("sign in", "not a bot", "login required")):
+                    self.error_msg = "YouTube altyazısı için oturum doğrulaması gerekiyor; giriş/CAPTCHA aşılmadı."
+                    return False
                 subs = sorted(
                     (f for f in self.work_dir.glob("yt_sub.*") if f.suffix.lower() in (".srt", ".vtt", ".ass", ".ttml")),
                     key=lambda f: f.stat().st_size,
                     reverse=True,
                 )
-                if subs and rc == 0:
-                    subs[0].replace(self.output_file)
-                    with self._cond:
-                        self.final_size = self.output_file.stat().st_size
-                        self.completed = True
-                        self._cond.notify_all()
-                    return True
+                if rc == 0:
+                    from .hls_streamer import detect_subtitle_kind, normalize_srt_text, normalize_vtt_text, vtt_to_srt
+                    for subtitle in subs:
+                        if not 0 < subtitle.stat().st_size <= 8 * 1024 * 1024:
+                            continue
+                        text = subtitle.read_text(encoding="utf-8-sig", errors="replace")
+                        kind = detect_subtitle_kind(text)
+                        if kind not in ("srt", "vtt"):
+                            continue  # HTML/empty/unsupported bodies are not subtitle success.
+                        wanted = Path(t.filename).suffix.lower()
+                        if kind == "vtt" and wanted == ".srt":
+                            text = vtt_to_srt(text)
+                            kind = "srt"
+                        else:
+                            text = normalize_srt_text(text) if kind == "srt" else normalize_vtt_text(text)
+                        if not text.strip() or detect_subtitle_kind(text) != kind:
+                            continue
+                        t.filename = str(Path(t.filename).with_suffix("." + kind))
+                        self.output_file = self.work_dir / ("ready." + kind)
+                        self.output_file.write_text(text, encoding="utf-8")
+                        with self._cond:
+                            self.final_size = self.output_file.stat().st_size
+                            t.estimated_size = self.final_size
+                            t.size_exact = True
+                            self.completed = True
+                            self._cond.notify_all()
+                        return not self.failed
+                self.error_msg = "YouTube altyazısı alınamadı veya boş/geçersiz içerik döndü."
                 return False
             ok = last_size > 0 and (rc == 0 or self.stop_event.is_set())
             if ok and out_path.exists():
@@ -3291,7 +3336,11 @@ def _norm_sub_dedup_key(url: str) -> str:
         p = urllib.parse.urlsplit((url or "").strip())
         host = (p.netloc or "").lower()
         path = (p.path or "").rstrip("/")
-        return f"{host}{path}"
+        # Keep track/language/video identity; only volatile auth/signature/format
+        # parameters are ignored. /timedtext?lang=tr and ?lang=en are NOT duplicates.
+        identity = {"lang", "tlang", "language", "srclang", "v", "kind", "id", "track", "trackid", "sub", "subid", "subtitle", "file", "filename"}
+        query = urllib.parse.urlencode(sorted((k.lower(), v) for k, v in urllib.parse.parse_qsl(p.query) if k.lower() in identity))
+        return f"{host}{path}" + ("?" + query if query else "")
     except Exception:
         return (url or "").strip().lower()
 
@@ -3441,8 +3490,9 @@ def _subtitle_options(
             return 1
         return 3
 
+    context_by_url: Dict[str, Dict[str, Any]] = {}
     raw_candidates: List[Tuple[str, str]] = []  # (url, label)
-    for st in captured_streams[:40]:
+    for st in captured_streams[-300:]:
         url = st.get("url") or ""
         mime = (st.get("mime") or "").lower()
         mt = st.get("manifestText") or ""
@@ -3451,6 +3501,7 @@ def _subtitle_options(
             for nm, surl in parse_hls_subtitles(mt, url) + parse_dash_subtitles(mt, url):
                 if surl and surl.startswith("http"):
                     raw_candidates.append((surl, nm))
+                    context_by_url[surl] = st
         low = url.lower()
         path_q = low.split("?")[0]
         is_sub_url = (
@@ -3475,6 +3526,7 @@ def _subtitle_options(
             if not lbl and "/timedtext" in low:
                 lbl = "YouTube"
             raw_candidates.append((url, lbl))
+            context_by_url[url] = st
 
     # 1) TEKİLLEŞTİRME — aynı (host+yol) için en iyi etiketli aday kazanır
     for url, lbl in raw_candidates:
@@ -3483,6 +3535,7 @@ def _subtitle_options(
         if prev is None:
             cand_by_key[key] = {"url": url, "label": lbl, "score": _label_score(lbl)}
         else:
+            prev["url"] = url  # Prefer the newest signed URL for the same track.
             if _label_score(lbl) > prev["score"]:
                 prev["label"] = lbl
                 prev["score"] = _label_score(lbl)
@@ -3494,12 +3547,15 @@ def _subtitle_options(
 
         rp = urllib.parse.urlsplit(referer or page_url or "")
         origin = f"{rp.scheme}://{rp.netloc}" if rp.netloc else ""
-        probe_headers = build_stream_headers(referer or page_url or "", origin, "", "")
+        def headers_for(url: str) -> Dict[str, str]:
+            context = context_by_url.get(url, {})
+            return build_stream_headers(context.get("referer") or referer or page_url or "",
+                                        context.get("origin") or origin, "", context.get("user_agent") or "")
         keys = list(cand_by_key.keys())[:14]
         if keys:
             with concurrent.futures.ThreadPoolExecutor(max_workers=min(5, len(keys))) as px:
                 fut_map = {
-                    px.submit(fetch_subtitle_probe, cand_by_key[k]["url"], probe_headers, 6.0): k
+                    px.submit(fetch_subtitle_probe, cand_by_key[k]["url"], headers_for(cand_by_key[k]["url"]), 6.0): k
                     for k in keys
                 }
                 for fut in concurrent.futures.as_completed(fut_map, timeout=30):
@@ -3560,7 +3616,9 @@ def _subtitle_options(
                 delivery="subs",
                 direct_url=url,
                 source_url=page_url,
-                stream_referer=referer or page_url,
+                stream_referer=context_by_url.get(url, {}).get("referer") or referer or page_url,
+                stream_origin=context_by_url.get(url, {}).get("origin") or "",
+                stream_user_agent=context_by_url.get(url, {}).get("user_agent") or "",
                 filesize=(size_bytes if status == "ok" and size_bytes > 0 else None),
                 filesize_exact=(status == "ok" and size_bytes > 0),
             )

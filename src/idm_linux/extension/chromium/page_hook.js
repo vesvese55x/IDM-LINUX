@@ -546,6 +546,7 @@
 (function () {
   try {
     const scan = () => {
+      if (!window.__idmLinuxCaptureEnabled()) return;
       document.querySelectorAll("track[src]").forEach((tr) => {
         const kind = (tr.kind || "").toLowerCase();
         if (kind && kind !== "subtitles" && kind !== "captions") return;
@@ -610,22 +611,43 @@
         return "";
       } catch (_e) { return ""; }
     };
-    const emitSub = (u, hintLabel) => {
+    const emitSub = (u, hintLabel, declaredCaption = false, baseUrl = location.href) => {
       try {
-        if (!u || typeof u !== "string") return;
-        if (!(subExtRe.test(u) || subNameRe.test(u))) return;
+        if (!window.__idmLinuxCaptureEnabled() || !u || typeof u !== "string" || u.length > 8192) return;
+        if (!(declaredCaption || subExtRe.test(u) || subNameRe.test(u))) return;
         if (u.startsWith("blob:") || u.startsWith("data:")) return;
         let abs = u;
-        try { abs = new URL(u, location.href).href; } catch (_e) { return; }
+        try { abs = new URL(u, baseUrl).href; } catch (_e) { return; }
         if (subSeen.has(abs)) return;
         subSeen.add(abs);
         if (subSeen.size > 200) subSeen.clear();
         window.postMessage({ __idmLinuxSubtitle: true, url: abs, label: hintLabel || "altyazı" }, "*");
       } catch (_e) {}
     };
-    const scanSubUrls = (text) => {
+    const scanSubUrls = (text, baseUrl = location.href) => {
       try {
-        if (!text || typeof text !== "string" || text.length > 2000000) return;
+        if (!window.__idmLinuxCaptureEnabled() || !text || typeof text !== "string" || text.length > 2000000) return;
+        // Player JSON often stores relative, escaped, or extensionless caption
+        // URLs. Parse data only; never evaluate page scripts/configuration.
+        const walk = (value, parentKey = "", depth = 0, budget = {left: 2500}) => {
+          if (!value || typeof value !== "object" || depth > 10 || --budget.left < 0) return;
+          if (Array.isArray(value)) { for (const item of value.slice(0, 100)) walk(item, parentKey, depth + 1, budget); return; }
+          const kind = String(value.kind || value.type || "").toLowerCase();
+          const declared = /^(subtitles?|captions?)$/.test(kind) || /^(subtitles?|captions?)$/i.test(parentKey);
+          const label = value.label || value.name || (value.srclang || value.lang || value.language ? "lang:" + (value.srclang || value.lang || value.language) : "");
+          for (const key of ["file", "src", "url"]) {
+            if (typeof value[key] === "string" && (declared || subExtRe.test(value[key]))) emitSub(value[key], String(label).slice(0,80), declared, baseUrl);
+          }
+          for (const [key, child] of Object.entries(value).slice(0,100)) if (child && typeof child === "object") walk(child,key,depth+1,budget);
+        };
+        try { walk(JSON.parse(text)); } catch (_json) {}
+        text = text.replace(/\\\//g, "/").replace(/\\u0026/gi, "&");
+        const relative = /["']([^"'\s\\<>]{1,1800}\.(?:vtt|srt|ass|ssa|ttml|dfxp|smi|sami|sbv|sub)(?:\?[^"'\s\\<>]*)?)["']/gi;
+        let rm; let relativeCount = 0;
+        while ((rm = relative.exec(text)) && relativeCount++ < 24) {
+          const context = text.slice(Math.max(0,rm.index-160),relative.lastIndex+160);
+          emitSub(rm[1],detectSubLabelFromContext(context),false,baseUrl);
+        }
         const re = /https?:\/\/[^"'\s\\<>]{8,300}?\.(vtt|srt|ass|ssa|ttml|dfxp|smi|sami|sbv|sub)(\?[^"'\s\\<>]*)?/gi;
         let m; let guard = 0;
         while ((m = re.exec(text)) !== null && guard < 12) {
@@ -636,6 +658,26 @@
         }
       } catch (_e) {}
     };
+    const scanPlayerConfigs = () => {
+      if (!window.__idmLinuxCaptureEnabled()) return;
+      let count = 0, total = 0;
+      for (const script of document.querySelectorAll("script:not([src])")) {
+        if (++count > 60) break;
+        const text = script.textContent || "";
+        total += text.length;
+        if (total > 2000000) break;
+        if (text.length < 2000000 && /tracks|subtitles|captions/i.test(text)) scanSubUrls(text);
+      }
+      try {
+        if (typeof window.jwplayer === "function") {
+          const player = window.jwplayer();
+          if (player && typeof player.getPlaylist === "function") scanSubUrls(JSON.stringify(player.getPlaylist()));
+        }
+      } catch (_player) {}
+    };
+    setTimeout(scanPlayerConfigs, 1700);
+    setTimeout(scanPlayerConfigs, 6500);
+    window.addEventListener("idm-linux-capture-state", scanPlayerConfigs);
     try {
       const origFetch = window.fetch;
       if (origFetch) {
@@ -645,10 +687,27 @@
           try {
             p.then((resp) => {
               try {
-                if (!resp || !resp.headers) return;
+                if (!window.__idmLinuxCaptureEnabled() || !resp || !resp.headers) return;
                 const ct = String(resp.headers.get("content-type") || "");
                 if (ct && !/text|json|xml|javascript/i.test(ct)) return; // video/ikili yanıtları atla
-                resp.clone().text().then((txt) => { try { scanSubUrls(txt); } catch (_e2) {} }).catch(() => {});
+                if (Number(resp.headers.get("content-length") || 0) > 2000000) return;
+                const copy = resp.clone();
+                const readTextBounded = async () => {
+                  if (!copy.body || !copy.body.getReader) return (await copy.text()).slice(0,2000000);
+                  const reader = copy.body.getReader(), decoder = new TextDecoder();
+                  let total = 0, text = "";
+                  try {
+                    while (window.__idmLinuxCaptureEnabled()) {
+                      const result = await reader.read();
+                      if (result.done) return text + decoder.decode();
+                      total += result.value.byteLength;
+                      if (total > 2000000) return "";
+                      text += decoder.decode(result.value,{stream:true});
+                    }
+                    return "";
+                  } finally { try { reader.cancel().catch(() => {}); } catch (_cancel) {} }
+                };
+                readTextBounded().then((txt) => { try { scanSubUrls(txt, resp.url || location.href); } catch (_e2) {} }).catch(() => {});
               } catch (_e) {}
             }).catch(() => {});
           } catch (_e) {}
@@ -668,7 +727,7 @@
               const rt = this.responseType;
               if (rt && rt !== "text") return;
               const txt = this.responseText;
-              if (txt && txt.length < 2000000) scanSubUrls(txt);
+              if (txt && txt.length < 2000000) scanSubUrls(txt, this.responseURL || location.href);
             } catch (_e) {}
           });
         } catch (_e) {}
@@ -680,7 +739,7 @@
     try {
       new MutationObserver(() => {
         if (subScanTimer) clearTimeout(subScanTimer);
-        subScanTimer = setTimeout(scan, 1200);
+        subScanTimer = setTimeout(() => { scan(); scanPlayerConfigs(); }, 1200);
       }).observe(document.documentElement, { childList: true, subtree: true });
     } catch (_e) {}
     setTimeout(scan, 6000);
@@ -733,13 +792,15 @@
           try {
             let base = tr.baseUrl || "";
             if (!base) return;
-            const sep = base.includes("?") ? "&" : "?";
-            base = `${base}${sep}fmt=vtt`;
+            const captionUrl = new URL(base, location.href);
+            captionUrl.searchParams.set("fmt", "vtt");
+            base = captionUrl.href;
             const nm = (tr.name && (tr.name.simpleText || (tr.name.runs && tr.name.runs[0] && tr.name.runs[0].text))) || tr.languageCode || "altyazı";
             const isAuto = tr.kind === "asr";
             const label = isAuto ? `${nm} (Otomatik)` : nm;
             const lang = tr.languageCode || "";
-            const key = `${lang}|${isAuto}|${label}`;
+            const videoId = (resp.videoDetails && resp.videoDetails.videoId) || new URL(location.href).searchParams.get("v") || location.pathname;
+            const key = `${videoId}|${lang}|${isAuto}|${label}`;
             if (seen.has(key)) return;
             seen.add(key);
             // v3.11.0 KATMAN 2: sayfa bağlamında indir (downsub yaklaşımı)
@@ -796,6 +857,7 @@
     try {
       window.addEventListener("yt-navigate-finish", () => {
         try {
+          seen.clear(); seenSubText.clear();
           const mp = document.getElementById("movie_player");
           if (mp && mp.getPlayerResponse) {
             const live = mp.getPlayerResponse();
@@ -1004,6 +1066,7 @@
     };
     const cueText = (cue) => String(cue.text || "").replace(/\r/g, "").trim();
     const collect = () => {
+      if (!window.__idmLinuxCaptureEnabled()) return;
       document.querySelectorAll("video").forEach((video) => {
         let tracks;
         try { tracks = video.textTracks; } catch (_e) { return; }

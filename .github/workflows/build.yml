@@ -77,7 +77,12 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq rpm zstd file ffmpeg aria2 xvfb xauth python3-tk libtk8.6 libxcb1
-          python3 -m pip install pillow
+          python3 -m pip install pillow playwright
+          if command -v google-chrome >/dev/null; then
+            echo "PLAYWRIGHT_BROWSER_EXECUTABLE=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          else
+            python3 -m playwright install --with-deps chromium
+          fi
 
       - uses: actions/setup-node@v4
         with:
@@ -89,6 +94,7 @@ jobs:
           node src/idm_linux/tests/test_browser_capture.cjs
           python3 packaging/rebuild_extensions.py --check
           python3 -m unittest discover -s packaging/tests -v
+          python3 -m unittest discover -s src/idm_linux/tests -p test_subtitle_delivery.py -v
       - name: Diagnose real progressive HLS media startup
         shell: bash
         run: |
@@ -103,6 +109,10 @@ jobs:
           mkdir -p artifacts/linux-gui
           xvfb-run -a -s "-screen 0 1600x1000x24" python3 src/idm_linux/tests/test_suite.py > artifacts/linux-gui/existing-tests.log 2>&1 || { tail -70 artifacts/linux-gui/existing-tests.log; exit 1; }
           tail -10 artifacts/linux-gui/existing-tests.log
+
+      - name: Real Chromium subtitle capture and passive-mode fixtures
+        timeout-minutes: 4
+        run: xvfb-run -a -s "-screen 0 1600x1000x24" python3 packaging/linux/test_subtitle_browser.py
 
       - name: Observe nine real production GUI pages under Xvfb
         timeout-minutes: 6
