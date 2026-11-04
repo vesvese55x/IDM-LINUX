@@ -189,3 +189,24 @@ class BoundedHttpTests(unittest.TestCase):
             gate.set();first.close();second.close();server.shutdown();server.server_close();thread.join(2)
 
 if __name__=='__main__': unittest.main(verbosity=2)
+
+class CompressedManifestModeTests(unittest.TestCase):
+    def test_compressed_vod_stays_vod_and_live_stays_live(self):
+        import gzip, io, zlib
+        from unittest.mock import patch
+        from idm_linux.daemon import _auto_hls_mode
+        vod=b'#EXTM3U\n#EXTINF:2,\nfirst.ts\n#EXT-X-ENDLIST\n'
+        live=b'#EXTM3U\n#EXT-X-TARGETDURATION:2\n#EXTINF:2,\nfirst.ts\n'
+        for plain,expected in ((vod,'vod'),(live,'live')):
+            for enc,body in (('gzip',gzip.compress(plain)),('deflate',zlib.compress(plain)),('',gzip.compress(plain))):
+                response=io.BytesIO(body);response.headers={'Content-Encoding':enc}
+                with self.subTest(encoding=enc,expected=expected),patch('urllib.request.urlopen',return_value=response):
+                    self.assertEqual(_auto_hls_mode('https://example.test/master.txt',''),expected)
+
+    def test_gzip_manifest_decode_is_bounded(self):
+        import gzip, io
+        from unittest.mock import patch
+        from idm_linux.daemon import _auto_hls_mode
+        response=io.BytesIO(gzip.compress(b'A'*1000000));response.headers={'Content-Encoding':'gzip'}
+        with patch('urllib.request.urlopen',return_value=response):
+            self.assertEqual(_auto_hls_mode('https://example.test/master.txt',''),'dvr')

@@ -90,7 +90,9 @@ jobs:
           python3 packaging/rebuild_extensions.py --check
           python3 -m unittest discover -s packaging/tests -v
       - name: Diagnose real progressive HLS media startup
+        shell: bash
         run: |
+          set -o pipefail
           mkdir -p artifacts/linux-gui
           python3 packaging/linux/diagnose_media.py 2>&1 | tee artifacts/linux-gui/media-preflight.log
 

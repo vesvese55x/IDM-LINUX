@@ -4,6 +4,7 @@ import logging
 import os
 from pathlib import Path
 import subprocess
+import shutil
 import sys
 import unittest
 ROOT=Path(__file__).resolve().parents[2]
@@ -12,6 +13,12 @@ OUT=ROOT/'artifacts/linux-gui';OUT.mkdir(parents=True,exist_ok=True)
 from idm_linux.tests.test_suite import TestIdmLinuxSuite
 for name in ('stream_engine','hls_streamer','daemon'):
     logger=logging.getLogger(name);logger.addHandler(logging.StreamHandler());logger.setLevel(logging.INFO)
+original_which=shutil.which
+shutil.which=lambda name,*a,**k: None if name == 'streamlink' else original_which(name,*a,**k)
+import idm_linux.distro as distro
+def forbidden_install(*args,**kwargs):
+    raise AssertionError('A VOD HLS stream must not install streamlink before producing bytes')
+distro.ensure_streamlink=forbidden_install
 original=subprocess.Popen
 handles=[]
 def traced_popen(command,*args,**kwargs):

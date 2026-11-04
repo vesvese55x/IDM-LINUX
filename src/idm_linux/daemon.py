@@ -854,7 +854,24 @@ def _auto_hls_mode(url: str, manifest_text: str, referer: str = "", user_agent: 
                 headers={"User-Agent": user_agent or "IDM-Linux/2.8", "Referer": referer or ""},
             )
             with urllib.request.urlopen(rq, timeout=6) as rr:
-                txt = rr.read(400000).decode("utf-8", "ignore")
+                raw = rr.read(400001)
+                if len(raw) > 400000:
+                    raise ValueError("Manifest exceeds classification limit")
+                encoding = (rr.headers.get("Content-Encoding") or "").lower()
+                # urllib does not decompress HTTP gzip. Classifying compressed
+                # bytes as text loses ENDLIST and falsely forces VOD into live
+                # mode (then a missing streamlink triggers a blocking install).
+                import zlib
+                if "gzip" in encoding or raw.startswith(b"\x1f\x8b"):
+                    raw = zlib.decompressobj(16 + zlib.MAX_WBITS).decompress(raw, 400001)
+                elif "deflate" in encoding:
+                    try:
+                        raw = zlib.decompressobj().decompress(raw, 400001)
+                    except zlib.error:
+                        raw = zlib.decompressobj(-zlib.MAX_WBITS).decompress(raw, 400001)
+                if len(raw) > 400000:
+                    raise ValueError("Decoded manifest exceeds classification limit")
+                txt = raw.decode("utf-8", "ignore")
         except Exception:
             return "dvr"
     cl = classify_manifest_live(txt)
