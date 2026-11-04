@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import deque, OrderedDict
 
 import json
+import hashlib
 import os
 import re
 import shutil
@@ -191,6 +192,7 @@ class VideoFormatOption:
     abyss_slug: str = ""           # v2.9.4: abyss.to çözücü kimliği
     abyss_label: str = ""          # v2.9.4: çözünürlük etiketi (720p...)
     subtitle_state: str = ""       # ready/checking/unavailable; detected is not downloaded
+    subtitle_probe_headers: Dict[str, str] = field(default_factory=dict, repr=False)  # private, never serialized
     sub_lang: str = ""             # v2.9.4: yt-dlp altyazı dili
     segment_urls: List[str] = field(default_factory=list)        # v2.8.5: DASH segment serisi
     audio_segment_urls: List[str] = field(default_factory=list)  # v2.8.5: ayrık ses segment serisi
@@ -3791,6 +3793,7 @@ def _subtitle_options(
                 stream_user_agent=context_by_url.get(url, {}).get("user_agent") or "",
                 filesize=(size_bytes if status == "ok" and size_bytes > 0 else None),
                 filesize_exact=(status == "ok" and size_bytes > 0),
+                subtitle_probe_headers=(headers_for(url) if validate and probe_cache is not None else {}),
             )
         )
     return opts
@@ -4064,6 +4067,25 @@ def parse_mpd_representations(mpd_text: str, base_url: str) -> List[Dict[str, An
 
 
 
+def _probe_context_key(page_url, streams, cookies="", referer="", user_agent=""):
+    # Keep the existing segment-count buckets, but never reuse another cookie/frame
+    # context or hide a newly observed caption just because the bucket is unchanged.
+    captions = []
+    for st in streams[-300:]:
+        url = st.get("url") or ""
+        context = (st.get("referer", ""), st.get("origin", ""),
+                   st.get("cookie_header", ""), st.get("user_agent", ""))
+        if _looks_like_subtitle_capture(url, st.get("mime", "")):
+            captions.append((url, st.get("sub_label", ""), context))
+        manifest = st.get("manifestText") or ""
+        if manifest:
+            tracks = parse_hls_subtitles(manifest, url) + parse_dash_subtitles(manifest, url)
+            if tracks:
+                captions.append((url, tracks, context))
+    digest = hashlib.sha256(json.dumps([cookies, referer, user_agent, captions], sort_keys=True).encode()).hexdigest()
+    return f"{page_url}|{len(streams) // 8}|{digest}"
+
+
 class StreamEngine:
     def __init__(self, cfg: IdmLinuxConfig) -> None:
         self.cfg = cfg
@@ -4075,6 +4097,30 @@ class StreamEngine:
         from .subtitle_probe_cache import SubtitleProbeCache
         self._subtitle_probe_cache = SubtitleProbeCache()
         self._extractor_failures = OrderedDict()
+
+    def _refresh_cached_subtitles(self, cached):
+        result = dict(cached)
+        contexts = result.pop("_subtitle_probe_context", {})
+        formats = []
+        for original in result.get("formats") or []:
+            fmt = dict(original)
+            url = fmt.get("direct_url")
+            if fmt.get("delivery") == "subs" and url in contexts:
+                status, size, kind = self._subtitle_probe_cache.get(url, contexts[url])
+                if status == "bad":
+                    continue
+                fmt["subtitle_state"] = "ready" if status == "ok" else "checking" if status in ("checking", "deferred") else "unavailable"
+                fmt["filesize"] = size if status == "ok" and size > 0 else None
+                fmt["filesize_exact"] = status == "ok" and size > 0
+                fmt["filesize_human"] = format_bytes(fmt["filesize"])
+                if status == "ok" and kind in ("vtt", "srt", "ass", "ssa", "ttml", "sami", "sbv", "mpl2"):
+                    ext = "sub" if kind == "mpl2" else kind
+                    fmt["ext"] = ext
+                    fmt["label"] = re.sub(r"\([A-Z0-9]+\)$", f"({ext.upper()})", fmt.get("label", ""))
+            formats.append(fmt)
+        result["formats"] = formats
+        result["subtitle_pending"] = any(f.get("subtitle_state") == "checking" for f in formats)
+        return result
 
     def clear_cache(self) -> None:
         with self._lock:
@@ -4430,12 +4476,12 @@ class StreamEngine:
                         captured_streams = captured_streams + [item]
         # v3.2.2: akış sayısı CANLI sayfalarda sürekli oynar -> her probe yeni anahtar =
         # önbellek çöplüğü. 8'lik kovalarla anahtar sabitlenir (aynı sayfa = aynı önbellek).
-        cache_key = f"{page_url}|{len(captured_streams) // 8}"
+        cache_key = _probe_context_key(page_url, captured_streams, cookies, referer, user_agent)
         if not force_refresh:
             with self._lock:
                 cached = self._probe_cache.get(cache_key)
-                if cached and (time.time() - cached[0]) < 600 and (cached[1].get("formats") or not captured_streams):
-                    return cached[1]
+            if cached and (time.time() - cached[0]) < 600 and (cached[1].get("formats") or not captured_streams):
+                return self._refresh_cached_subtitles(cached[1])
 
         options: List[VideoFormatOption] = []
         title = ""
@@ -4918,7 +4964,7 @@ class StreamEngine:
 
         # v3.1.0: KISMİ sonuç (yt-dlp arka planda) ÖNBELLEĞE YAZILMAZ — 10 dakika boyunca
         # yarım bar gösterilmesin. Tam sonuç (inline) önbelleğe girer.
-        if options and not probe_pending and not result_payload["subtitle_pending"]:
+        if options and not probe_pending:
             _CACHE_SEG_CAP = 400
 
             def _cache_fmt(f: Dict[str, Any]) -> Dict[str, Any]:
@@ -4940,6 +4986,8 @@ class StreamEngine:
                 "ytdlp_missing": bool(should_run_ytdlp and not ytdlp_bin),
                 "ytdlp_updating": bool(ytdlp_updating),
                 "ytdlp_pending": False,
+                "subtitle_pending": result_payload["subtitle_pending"],
+                "_subtitle_probe_context": {o.direct_url: dict(o.subtitle_probe_headers) for o in sub_opts if o.subtitle_probe_headers},
                 "subs_header": result_payload.get("subs_header", ""),
                 "formats": [_cache_fmt(f) for f in result_payload["formats"]],
             }
