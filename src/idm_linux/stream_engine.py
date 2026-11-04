@@ -3445,7 +3445,7 @@ def _youtube_lang_options(info: Dict[str, Any], page_url: str) -> List[VideoForm
         if lang in seen_lang:
             continue
         seen_lang.add(lang)
-        if len(seen_lang) > 14:
+        if len(seen_lang) > 300:
             break
         opts.append(
             VideoFormatOption(
@@ -3455,23 +3455,25 @@ def _youtube_lang_options(info: Dict[str, Any], page_url: str) -> List[VideoForm
                 resolution="",
                 filesize=f.get("filesize") or f.get("filesize_approx"),
                 delivery="ytdlp",
-                format_selector=f"bestaudio[language={lang}]/bestaudio",
+                # Do not silently download another language if the selected track
+                # disappears between probing and downloading.
+                format_selector=f"bestaudio[language={lang}]",
                 source_url=page_url,
                 audio_only=True,
             )
         )
     # v3.5.0: önce GERÇEK (elle yüklenmiş) altyazılar, sonra otomatik kapalı altyazılar;
-    # toplam 20 kayıtla sınırlı (bar taşmasın). YouTube 'en-orig' gibi -orig kodları sonda.
+    # 300 kayıtlık güvenlik sınırı vardır; 20 dilde kesilmez. YouTube 'en-orig' gibi -orig kodları sonda.
     real_codes = [c for c in (info.get("subtitles") or {}).keys() if c and c != "live_chat"]
     auto_all = list((info.get("automatic_captions") or {}).keys())
     auto_codes = [c for c in auto_all if c and c not in real_codes and c != "live_chat"]
     auto_codes.sort(key=lambda c: (c.endswith("-orig"), c))  # -orig en sona
     n_sub = 0
     for is_auto, codes in ((False, real_codes), (True, auto_codes)):
-        if n_sub >= 20:
+        if n_sub >= 300:
             break
         for code in codes:
-            if n_sub >= 20:
+            if n_sub >= 300:
                 break
             nm = sub_lang_name(code)
             opts.append(
