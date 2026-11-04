@@ -39,7 +39,7 @@ function pageHarness(host='example.test', enabled=true, rejectChunks=false) {
   function XHR(){}XHR.prototype.open=function(){};XHR.prototype.send=function(){};XHR.prototype.addEventListener=function(){};
   const timeout=(fn,ms)=>{const t=setTimeout(fn,ms);t.unref();return t;};
   const context=vm.createContext({window:win,document:doc,location,URL:TestURL,Location,HTMLAnchorElement:Anchor,Blob,FileReader:Reader,
-    XMLHttpRequest:XHR,fetch:win.fetch,console,navigator:{userAgent:'test'},setTimeout:timeout,clearTimeout,setInterval(){return 1;},clearInterval(){},MutationObserver:class{observe(){} disconnect(){}},performance:{getEntriesByType(){return[];}},btoa:s=>Buffer.from(s,'binary').toString('base64'),atob:s=>Buffer.from(s,'base64').toString('binary')});
+    XMLHttpRequest:XHR,fetch:win.fetch,AbortController,TextDecoder,console,navigator:{userAgent:'test'},setTimeout:timeout,clearTimeout,setInterval(){return 1;},clearInterval(){},MutationObserver:class{observe(){} disconnect(){}},performance:{getEntriesByType(){return[];}},btoa:s=>Buffer.from(s,'binary').toString('base64'),atob:s=>Buffer.from(s,'base64').toString('binary')});
   return {win,doc,location,context,clicks,posts,created,revoked,chunks,Anchor,URL:TestURL,fire,load(){vm.runInContext(fs.readFileSync(path.join(root,'page_hook.js'),'utf8'),context);}};
 }
 function captionResponse(url, body, type='application/json') {
@@ -72,6 +72,53 @@ async function externalCaptionTests(){
     assert(!h.posts.some(p=>p.__idmLinuxSubtitle||p.__idmLinuxSubtitleText));
   }
   console.log('PASS OK/VK stringified metadata, relative external captions, JSON3 capture, invalid/passive rejection');
+}
+async function staleCaptionTests(){
+  for(const mode of ['navigation','disable-enable']) {
+    const h=pageHarness();let finish;
+    h.win.fetch=async()=>({ok:true,url:'https://example.test/en.vtt',headers:{get:()=> 'text/vtt'},clone(){return this;},text:()=>new Promise(resolve=>{finish=resolve;})});
+    h.load();await h.win.fetch('https://example.test/en.vtt');await until(()=>finish);
+    if(mode==='navigation') h.location.href='https://example.test/watch?v=new';
+    else {h.doc.documentElement.dataset.idmLinuxCaptureEnabled='0';h.fire('idm-linux-capture-state',{});h.doc.documentElement.dataset.idmLinuxCaptureEnabled='1';h.fire('idm-linux-capture-state',{});}
+    finish('WEBVTT\n\n00:00:00.000 --> 00:00:02.000\nOld caption\n');await flush();
+    assert(!h.posts.some(p=>p.__idmLinuxSubtitleText));
+  }
+  console.log('PASS delayed caption bodies cannot cross SPA navigation or disable/enable generation');
+}
+async function youtubeCaptionTimeoutTest(){
+  const h=pageHarness('www.youtube.com');let calls=0,active=0;
+  h.win.fetch=(url,init)=>new Promise((resolve,reject)=>{
+    calls++;active++;
+    init.signal.addEventListener('abort',()=>{active--;reject(new Error('timeout'));},{once:true});
+  });
+  h.context.setTimeout=(fn,ms)=>{const timer=setTimeout(fn,ms===8000?10:ms);timer.unref();return timer;};
+  h.win.ytInitialPlayerResponse={videoDetails:{videoId:'abc'},captions:{playerCaptionsTracklistRenderer:{captionTracks:Array.from({length:9},(_,i)=>({baseUrl:'https://www.youtube.com/api/timedtext?v=abc&lang=l'+i,languageCode:'l'+i}))}}};
+  h.load();h.context.fetch=h.win.fetch;await until(()=>calls===9&&active===0);
+  assert(!h.posts.some(p=>p.__idmLinuxSubtitleText));
+  console.log('PASS expired YouTube caption requests abort and release queue slots without emitting fake text');
+}
+async function youtubeCaptionQueueTests(){
+  const h=pageHarness('www.youtube.com');const pending=[];let active=0,maxActive=0;
+  h.win.fetch=(url,init={})=>new Promise((resolve,reject)=>{
+    active++;maxActive=Math.max(maxActive,active);let settled=false;
+    const done=()=>{if(settled)return;settled=true;active--;resolve(captionResponse(url,'WEBVTT\n\n00:00:00.000 --> 00:00:01.000\nGood caption\n','text/vtt'));};
+    pending.push({url,done});
+    if(init.signal)init.signal.addEventListener('abort',()=>{if(!settled){settled=true;active--;reject(new Error('aborted'));}},{once:true});
+  });
+  const response=id=>({videoDetails:{videoId:id},captions:{playerCaptionsTracklistRenderer:{captionTracks:Array.from({length:25},(_,i)=>({baseUrl:'https://www.youtube.com/api/timedtext?v='+id+'&lang=l'+i,languageCode:'l'+i}))}}});
+  h.win.ytInitialPlayerResponse=response('abc');h.load();h.context.fetch=h.win.fetch;await flush();
+  assert.equal(pending.length,4);assert.equal(maxActive,4);
+  while(pending.length<25){for(const p of pending)p.done();await flush();}
+  for(const p of pending)p.done();await flush();assert.equal(maxActive,4);
+  assert(h.posts.some(p=>p.__idmLinuxSubtitleText));
+  h.posts.length=0;h.location.href='https://www.youtube.com/watch?v=new';h.fire('yt-navigate-start',{});h.fire('yt-navigate-finish',{});await flush();
+  assert(!h.posts.some(p=>p.__idmLinuxSubtitle||p.__idmLinuxSubtitleText)); // stale initial response rejected
+  h.win.ytInitialPlayerResponse=response('new');h.fire('yt-player-updated',{});await flush();
+  const late=pending.slice(25);assert.equal(late.length,4);
+  h.doc.documentElement.dataset.idmLinuxCaptureEnabled='0';h.fire('idm-linux-capture-state',{});await flush();
+  assert.equal(active,0);const count=h.posts.filter(p=>p.__idmLinuxSubtitleText).length;
+  for(const p of late)p.done();await flush();assert.equal(h.posts.filter(p=>p.__idmLinuxSubtitleText).length,count);
+  console.log('PASS YouTube 25 captions use four concurrent requests; stale video response is rejected; disable aborts only own prefetch');
 }
 async function textTrackCaptionTests(){
   for(const mode of ['external','embedded','oversized']) {
@@ -176,4 +223,4 @@ async function probeRecoveryTest(){
   assert.equal(vm.runInContext('globalThis.probeCalls',h.context),2);
   console.log('PASS video probe recovers after bridge wake without assigning to const');
 }
-(async()=>{await pageTests();await backgroundTests();await probeRecoveryTest();await externalCaptionTests();await textTrackCaptionTests();await navigationCaptionTest();console.log('BROWSER_CAPTURE_HARNESS_PASS');})().catch(e=>{console.error(e);process.exitCode=1;});
+(async()=>{await pageTests();await backgroundTests();await probeRecoveryTest();await externalCaptionTests();await textTrackCaptionTests();await staleCaptionTests();await youtubeCaptionQueueTests();await youtubeCaptionTimeoutTest();await navigationCaptionTest();console.log('BROWSER_CAPTURE_HARNESS_PASS');})().catch(e=>{console.error(e);process.exitCode=1;});

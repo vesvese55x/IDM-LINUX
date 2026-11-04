@@ -142,6 +142,22 @@ def _sniff_is_torrent_url(
         return False
 
 
+def _prepare_subtitle_job(job, timeout=20):
+    """Only validated subtitle jobs may be dispatched; abandoned work is stopped."""
+    if job is None:
+        return False
+    ready = False
+    try:
+        ready = bool(job.wait_complete(timeout=timeout) and not job.failed and job.final_size > 0)
+        return ready
+    finally:
+        if not ready:
+            job.stop()
+            fail = getattr(job, "_mark_failed", None)
+            if callable(fail) and not getattr(job, "failed", True):
+                fail("Altyazı hazırlama başarısız veya süresi doldu; indirme başlatılmadı.")
+
+
 def _categorized_final_dir(filename: str, base_dir: Path) -> Path:
     """v3.7.0: dosya adına göre IDM kategori klasörünü döndürür ve oluşturur.
     IDM'in Windows'taki davranışı birebir: Video -> Downloads/Video, müzik ->
@@ -2569,7 +2585,7 @@ def make_http_handler(state: DaemonState):
                             final_dir=_categorized_final_dir(filename, Path(state.cfg.download_dir)),
                         )
                         job = state.stream_engine.get_job(tk.ticket_id)
-                        if not job or not job.wait_complete(timeout=20) or job.failed or job.final_size <= 0:
+                        if not _prepare_subtitle_job(job):
                             self._send_json({"ok":False,"error": "Altyazı hazırlanamadı; erişim veya kaynak doğrulaması başarısız. IDM'ye boş dosya gönderilmedi."}, status=422)
                             return
                         quoted_tk = urllib.parse.quote(tk.filename)
@@ -2736,7 +2752,7 @@ def make_http_handler(state: DaemonState):
                         final_dir=_categorized_final_dir(filename, Path(state.cfg.download_dir)),
                     )
                     job = state.stream_engine.get_job(ticket.ticket_id)
-                    if not job or not job.wait_complete(timeout=20) or job.failed or job.final_size <= 0:
+                    if not _prepare_subtitle_job(job):
                         self._send_json({"ok":False,"error":"Altyazı kaynağı doğrulanamadı; IDM'ye boş dosya gönderilmedi."},status=422)
                         return
                     quoted_fn = urllib.parse.quote(ticket.filename)

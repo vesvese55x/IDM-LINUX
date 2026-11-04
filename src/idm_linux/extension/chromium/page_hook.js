@@ -716,36 +716,42 @@
     setTimeout(scanPlayerConfigs, 1700);
     setTimeout(scanPlayerConfigs, 6500);
     window.addEventListener("idm-linux-capture-state", scanPlayerConfigs);
+    let captionContextGeneration = 0;
+    for (const event of ["idm-linux-capture-state", "yt-navigate-start", "popstate", "hashchange"]) {
+      window.addEventListener(event, () => { captionContextGeneration += 1; });
+    }
     try {
       const origFetch = window.fetch;
       if (origFetch) {
         window.fetch = function (input, init) {
+          const requestPage = location.href, requestGeneration = captionContextGeneration;
           try { emitSub(typeof input === "string" ? input : (input && input.url) || ""); } catch (_e) {}
           const p = origFetch.apply(this, arguments);
           try {
             p.then((resp) => {
               try {
-                if (!window.__idmLinuxCaptureEnabled() || !resp || !resp.headers) return;
+                if (!window.__idmLinuxCaptureEnabled() || (location.href !== requestPage || requestGeneration !== captionContextGeneration) || !resp || !resp.headers) return;
                 const ct = String(resp.headers.get("content-type") || "");
                 if (ct && !/text|json|xml|javascript/i.test(ct)) return; // video/ikili yanıtları atla
                 if (Number(resp.headers.get("content-length") || 0) > 2000000) return;
                 const copy = resp.clone();
                 const readTextBounded = async () => {
-                  if (!copy.body || !copy.body.getReader) return (await copy.text()).slice(0,2000000);
+                  if (!copy.body || !copy.body.getReader) { const text = await copy.text(); return text.length <= 2000000 ? text : ""; }
                   const reader = copy.body.getReader(), decoder = new TextDecoder();
-                  let total = 0, text = "";
+                  let total = 0, text = "", timedOut = false;
+                  const timer = setTimeout(() => { timedOut = true; try { reader.cancel().catch(() => {}); } catch (_cancel) {} }, 4000);
                   try {
-                    while (window.__idmLinuxCaptureEnabled()) {
+                    while (window.__idmLinuxCaptureEnabled() && location.href === requestPage && requestGeneration === captionContextGeneration) {
                       const result = await reader.read();
-                      if (result.done) return text + decoder.decode();
+                      if (result.done) return timedOut ? "" : text + decoder.decode();
                       total += result.value.byteLength;
                       if (total > 2000000) return "";
                       text += decoder.decode(result.value,{stream:true});
                     }
                     return "";
-                  } finally { try { reader.cancel().catch(() => {}); } catch (_cancel) {} }
+                  } finally { clearTimeout(timer); try { reader.cancel().catch(() => {}); } catch (_cancel) {} }
                 };
-                readTextBounded().then((txt) => { try { scanSubUrls(txt, resp.url || location.href); captureCaptionText(txt,resp.url || location.href); } catch (_e2) {} }).catch(() => {});
+                readTextBounded().then((txt) => { try { if (!window.__idmLinuxCaptureEnabled() || (location.href !== requestPage || requestGeneration !== captionContextGeneration)) return; scanSubUrls(txt, resp.url || location.href); captureCaptionText(txt,resp.url || location.href); } catch (_e2) {} }).catch(() => {});
               } catch (_e) {}
             }).catch(() => {});
           } catch (_e) {}
@@ -755,7 +761,7 @@
       const origOpen = window.XMLHttpRequest.prototype.open;
       const origSend = window.XMLHttpRequest.prototype.send;
       window.XMLHttpRequest.prototype.open = function (method, url, ...rest) {
-        try { emitSub(url); } catch (_e) {}
+        try { this.__idmCaptionRequestPage = location.href; this.__idmCaptionGeneration = captionContextGeneration; emitSub(url); } catch (_e) {}
         return origOpen.call(this, method, url, ...rest);
       };
       window.XMLHttpRequest.prototype.send = function (...sargs) {
@@ -763,7 +769,7 @@
           this.addEventListener("load", () => {
             try {
               const rt = this.responseType;
-              if (!window.__idmLinuxCaptureEnabled() || this.status < 200 || this.status >= 300) return;
+              if (!window.__idmLinuxCaptureEnabled() || this.__idmCaptionRequestPage !== location.href || this.__idmCaptionGeneration !== captionContextGeneration || this.status < 200 || this.status >= 300) return;
               if (rt && rt !== "text" && rt !== "json") return;
               const txt = rt === "json" ? JSON.stringify(this.response) : this.responseText;
               if (txt && txt.length < 2000000) { scanSubUrls(txt, this.responseURL || location.href); captureCaptionText(txt,this.responseURL || location.href); }
@@ -802,6 +808,54 @@
     if (typeof emitStream !== "function") return;
     const seen = new Set();
     const seenSubText = new Set();
+    const captionQueue = [], captionControllers = new Set();
+    let captionGeneration = 0, navigating = false;
+    const currentVideoId = () => {
+      const url = new URL(location.href);
+      return url.searchParams.get("v") || (url.pathname.match(/^\/(?:shorts|embed|live)\/([^/]+)/) || [])[1] || "";
+    };
+    const resetCaptionWork = () => {
+      captionGeneration += 1; captionQueue.length = 0;
+      for (const controller of captionControllers) controller.abort();
+      seen.clear(); seenSubText.clear();
+    };
+    const pumpCaptions = () => {
+      while (window.__idmLinuxCaptureEnabled() && !navigating && captionControllers.size < 4 && captionQueue.length) {
+        const task = captionQueue.shift();
+        if (task.generation !== captionGeneration || task.page !== location.href) continue;
+        const controller = new AbortController(); captionControllers.add(controller);
+        const valid = () => !controller.signal.aborted && task.generation === captionGeneration &&
+          task.page === location.href && window.__idmLinuxCaptureEnabled() && !navigating;
+        const timer = setTimeout(() => controller.abort(), 8000);
+        Promise.resolve().then(() => {
+          if (!valid()) throw new Error("Stale caption");
+          return fetch(task.url, { credentials: "include", signal: controller.signal });
+        }).then(async response => {
+          if (!valid() || !response.ok || Number(response.headers.get("content-length") || 0) > 2000000) return;
+          let text = "";
+          if (response.body && response.body.getReader) {
+            const reader = response.body.getReader(), decoder = new TextDecoder(); let bytes = 0;
+            try {
+              while (valid()) {
+                const result = await reader.read();
+                if (result.done) { text += decoder.decode(); break; }
+                bytes += result.value.byteLength;
+                if (bytes > 2000000) return;
+                text += decoder.decode(result.value, {stream:true});
+              }
+            } finally { try { await reader.cancel(); } catch (_cancel) {} }
+          } else { text = await response.text(); }
+          if (!valid() || text.length > 2000000 || !/^\uFEFF?WEBVTT\b/.test(text) || !text.includes("-->")) return;
+          if (!seenSubText.has(task.key)) {
+            seenSubText.add(task.key);
+            window.postMessage({__idmLinuxSubtitleText:true,vtt:text,label:task.label,lang:task.lang,sourceUrl:task.url},"*");
+          }
+        }).catch(() => {}).finally(() => {
+          clearTimeout(timer); captionControllers.delete(controller); pumpCaptions();
+        });
+      }
+    };
+
 
     // v3.11.0 KATMAN 1: şifresiz muxed formatları anında bara ışınla
     const mineStreamingData = (resp) => {
@@ -821,13 +875,15 @@
     };
 
     const emitTracks = (resp) => {
-      if (!window.__idmLinuxCaptureEnabled()) return;
+      if (!window.__idmLinuxCaptureEnabled() || navigating) return;
       try {
+        const expectedId = currentVideoId();
+        if (expectedId && resp && resp.videoDetails && resp.videoDetails.videoId && resp.videoDetails.videoId !== expectedId) return;
         mineStreamingData(resp);
         const renderer = resp && resp.captions && resp.captions.playerCaptionsTracklistRenderer;
         if (!renderer) return;
         const tracks = renderer.captionTracks || [];
-        tracks.forEach((tr) => {
+        tracks.slice(0,300).forEach((tr) => {
           try {
             let base = tr.baseUrl || "";
             if (!base) return;
@@ -847,22 +903,9 @@
               try { window.postMessage({ __idmLinuxSubtitle: true, url: base, label: label }, "*"); } catch (_e) {}
             };
             emitUrlEntry();
-            try {
-              fetch(base, { credentials: "include" })
-                .then((r) => (r.ok ? r.text() : Promise.reject(new Error(String(r.status)))))
-                .then((txt) => {
-                  if (txt && txt.slice(0, 6) === "WEBVTT" && txt.length > 40) {
-                    if (!seenSubText.has(key)) {
-                      seenSubText.add(key);
-                      window.postMessage({ __idmLinuxSubtitleText: true, vtt: txt.slice(0, 2000000), label: label, lang: lang, sourceUrl: base }, "*");
-                    }
-                  } else {
-                    emitUrlEntry();
-                  }
-                })
-                .catch(emitUrlEntry);
-            } catch (_e) {
-              emitUrlEntry();
+            if (captionQueue.length < 300) {
+              captionQueue.push({url:base,label,lang,key,page:location.href,generation:captionGeneration});
+              pumpCaptions();
             }
           } catch (_e) {}
         });
@@ -888,7 +931,11 @@
     };
     scanPlayerResponse();
     const poll = setInterval(scanPlayerResponse, 2000);
-    window.addEventListener("idm-linux-capture-state", scanPlayerResponse);
+    window.addEventListener("idm-linux-capture-state", () => {
+      if (!window.__idmLinuxCaptureEnabled()) resetCaptionWork();
+      else scanPlayerResponse();
+    });
+    window.addEventListener("yt-navigate-start", () => { navigating = true; resetCaptionWork(); }, true);
     window.addEventListener("yt-player-updated", scanPlayerResponse, true);
     window.addEventListener("yt-page-data-updated", scanPlayerResponse, true);
     // v3.6.0: poll ömrü 60 -> 180 sn (uzun videolarda/çalma listelerinde bar altyazı
@@ -897,7 +944,7 @@
     try {
       window.addEventListener("yt-navigate-finish", () => {
         try {
-          seen.clear(); seenSubText.clear();
+          navigating = false; resetCaptionWork();
           const mp = document.getElementById("movie_player");
           if (mp && mp.getPlayerResponse) {
             const live = mp.getPlayerResponse();

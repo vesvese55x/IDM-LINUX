@@ -797,7 +797,7 @@ class ActiveStreamJob:
         headers = build_stream_headers(t.referer, t.origin, t.cookies_header, t.user_agent)
         try:
             txt = assemble_subtitle_text(
-                t.source_url, headers, initial_text=t.manifest_text or "", smart_fetch=fetch_subtitle_bytes_smart
+                t.source_url, headers, initial_text=t.manifest_text or "", smart_fetch=fetch_subtitle_bytes_smart, stop_event=self.stop_event
             )
             if not (txt or "").strip():
                 raise RuntimeError("boş altyazı metni")
@@ -846,6 +846,8 @@ class ActiveStreamJob:
                 self.stream_file.unlink(missing_ok=True)
             except Exception:
                 pass
+            if self.stop_event.is_set():
+                raise RuntimeError("Altyazı işi iptal edildi; çıktı yayımlanmadı")
             self.output_file.write_bytes(data)
             self.final_size = len(data)
             t.estimated_size = len(data)
@@ -2077,6 +2079,9 @@ class ActiveStreamJob:
                 pass
             rc = proc.poll()
             if t.sub_lang:  # v2.9.4: altyazı dosyasını bul ve teslim et
+                if self.stop_event.is_set():
+                    self.error_msg = "Altyazı işi iptal edildi; çıktı yayımlanmadı"
+                    return False
                 if stderr_thread is not None:
                     stderr_thread.join(timeout=1)
                 detail = "".join(subtitle_errors)
@@ -2134,10 +2139,10 @@ class ActiveStreamJob:
 
     def wait_complete(self, timeout: float = 600.0) -> bool:
         """v2.8.5: mux/birleştirme bitene dek bekler (wait_mux biletlerinde IDM'ye doğru dosya akar)."""
-        deadline = time.time() + timeout
+        deadline = time.monotonic() + timeout
         with self._cond:
-            while not self.completed and not self.failed and time.time() < deadline:
-                self._cond.wait(timeout=1.0)
+            while not self.completed and not self.failed and time.monotonic() < deadline:
+                self._cond.wait(timeout=min(1.0, max(0.0, deadline - time.monotonic())))
             return self.completed
 
     def _mark_failed(self, msg: str) -> None:

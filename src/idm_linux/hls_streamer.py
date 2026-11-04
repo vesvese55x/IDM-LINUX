@@ -3,6 +3,7 @@ from __future__ import annotations
 import concurrent.futures
 import gzip
 import os
+import queue
 import re
 import shutil
 import subprocess
@@ -93,6 +94,86 @@ def is_hls_playlist_text(text: str) -> bool:
 # doğrulama probe aşamasında sahte/ölü altyazı girdilerini de KÖKTEN temizler.
 
 _SUB_SNIFF_CAP = 262144  # doğrulama için 256 KB yeter (ilk 4 cursor)
+
+
+_SUB_BODY_CAP = 8 * 1024 * 1024
+
+
+class SubtitleBodyLimitError(ValueError):
+    pass
+
+
+def _decode_subtitle_http_body(raw, encoding="", *, allow_prefix=False, limit=_SUB_BODY_CAP):
+    """Bound expansion before allocating it; video/HLS media decoding is unchanged."""
+    enc = (encoding or "").lower().strip()
+    if len(raw) > limit:
+        raise SubtitleBodyLimitError("Altyazı boyutu güvenlik sınırını aşıyor")
+    gzip_body = "gzip" in enc or raw[:2] == b"\x1f\x8b"
+    if not gzip_body and "deflate" not in enc:
+        return raw
+    modes = [16 + zlib.MAX_WBITS] if gzip_body else [zlib.MAX_WBITS, -zlib.MAX_WBITS]
+    for mode in modes:
+        try:
+            chunks = []; size = 0; pending = raw
+            while pending:
+                decoder = zlib.decompressobj(mode)
+                chunk = decoder.decompress(pending, limit - size + 1)
+                size += len(chunk)
+                if size > limit:
+                    raise SubtitleBodyLimitError("Açılan altyazı güvenlik sınırını aşıyor")
+                chunks.append(chunk)
+                if not decoder.eof:
+                    if not allow_prefix:
+                        raise ValueError("Sıkıştırılmış altyazı yanıtı eksik")
+                    break
+                pending = decoder.unused_data
+                if pending and not gzip_body:
+                    raise ValueError("Sıkıştırılmış altyazıda beklenmeyen ek veri")
+            return b"".join(chunks)
+        except zlib.error:
+            continue
+    raise ValueError("Sıkıştırılmış altyazı geçersiz")
+
+
+def _fetch_subtitle_http_bytes(url, headers, *, timeout=12.0, stop_event=None, limit=_SUB_BODY_CAP):
+    """Bound both encoded/decoded bytes and the whole response, not each socket read."""
+    deadline = time.monotonic() + max(0.01, timeout)
+    def remaining():
+        if stop_event is not None and stop_event.is_set():
+            raise RuntimeError("Altyazı işi iptal edildi")
+        left = deadline - time.monotonic()
+        if left <= 0:
+            raise TimeoutError("Altyazı okuma süresi doldu")
+        return left
+    try:
+        response = urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=remaining())
+    except urllib.error.HTTPError as exc:
+        exc.close()
+        raise
+    with response:
+        chunks = []; total = 0
+        declared = response.headers.get("Content-Length") or ""
+        expected = int(declared) if declared.isdigit() else None
+        if expected is not None and expected > limit:
+            raise SubtitleBodyLimitError("Altyazı boyutu güvenlik sınırını aşıyor")
+        reader = getattr(response, "read1", response.read)
+        while True:
+            left = remaining()
+            # HTTPResponse's socket timeout must shrink as the total budget expires.
+            sock = getattr(getattr(getattr(response, "fp", None), "raw", None), "_sock", None)
+            if sock is not None:
+                sock.settimeout(left)
+            chunk = reader(min(65536, limit + 1 - total))
+            remaining()
+            if not chunk:
+                break
+            total += len(chunk)
+            if total > limit:
+                raise SubtitleBodyLimitError("Altyazı boyutu güvenlik sınırını aşıyor")
+            chunks.append(chunk)
+        if expected is not None and total != expected:
+            raise ValueError("Altyazı HTTP yanıtı eksik")
+        return _decode_subtitle_http_body(b"".join(chunks), response.headers.get("Content-Encoding") or "", limit=limit)
 
 
 def normalize_caption_payload(raw: bytes) -> bytes:
@@ -217,7 +298,7 @@ def fetch_subtitle_probe(
                 if int(getattr(resp, "status", 200) or 200) >= 400:
                     return "unknown", 0, ""
                 raw = resp.read(_SUB_SNIFF_CAP)
-                data = normalize_caption_payload(_decompress_http_body(raw, resp.headers.get("Content-Encoding") or ""))
+                data = normalize_caption_payload(_decode_subtitle_http_body(raw, resp.headers.get("Content-Encoding") or "", allow_prefix=True))
                 if is_hls_playlist_text(data.decode("utf-8", errors="replace")):
                     # This is a subtitle playlist, not a fake non-caption HTML body.
                     return "ok", 0, "vtt"
@@ -237,13 +318,15 @@ def fetch_subtitle_probe(
             # Do not retry authentication or authorization failures with stripped headers.
             if exc.code in (401, 403, 404, 429):
                 return "unknown", 0, ""
+        except SubtitleBodyLimitError:
+            return "bad", 0, ""
         except Exception:
             continue
     return ("bad", 0, "") if got_invalid_body else ("unknown", 0, "")
 
 
 def fetch_subtitle_bytes_smart(
-    sub_url: str, headers: Dict[str, str], timeout: float = 12.0
+    sub_url: str, headers: Dict[str, str], timeout: float = 12.0, stop_event=None
 ) -> bytes:
     """Altyazı gövdesini 4 başlık varyantıyla getirir; ilki başarısız olursa sıradaki
     varyant denenir (rapidvid/fullhdfilmizlesene '0 bayt' düzeltmesi)."""
@@ -254,19 +337,20 @@ def fetch_subtitle_bytes_smart(
         if remaining <= 0:
             break
         try:
-            with urllib.request.urlopen(urllib.request.Request(sub_url, headers=hdrs), timeout=remaining) as response:
-                raw = response.read(8 * 1024 * 1024 + 1)
-                if len(raw) > 8 * 1024 * 1024:
-                    raise ValueError("Altyazı boyutu güvenlik sınırını aşıyor")
-                raw = normalize_caption_payload(_decompress_http_body(raw, response.headers.get("Content-Encoding") or ""))
+            raw = normalize_caption_payload(_fetch_subtitle_http_bytes(
+                sub_url, hdrs, timeout=remaining, stop_event=stop_event))
         except urllib.error.HTTPError as exc:
             exc.close()
             last_exc = exc
             if exc.code in (401,403,404,429):
                 break
             continue
+        except SubtitleBodyLimitError:
+            raise
         except Exception as exc:
             last_exc = exc
+            if stop_event is not None and stop_event.is_set():
+                break
             continue
         if looks_like_subtitle_bytes(raw) or is_hls_playlist_text(raw.decode("utf-8", errors="ignore")):
             return raw
@@ -1212,6 +1296,9 @@ def assemble_subtitle_text(
     concurrency: int = 8,
     smart_fetch=None,
     _depth: int = 0,
+    timeout: float = 18.0,
+    stop_event=None,
+    _deadline=None,
 ) -> str:
     """Altyazı kaynağını TEK metne indirir:
     - Tek .vtt/.srt dosyası -> olduğu gibi döner
@@ -1220,16 +1307,28 @@ def assemble_subtitle_text(
     AES-128 şifreli segmentler de desteklenir.
     v3.9.0: smart_fetch verildiğinde TEK dosyalık altyazı 4 başlık varyantıyla
     getirilir (rapidvid gibi hotlink korumalı CDN'lerin '0 bayt' vakası biter)."""
+    deadline = _deadline if _deadline is not None else time.monotonic() + max(.01, timeout)
+    abort = threading.Event()
+    def check_budget():
+        if abort.is_set() or (stop_event is not None and stop_event.is_set()):
+            raise RuntimeError("Altyazı işi iptal edildi")
+        left = deadline - time.monotonic()
+        if left <= 0:
+            raise TimeoutError("Altyazı hazırlama süresi doldu")
+        return left
+    check_budget()
+    if len((initial_text or "").encode("utf-8")) > _SUB_BODY_CAP:
+        raise SubtitleBodyLimitError("Altyazı manifesti güvenlik sınırını aşıyor")
     if _depth > 6:
         raise RuntimeError("Altyazı manifest döngüsü/derinlik sınırı")
     text = (initial_text or "").strip()
     if not is_hls_playlist_text(text):
         try:
             if smart_fetch is not None:
-                raw = smart_fetch(sub_url, headers, timeout=12.0)
+                raw = smart_fetch(sub_url, headers, timeout=min(12.0, check_budget()))
             else:
-                raw = fetch_url_bytes(sub_url, headers, timeout=12.0, retries=3)
-            text = raw.decode("utf-8", errors="ignore").strip()
+                raw = _fetch_subtitle_http_bytes(sub_url, headers, timeout=min(12.0, check_budget()), stop_event=stop_event)
+            text = raw.decode("utf-8-sig", errors="strict").strip()
         except Exception as exc:
             raise RuntimeError(f"Altyazı kaynağı okunamadı: {exc}")
 
@@ -1260,13 +1359,15 @@ def assemble_subtitle_text(
                     break
         if not sub_uri:
             raise RuntimeError("Master listede altyazı grubu bulunamadı.")
-        return assemble_subtitle_text(sub_uri, headers, initial_text="", concurrency=concurrency, smart_fetch=smart_fetch, _depth=_depth+1)
+        return assemble_subtitle_text(sub_uri, headers, initial_text="", concurrency=concurrency, smart_fetch=smart_fetch, _depth=_depth+1, stop_event=stop_event, _deadline=deadline)
 
     parsed = parse_media_playlist_body(sub_url, text)
     items = parsed["items"]
     if not items:
         raise RuntimeError("Altyazı oynatma listesinde segment yok.")
 
+    if len(items) > 20000:
+        raise SubtitleBodyLimitError("Altyazı segment sayısı güvenlik sınırını aşıyor")
     key_cache: Dict[str, bytes] = {}
     key_lock = threading.Lock()
 
@@ -1275,11 +1376,11 @@ def assemble_subtitle_text(
         seg_hdrs = dict(headers)
         if byte_rng is not None:
             seg_hdrs["Range"] = f"bytes={byte_rng[0]}-{byte_rng[1]}"
-        data = fetch_url_bytes(s_url, seg_hdrs, timeout=15.0, retries=3)
+        data = _fetch_subtitle_http_bytes(s_url, seg_hdrs, timeout=min(12.0, check_budget()), stop_event=abort)
         if k_uri:
             with key_lock:
                 if k_uri not in key_cache:
-                    key_cache[k_uri] = fetch_url_bytes(k_uri, headers, timeout=10.0)
+                    key_cache[k_uri] = _fetch_subtitle_http_bytes(k_uri, headers, timeout=min(10.0, check_budget()), stop_event=abort, limit=16)
                 kb = key_cache[k_uri]
             if len(kb) != 16:
                 raise RuntimeError("Altyazı AES anahtarı geçersiz")
@@ -1290,22 +1391,56 @@ def assemble_subtitle_text(
             raise RuntimeError("Altyazı segmenti boş veya altyazı değil")
         return data.decode("utf-8-sig", errors="strict")
 
-    # Sıra korunur: pencere paralel (8x), sonuç seq sırasına göre dizilir
-    results: List[Optional[str]] = [None] * len(items)
-    with concurrent.futures.ThreadPoolExecutor(max_workers=max(2, concurrency)) as pool:
-        fut_map = {pool.submit(_fetch_one, it): pos for pos, it in enumerate(items)}
-        for fut in concurrent.futures.as_completed(fut_map):
-            pos = fut_map[fut]
+    # Fixed daemon workers + a sliding window: no task per segment and no
+    # executor shutdown waiting forever for an OS/DNS call after timeout.
+    workers = max(1, min(8, concurrency, len(items)))
+    tasks = queue.Queue(maxsize=workers)
+    finished = queue.Queue(maxsize=workers)
+    def work():
+        while not abort.is_set():
             try:
-                results[pos] = fut.result()
+                pos = tasks.get(timeout=.1)
+            except queue.Empty:
+                continue
+            try:
+                check_budget()
+                value, error = _fetch_one(items[pos]), None
             except Exception as exc:
-                logger.info("Altyazı segmenti atlandı (%s/%s): %s", pos + 1, len(items), exc)
-    if any(r is None for r in results):
-        raise RuntimeError("Altyazı eksik: bütün segmentler alınmadan tamamlandı sayılmadı")
-    parts = [r for r in results if r and (r or "").strip()]
-    if not parts:
-        raise RuntimeError("Altyazı segmentlerinin hiçbiri indirilemedi.")
-    merged = _concat_hls_vtt_segments(parts)
-    if not looks_like_subtitle_bytes(merged.encode("utf-8", errors="ignore")):
+                value, error = None, exc
+            while not abort.is_set():
+                try:
+                    finished.put((pos, value, error), timeout=.1)
+                    break
+                except queue.Full:
+                    pass
+    results = [None] * len(items)
+    total = 0; submitted = 0
+    try:
+        for _ in range(workers):
+            tasks.put_nowait(submitted); submitted += 1
+        for i in range(workers):
+            threading.Thread(target=work, name=f"subtitle-segment-{i}", daemon=True).start()
+        for _ in items:
+            while True:
+                left = check_budget()
+                try:
+                    pos, value, error = finished.get(timeout=min(.1, left))
+                    break
+                except queue.Empty:
+                    continue
+            if error is not None:
+                raise RuntimeError("Altyazı eksik: bütün segmentler alınamadı") from error
+            total += len(value.encode("utf-8"))
+            if total > _SUB_BODY_CAP:
+                raise SubtitleBodyLimitError("Birleşik altyazı güvenlik sınırını aşıyor")
+            results[pos] = value
+            if submitted < len(items):
+                tasks.put_nowait(submitted); submitted += 1
+    finally:
+        abort.set()
+    merged = _concat_hls_vtt_segments(results)
+    if len(merged.encode("utf-8")) > _SUB_BODY_CAP:
+        raise SubtitleBodyLimitError("Birleşik altyazı güvenlik sınırını aşıyor")
+    if not looks_like_subtitle_bytes(merged.encode("utf-8")):
         raise RuntimeError("Birleştirilen altyazı segmentleri geçerli bir altyazı üretmedi.")
     return merged
