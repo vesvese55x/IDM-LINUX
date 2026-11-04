@@ -188,7 +188,6 @@ class BoundedHttpTests(unittest.TestCase):
         finally:
             gate.set();first.close();second.close();server.shutdown();server.server_close();thread.join(2)
 
-if __name__=='__main__': unittest.main(verbosity=2)
 
 class CompressedManifestModeTests(unittest.TestCase):
     def test_compressed_vod_stays_vod_and_live_stays_live(self):
@@ -210,3 +209,5 @@ class CompressedManifestModeTests(unittest.TestCase):
         response=io.BytesIO(gzip.compress(b'A'*1000000));response.headers={'Content-Encoding':'gzip'}
         with patch('urllib.request.urlopen',return_value=response):
             self.assertEqual(_auto_hls_mode('https://example.test/master.txt',''),'dvr')
+
+if __name__=='__main__': unittest.main(verbosity=2)

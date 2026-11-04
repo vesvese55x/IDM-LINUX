@@ -17,7 +17,7 @@ on:
   push:
     branches: [main]
 concurrency:
-  group: idm-linux-build
+  group: idm-linux-build-${{ inputs.publish_release && 'release' || github.sha }}
   cancel-in-progress: false
 permissions:
   contents: write
