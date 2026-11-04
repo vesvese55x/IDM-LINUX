@@ -28,7 +28,7 @@ common.zoom_qr = QR Kodu Böyüt
 common.qr_modal_title = QR Kod — {title}
 common.qr_scan_hint = Birbaşa açmaq üçün telefonunuzun kamerası ilə oxudun.
 inst.title = IDM-Linux Universal Quraşdırma və Yeniləmə Bələdçisi
-inst.sys_summary = Sistem: {distro} ({pm})  •  Wine: {wine}  •  Media və Torrent: yt-dlp={ytdlp} / ffmpeg={ffmpeg} / aria2c={aria2}
+inst.sys_summary = Sistem: {distro} ({pm})  •  Wine: {wine}  •  Media və Torrent: yt-dlp={ytdlp} / ffmpeg={ffmpeg} / aria2c={aria2} / JS={js}
 inst.auto_install = Avtomatik Quraşdırılacaq
 inst.will_download = Endiriləcək
 inst.will_install = Quraşdırılacaq

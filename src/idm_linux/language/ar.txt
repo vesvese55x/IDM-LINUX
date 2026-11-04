@@ -28,7 +28,7 @@ common.zoom_qr = تكبير رمز QR
 common.qr_modal_title = رمز الاستجابة السريعة — {title}
 common.qr_scan_hint = امسح الرمز بكاميرا هاتفك لفتحه مباشرة.
 inst.title = المعالج الشامل لتثبيت وتحديث IDM-Linux
-inst.sys_summary = النظام: {distro} ({pm})  •  Wine: {wine}  •  الوسائط والتورنت: yt-dlp={ytdlp} / ffmpeg={ffmpeg} / aria2c={aria2}
+inst.sys_summary = النظام: {distro} ({pm})  •  Wine: {wine}  •  الوسائط والتورنت: yt-dlp={ytdlp} / ffmpeg={ffmpeg} / aria2c={aria2} / JS={js}
 inst.auto_install = تثبيت تلقائي
 inst.will_download = سيتم تنزيله
 inst.will_install = سيتم تثبيته

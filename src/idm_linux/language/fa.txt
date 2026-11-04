@@ -28,7 +28,7 @@ common.zoom_qr = بزرگ‌نمایی بارکد QR
 common.qr_modal_title = رمزینه پاسخ سریع — {title}
 common.qr_scan_hint = با دوربین گوشی خود اسکن کنید تا مستقیماً باز شود.
 inst.title = جادوگر جامع نصب و به‌روزرسانی IDM-Linux
-inst.sys_summary = سیستم: {distro} ({pm})  •  Wine: {wine}  •  رسانه و تورنت: yt-dlp={ytdlp} / ffmpeg={ffmpeg} / aria2c={aria2}
+inst.sys_summary = سیستم: {distro} ({pm})  •  Wine: {wine}  •  رسانه و تورنت: yt-dlp={ytdlp} / ffmpeg={ffmpeg} / aria2c={aria2} / JS={js}
 inst.auto_install = نصب خودکار
 inst.will_download = دانلود خواهد شد
 inst.will_install = نصب خواهد شد

@@ -28,7 +28,7 @@ common.zoom_qr = Phóng to mã QR
 common.qr_modal_title = Mã QR — {title}
 common.qr_scan_hint = Quét bằng camera điện thoại để mở trực tiếp.
 inst.title = Trình Cài Đặt & Cập Nhật Toàn Diện IDM-Linux
-inst.sys_summary = Hệ thống: {distro} ({pm})  •  Wine: {wine}  •  Đa phương tiện & Torrent: yt-dlp={ytdlp} / ffmpeg={ffmpeg} / aria2c={aria2}
+inst.sys_summary = Hệ thống: {distro} ({pm})  •  Wine: {wine}  •  Đa phương tiện & Torrent: yt-dlp={ytdlp} / ffmpeg={ffmpeg} / aria2c={aria2} / JS={js}
 inst.auto_install = Tự động cài đặt
 inst.will_download = Sẽ tải về
 inst.will_install = Sẽ cài đặt

@@ -40,6 +40,7 @@ from .crx_builder import (
 )
 from .daemon import is_daemon_running
 from .distro import detect_system, install_system_dependencies
+from .media_dependencies import ensure_media_dependencies
 from .firefox_ext import (
     cache_official_firefox_xpi,
     install_firefox_extensions_robust,
@@ -1282,7 +1283,7 @@ def execute_install_pipeline(
     log_fn(f"  [*] Seçilen WINEPREFIX  : {cfg.wine_prefix}")
     log_fn(f"  [*] İndirilenler Dizini : {cfg.download_dir}")
 
-    _step(15, "Sistem bağımlılıkları (Wine, FFmpeg, yt-dlp) kontrol ediliyor...")
+    _step(15, "Sistem bağımlılıkları (Wine, FFmpeg, yt-dlp ve JavaScript) kontrol ediliyor...")
     if not skip_system_pkgs:
         sys_info = install_system_dependencies(
             sys_info,
@@ -1290,6 +1291,13 @@ def execute_install_pipeline(
             log_fn=log_fn,
             prefer_gui_auth=prefer_gui_auth,
         )
+
+    media = ensure_media_dependencies(allow_install=False, log_fn=log_fn)
+    if not media["ready"]:
+        detail = ", ".join(media["missing"])
+        if not skip_system_pkgs:
+            raise RuntimeError("Video bileşenleri kurulamadı/yapılandırılamadı: " + detail + ". Kurulum tamamlandı olarak işaretlenmedi.")
+        log_fn("  [!] --skip-pkgs seçildi; video desteği eksik bırakılıyor: " + detail)
 
     _step(28, "Resmi IDM sitesinden en güncel kurulum paketi sorgulanıyor...")
     resolved_ver_label = "Latest"

@@ -28,7 +28,7 @@ common.zoom_qr = QR Кодду Чоңойтуу
 common.qr_modal_title = QR Код — {title}
 common.qr_scan_hint = Түз ачуу үчүн телефонуңуздун камерасы менен сканерлеңиз.
 inst.title = IDM-Linux Универсалдуу Орнотуу жана Жаңыртуу Чебери
-inst.sys_summary = Система: {distro} ({pm})  •  Wine: {wine}  •  Медиа & Torrent: yt-dlp={ytdlp} / ffmpeg={ffmpeg} / aria2c={aria2}
+inst.sys_summary = Система: {distro} ({pm})  •  Wine: {wine}  •  Медиа & Torrent: yt-dlp={ytdlp} / ffmpeg={ffmpeg} / aria2c={aria2} / JS={js}
 inst.auto_install = Авто-орнотулат
 inst.will_download = Жүктөлөт
 inst.will_install = Орнотулат

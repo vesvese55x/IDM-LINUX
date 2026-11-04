@@ -1557,6 +1557,10 @@ def make_http_handler(state: DaemonState):
                         "wine_installed": sys_info.wine_installed,
                         "wine_version": sys_info.wine_version,
                         "ffmpeg_installed": sys_info.ffmpeg_installed,
+                        "js_runtime": getattr(sys_info, "js_runtime", ""),
+                        "js_runtime_installed": bool(getattr(sys_info, "js_runtime_path", None)),
+                        "js_runtime_configured": bool(getattr(sys_info, "js_runtime_configured", False)),
+                        "media_ready": bool(sys_info.ffmpeg_installed and sys_info.ytdlp_path and getattr(sys_info, "js_runtime_configured", False)),
                         "ytdlp_installed": sys_info.ytdlp_path is not None,
                         "aria2_installed": sys_info.aria2_installed,
                         # v3.10.0: kendi BitTorrent motorumuz her zaman kullanılabilir

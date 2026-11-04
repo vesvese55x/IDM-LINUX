@@ -28,7 +28,7 @@ common.zoom_qr = 放大二维码
 common.qr_modal_title = 二维码 — {title}
 common.qr_scan_hint = 使用手机相机扫描即可直接打开。
 inst.title = IDM-Linux 通用安装与更新向导
-inst.sys_summary = 系统: {distro} ({pm})  •  Wine: {wine}  •  媒体与种子: yt-dlp={ytdlp} / ffmpeg={ffmpeg} / aria2c={aria2}
+inst.sys_summary = 系统: {distro} ({pm})  •  Wine: {wine}  •  媒体与种子: yt-dlp={ytdlp} / ffmpeg={ffmpeg} / aria2c={aria2} / JS={js}
 inst.auto_install = 自动安装
 inst.will_download = 将自动下载
 inst.will_install = 将自动安装

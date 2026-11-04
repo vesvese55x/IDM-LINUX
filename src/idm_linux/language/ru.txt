@@ -28,7 +28,7 @@ common.zoom_qr = Увеличить QR-код
 common.qr_modal_title = QR-код — {title}
 common.qr_scan_hint = Наведите камеру смартфона, чтобы открыть ссылку напрямую.
 inst.title = Универсальный мастер установки и обновления IDM-Linux
-inst.sys_summary = Система: {distro} ({pm})  •  Wine: {wine}  •  Медиа и Torrent: yt-dlp={ytdlp} / ffmpeg={ffmpeg} / aria2c={aria2}
+inst.sys_summary = Система: {distro} ({pm})  •  Wine: {wine}  •  Медиа и Torrent: yt-dlp={ytdlp} / ffmpeg={ffmpeg} / aria2c={aria2} / JS={js}
 inst.auto_install = Автоустановка
 inst.will_download = Будет скачано
 inst.will_install = Будет установлено

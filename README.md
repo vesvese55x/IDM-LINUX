@@ -434,3 +434,24 @@
 🌐 इंटरफ़ेस 20 भाषाओं में काम करता है; तुर्की भाषा डिफ़ॉल्ट है।
 
 </details>
+
+### Otomatik video bağımlılıkları
+
+GUI kurulum sihirbazı ve CLI aynı kurulum hattını kullanır. Normal kurulum eksik
+FFmpeg ve JavaScript ortamını paket yöneticisiyle tamamlar; yalnızca `node`
+komutunun bulunması yeterli sayılmaz: Node ≥22, Deno ≥2.3 veya Bun ≥1.2.11
+çalışarak doğrulanır. Dağıtımın Node paketi eskiyse desteklenen Linux
+x86_64/aarch64 glibc sistemlerde resmi Deno arşivi GitHub dağıtımının SHA-256
+özetiyle doğrulanıp kullanıcıya özel kurulabilir. Desteklenmeyen mimari, yetki,
+ağ veya doğrulama hataları gizlenmez.
+
+yt-dlp için yönetilen, tekrar çalıştırılabilir bir JS ayar bloğu yazılır.
+Uygulamaya özel yt-dlp kullanılıyorsa yanındaki taşınabilir `yt-dlp.conf`
+kullanılır; sistem yt-dlp kullanılıyorsa yt-dlp'nin öncelik sırasındaki mevcut
+kullanıcı ayarı korunarak güncellenir. İlk değişiklik öncesinde
+`.idm-linux.before` yedeği alınır. Sembolik bağlantılı ayar dosyaları otomatik
+olarak değiştirilmez. Tarayıcı oturumu ve sandbox ayarları değiştirilmez.
+
+Video bileşenleri hazır değilse normal kurulum başarı olarak bitmez.
+Açıkça `--skip-pkgs` seçilirse paket kurulumu/indirme yapılmaz ve eksikler
+uyarı olarak bildirilir; mevcut JS ortamının ayarı yine hazırlanabilir.

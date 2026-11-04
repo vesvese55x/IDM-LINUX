@@ -115,6 +115,9 @@ def launch_control_panel(initial_page: str = "overview", project_root: Optional[
         ytdlp_path = None
         tkinter_available = True
         aria2_installed = False
+        js_runtime = ""
+        js_runtime_path = None
+        js_runtime_configured = False
 
     sys_info = _SysInfoBox()
 
@@ -124,7 +127,7 @@ def launch_control_panel(initial_page: str = "overview", project_root: Optional[
             for k in (
                 "distro_id", "distro_name", "pkg_manager", "init_system", "display_server",
                 "wine_installed", "wine_version", "ffmpeg_installed", "ytdlp_path",
-                "tkinter_available", "aria2_installed",
+                "tkinter_available", "aria2_installed", "js_runtime", "js_runtime_path", "js_runtime_configured",
             ):
                 setattr(sys_info, k, getattr(real, k))
         except Exception:
@@ -746,6 +749,7 @@ def launch_control_panel(initial_page: str = "overview", project_root: Optional[
                     ytdlp="✓" if sys_info.ytdlp_path else t("inst.will_download"),
                     ffmpeg="✓" if sys_info.ffmpeg_installed else t("inst.will_install"),
                     aria2="✓" if sys_info.aria2_installed else t("inst.will_install"),
+                    js=sys_info.js_runtime or t("inst.will_install"),
                 ),
                 bg=BG_MAIN,
                 fg=ACCENT_CYAN,
@@ -2322,7 +2326,7 @@ def launch_control_panel(initial_page: str = "overview", project_root: Optional[
                                 text=t("ov.state_warm") if data.get("idm_running") else t("ov.state_idle"),
                                 fg=ACCENT_GREEN if data.get("idm_running") else ACCENT_AMBER,
                             )
-                            media_ok = data.get("ytdlp_installed") and data.get("ffmpeg_installed")
+                            media_ok = data.get("media_ready", bool(data.get("ytdlp_installed") and data.get("ffmpeg_installed") and sys_info.js_runtime_configured))
                             lbl_ov_media.configure(
                                 text=t("ov.state_4k") if media_ok else t("ov.state_basic"),
                                 fg=ACCENT_GREEN if media_ok else ACCENT_AMBER,
@@ -2428,6 +2432,7 @@ def launch_control_panel(initial_page: str = "overview", project_root: Optional[
                             ytdlp="✓" if info.ytdlp_path else i18n.t("inst.will_download"),
                             ffmpeg="✓" if info.ffmpeg_installed else i18n.t("inst.will_install"),
                             aria2="✓" if info.aria2_installed else i18n.t("inst.will_install"),
+                            js=info.js_runtime or i18n.t("inst.will_install"),
                         )
                     )
 

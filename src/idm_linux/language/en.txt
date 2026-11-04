@@ -28,7 +28,7 @@ common.zoom_qr = Enlarge QR Code
 common.qr_modal_title = QR Code — {title}
 common.qr_scan_hint = Scan with your phone camera to open directly.
 inst.title = IDM-Linux Universal Setup & Update Wizard
-inst.sys_summary = System: {distro} ({pm})  •  Wine: {wine}  •  Media & Torrent: yt-dlp={ytdlp} / ffmpeg={ffmpeg} / aria2c={aria2}
+inst.sys_summary = System: {distro} ({pm})  •  Wine: {wine}  •  Media & Torrent: yt-dlp={ytdlp} / ffmpeg={ffmpeg} / aria2c={aria2} / JS={js}
 inst.auto_install = Auto-Install
 inst.will_download = Will Download
 inst.will_install = Will Install

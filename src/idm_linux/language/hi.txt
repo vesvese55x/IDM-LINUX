@@ -28,7 +28,7 @@ common.zoom_qr = QR कोड बड़ा करें
 common.qr_modal_title = QR कोड — {title}
 common.qr_scan_hint = सीधे खोलने के लिए अपने फ़ोन कैमरे से स्कैन करें।
 inst.title = IDM-Linux यूनिवर्सल सेटअप और अपडेट विज़ार्ड
-inst.sys_summary = सिस्टम: {distro} ({pm})  •  Wine: {wine}  •  मीडिया व टोरेंट: yt-dlp={ytdlp} / ffmpeg={ffmpeg} / aria2c={aria2}
+inst.sys_summary = सिस्टम: {distro} ({pm})  •  Wine: {wine}  •  मीडिया व टोरेंट: yt-dlp={ytdlp} / ffmpeg={ffmpeg} / aria2c={aria2} / JS={js}
 inst.auto_install = स्वतः इंस्टॉल
 inst.will_download = डाउनलोड होगा
 inst.will_install = इंस्टॉल होगा

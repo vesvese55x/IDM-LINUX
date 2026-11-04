@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Callable, Dict, List, Optional, Tuple
 
 from .config import get_data_dir
+from .media_dependencies import find_js_runtime, runtime_is_configured, ensure_media_dependencies, working_ffmpeg
 
 
 @dataclass
@@ -26,6 +27,9 @@ class SystemInfo:
     ytdlp_path: Optional[str]
     tkinter_available: bool
     aria2_installed: bool = False
+    js_runtime: str = ""
+    js_runtime_path: Optional[str] = None
+    js_runtime_configured: bool = False
 
 
 def read_os_release() -> Dict[str, str]:
@@ -172,6 +176,7 @@ def detect_system(quick: bool = False) -> SystemInfo:
     os_rel = read_os_release()
     pkg = detect_pkg_manager(os_rel)
     wine_ok, wine_ver = check_wine(quick=quick)
+    js = find_js_runtime()
     return SystemInfo(
         distro_id=os_rel.get("ID", "linux"),
         distro_name=os_rel.get("PRETTY_NAME", os_rel.get("NAME", "Linux")),
@@ -180,10 +185,13 @@ def detect_system(quick: bool = False) -> SystemInfo:
         display_server=detect_display_server(),
         wine_installed=wine_ok,
         wine_version=wine_ver,
-        ffmpeg_installed=shutil.which("ffmpeg") is not None,
+        ffmpeg_installed=working_ffmpeg() is not None,
         ytdlp_path=find_ytdlp(),
         tkinter_available=check_tkinter(),
         aria2_installed=shutil.which("aria2c") is not None,
+        js_runtime=js.label if js else "",
+        js_runtime_path=js.path if js else None,
+        js_runtime_configured=runtime_is_configured(js),
     )
 
 
@@ -262,6 +270,7 @@ def install_system_dependencies(
     info = sys_info or detect_system()
     pm = info.pkg_manager
 
+    apt_index_ready = False
     need_wine = not info.wine_installed
     need_tk = not info.tkinter_available
     need_ffmpeg = install_optional_media and not info.ffmpeg_installed
@@ -276,7 +285,7 @@ def install_system_dependencies(
         if pm == "apt":
             if need_wine:
                 _run_priv(["dpkg", "--add-architecture", "i386"], log_fn=log_fn, prefer_gui_auth=prefer_gui_auth)
-            _run_priv(["apt-get", "update"], log_fn=log_fn, prefer_gui_auth=prefer_gui_auth)
+            apt_index_ready = _run_priv(["apt-get", "update"], log_fn=log_fn, prefer_gui_auth=prefer_gui_auth) == 0
             pkgs: List[str] = []
             if need_wine:
                 pkgs.extend(["wine", "wine32", "wine64"])
@@ -417,8 +426,9 @@ def install_system_dependencies(
                 "paketlerinin kurulu olduğundan emin olun."
             )
 
-    if install_optional_media and not find_ytdlp():
-        install_standalone_ytdlp(log_fn=log_fn)
+    if install_optional_media:
+        ensure_media_dependencies(allow_install=True, prefer_gui_auth=prefer_gui_auth,
+                                  log_fn=log_fn, refresh_apt_index=not apt_index_ready)
 
     return detect_system()
 

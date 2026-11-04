@@ -28,7 +28,7 @@ common.zoom_qr = Ampliar QR Code
 common.qr_modal_title = Código QR — {title}
 common.qr_scan_hint = Aponte a câmera do celular para abrir diretamente.
 inst.title = Assistente Universal de Instalação & Atualização IDM-Linux
-inst.sys_summary = Sistema: {distro} ({pm})  •  Wine: {wine}  •  Mídia & Torrent: yt-dlp={ytdlp} / ffmpeg={ffmpeg} / aria2c={aria2}
+inst.sys_summary = Sistema: {distro} ({pm})  •  Wine: {wine}  •  Mídia & Torrent: yt-dlp={ytdlp} / ffmpeg={ffmpeg} / aria2c={aria2} / JS={js}
 inst.auto_install = Instalação Automática
 inst.will_download = Será baixado
 inst.will_install = Será instalado

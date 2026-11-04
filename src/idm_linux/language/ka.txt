@@ -28,7 +28,7 @@ common.zoom_qr = QR კოდის გადიდება
 common.qr_modal_title = QR კოდი — {title}
 common.qr_scan_hint = პირდაპირ გასახსნელად დაასკანერეთ ტელეფონის კამერით.
 inst.title = IDM-Linux უნივერსალური დაყენებისა და განახლების ოსტატი
-inst.sys_summary = სისტემა: {distro} ({pm})  •  Wine: {wine}  •  მედია და Torrent: yt-dlp={ytdlp} / ffmpeg={ffmpeg} / aria2c={aria2}
+inst.sys_summary = სისტემა: {distro} ({pm})  •  Wine: {wine}  •  მედია და Torrent: yt-dlp={ytdlp} / ffmpeg={ffmpeg} / aria2c={aria2} / JS={js}
 inst.auto_install = ავტო-დაყენება
 inst.will_download = ჩამოიტვირთება
 inst.will_install = დაყენდება

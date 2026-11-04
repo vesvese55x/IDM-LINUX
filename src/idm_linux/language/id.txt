@@ -28,7 +28,7 @@ common.zoom_qr = Perbesar Kode QR
 common.qr_modal_title = Kode QR — {title}
 common.qr_scan_hint = Pindai dengan kamera ponsel Anda untuk membuka langsung.
 inst.title = Panduan Instalasi & Pembaruan Universal IDM-Linux
-inst.sys_summary = Sistem: {distro} ({pm})  •  Wine: {wine}  •  Media & Torrent: yt-dlp={ytdlp} / ffmpeg={ffmpeg} / aria2c={aria2}
+inst.sys_summary = Sistem: {distro} ({pm})  •  Wine: {wine}  •  Media & Torrent: yt-dlp={ytdlp} / ffmpeg={ffmpeg} / aria2c={aria2} / JS={js}
 inst.auto_install = Instal Otomatis
 inst.will_download = Akan Diunduh
 inst.will_install = Akan Diinstal

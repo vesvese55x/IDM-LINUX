@@ -28,7 +28,7 @@ common.zoom_qr = Μεγέθυνση QR
 common.qr_modal_title = Κωδικός QR — {title}
 common.qr_scan_hint = Σαρώστε με την κάμερα του κινητού σας για άμεσο άνοιγμα.
 inst.title = Καθολικός Οδηγός Εγκατάστασης & Ενημέρωσης IDM-Linux
-inst.sys_summary = Σύστημα: {distro} ({pm})  •  Wine: {wine}  •  Πολυμέσα & Torrent: yt-dlp={ytdlp} / ffmpeg={ffmpeg} / aria2c={aria2}
+inst.sys_summary = Σύστημα: {distro} ({pm})  •  Wine: {wine}  •  Πολυμέσα & Torrent: yt-dlp={ytdlp} / ffmpeg={ffmpeg} / aria2c={aria2} / JS={js}
 inst.auto_install = Αυτόματη εγκατάσταση
 inst.will_download = Θα ληφθεί
 inst.will_install = Θα εγκατασταθεί
