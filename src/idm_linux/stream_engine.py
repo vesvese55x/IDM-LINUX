@@ -4508,6 +4508,9 @@ class StreamEngine:
             classify_manifest_live((it.get("manifestText") or "")).get("live", False)
             for it in captured_streams[:24]
         )
+        # Known extractors already resolve complete media URLs. Speculative segment
+        # scanning can issue hundreds of HEADs and prevent the extractor from starting.
+        prefer_extractor = bool(use_ytdlp and _is_known_ytdlp_site(page_url) and find_ytdlp())
         series_options: List[VideoFormatOption] = []
         first_audio_key = next(iter(audio_groups), "")
         for gi, (key, members) in enumerate(series_groups.items()):
@@ -4516,7 +4519,7 @@ class StreamEngine:
                 u = (m.get("url") or "").strip()
                 if u and u not in urls_seen:
                     urls_seen.append(u)
-            if not page_live:
+            if not page_live and not prefer_extractor:
                 full_list = extrapolate_segment_list(urls_seen, {"Referer": referer or page_url, "User-Agent": user_agent or "IDM-Linux/2.8"})
                 if len(full_list) > len(urls_seen):
                     urls_seen = full_list
@@ -4532,14 +4535,14 @@ class StreamEngine:
                     if ".mpd" in u2 or "<MPD" in mt2:
                         manifest_hit = u2
                         break
-            if not manifest_hit and not page_live:
+            if not manifest_hit and not page_live and not prefer_extractor:
                 manifest_hit = probe_dash_manifest(  # v2.9.1: kısa zaman aşımı
                 urls_seen[0] if urls_seen else (members[0].get("url") or ""),
                 {"Referer": referer or page_url, "User-Agent": user_agent or "IDM-Linux/2.8"},
                 timeout=1.5,
             )
             mpd_text_full = ""
-            if manifest_hit and not page_live:
+            if manifest_hit and not page_live and not prefer_extractor:
                 mpd_text_full = fetch_mpd_full(
                     manifest_hit, {"Referer": referer or page_url, "User-Agent": user_agent or "IDM-Linux/2.9"}
                 )

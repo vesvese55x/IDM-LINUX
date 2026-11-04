@@ -47,6 +47,11 @@ class SubtitleCachedRefreshTests(unittest.TestCase):
     def test_unknown_is_not_marked_ready(self):
         self.initial();self.cache.state=('unknown',0,'');again=self.engine.probe_formats(self.page,[])
         self.assertEqual(next(f for f in again['formats'] if f['delivery']=='subs')['subtitle_state'],'unavailable')
+    def test_known_extractor_is_not_blocked_by_segment_enumeration(self):
+        streams=[{'url':f'https://cdn.test/clip/seg-{n}.m4s','mime':'video/mp4'} for n in range(1,4)]
+        with patch('idm_linux.stream_engine.find_ytdlp',return_value='/test/yt-dlp'),patch('idm_linux.stream_engine._run_ytdlp_probe',return_value=(self.info,'',False)) as extractor,patch('idm_linux.stream_engine.extrapolate_segment_list',side_effect=AssertionError('No speculative HEAD storm')),patch('idm_linux.stream_engine.probe_dash_manifest',side_effect=AssertionError('No speculative MPD storm')):
+            result=self.engine.probe_formats(self.page,streams,force_refresh=True)
+        extractor.assert_called_once();self.assertTrue(any(f['delivery']=='subs' for f in result['formats']))
     def test_real_background_path_finishes_and_does_not_restart_extractor(self):
         class ImmediateThread:
             def __init__(self,target,**kwargs):self.target=target
