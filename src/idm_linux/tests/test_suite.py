@@ -2373,9 +2373,11 @@ class TestIdmLinuxSuite(unittest.TestCase):
                     tk_mpd_live = eng.create_ticket(source_url="http://x/c.mpd", filename="dashcanli.mp4", mode="hls_native", hls_mode="dvr")
                     self.assertEqual(tk_mpd_live.backend, "streamlink")
                     tk_vod = eng.create_ticket(source_url="http://x/d.m3u8", filename="vod.mp4", mode="hls_native", is_hls=True, hls_mode="vod")
-                    # v2.8.4: HLS(m3u8) her modda streamlink (ses bozulmaz TS passthrough); progressive mp4 native kalır
-                    self.assertEqual(tk_vod.backend, "streamlink")
-                    self.assertTrue(tk_vod.filename.endswith(".ts"))
+                    # VOD with ffmpeg uses the native HLS sanitizer first and
+                    # delivers real MP4; live/DVR above still require streamlink.
+                    ffmpeg_ready = bool(orig_which("ffmpeg"))
+                    self.assertEqual(tk_vod.backend, "native" if ffmpeg_ready else "streamlink")
+                    self.assertTrue(tk_vod.filename.endswith(".mp4" if ffmpeg_ready else ".ts"))
                     tk_prog = eng.create_ticket(source_url="http://x/e.mp4", filename="prog.mp4", mode="ytdlp")
                     self.assertEqual(tk_prog.backend, "native")
                     for t_ in (tk_dvr, tk_live, tk_mpd, tk_mpd_live, tk_vod, tk_prog):

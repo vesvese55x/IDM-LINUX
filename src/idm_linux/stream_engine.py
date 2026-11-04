@@ -3973,7 +3973,13 @@ class StreamEngine:
         elif is_mpd and hls_mode == "vod":
             backend = "ytdlp" if find_ytdlp() else ("streamlink" if shutil.which("streamlink") else "native")
         elif is_hls_src or hls_mode in ("dvr", "live"):
-            backend = "streamlink" if shutil.which("streamlink") else "native"
+            # VOD HLS with ffmpeg must use the sanitizer/muxer first. Otherwise
+            # streamlink -> yt-dlp may copy disguised PNG/TS bytes into a video
+            # result. Keep live/DVR and missing-ffmpeg TS passthrough unchanged.
+            if hls_mode == "vod" and not is_mpd and shutil.which("ffmpeg"):
+                backend = "native"
+            else:
+                backend = "streamlink" if shutil.which("streamlink") else "native"
         else:
             backend = "native"
         if abyss_slug:
