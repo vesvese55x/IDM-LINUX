@@ -109,4 +109,14 @@ async function backgroundTests(){
   h.toggle(true);await flush();h.fire({id:4,url:'https://arena.ai/api/new.zip',mime:'application/zip'});await flush();assert(!h.paused.includes(4));assert(!h.cancelled.includes(4));
   console.log('PASS background passive listeners, pause-before-ACK, accepted purge and original-item resume');
 }
-(async()=>{await pageTests();await backgroundTests();console.log('BROWSER_CAPTURE_HARNESS_PASS');})().catch(e=>{console.error(e);process.exitCode=1;});
+async function probeRecoveryTest(){
+  const h=backgroundHarness();await flush();h.toggle(false);await flush();
+  vm.runInContext('globalThis.probeCalls=0;wakeDaemon=async()=>true;callBridge=async()=>++globalThis.probeCalls===1?{ok:false}:{ok:true,title:"Recovered",formats:[]};',h.context);
+  let result;
+  for(const fn of h.events.message.listeners)fn({type:'IDM_PROBE_VIDEO',pageUrl:'https://www.youtube.com/watch?v=fixture'}, {tab:{id:41,url:'https://www.youtube.com/watch?v=fixture',title:'fixture'},frameId:0}, r=>{result=r;});
+  await until(()=>result!==undefined);
+  assert.equal(result.ok,true);assert.equal(result.title,'Recovered');
+  assert.equal(vm.runInContext('globalThis.probeCalls',h.context),2);
+  console.log('PASS video probe recovers after bridge wake without assigning to const');
+}
+(async()=>{await pageTests();await backgroundTests();await probeRecoveryTest();console.log('BROWSER_CAPTURE_HARNESS_PASS');})().catch(e=>{console.error(e);process.exitCode=1;});

@@ -1214,7 +1214,7 @@ extApi.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
       const cookies = await getMergedCookies(cookieUrls);
 
-      const res = await callBridge(
+      let res = await callBridge(
         "/api/video/probe",
         "POST",
         {
