@@ -13,12 +13,13 @@ import time
 import urllib.parse
 import urllib.request
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 from .config import IdmLinuxConfig, get_cache_dir, setup_logger
 from .distro import find_ytdlp
+from .browser_transport import BrowserTransportError
 from .hls_streamer import (
     build_stream_headers,
     fetch_url_bytes,
@@ -222,6 +223,7 @@ class StreamTicket:
     abyss_slug: str = ""             # v2.9.4
     abyss_label: str = ""            # v2.9.4
     sub_lang: str = ""               # v2.9.4
+    browser_transport: Any = field(default=None, repr=False, compare=False)
     created_at: float = field(default_factory=time.time)
 
 
@@ -241,6 +243,9 @@ class ActiveStreamJob:
         # v2.8.7 BÜTÜNLÜK KORUMASI: job tamamlanıyor sanılırken dosya HTML hata sayfasıysa
         # (gofile vb. token/auth eksik) başarı YERİNE hata işaretle — bozuk dosya asla "indi" olmaz.
         if val and not getattr(self, "_completed", False):
+            transport = getattr(self.ticket, "browser_transport", None)
+            if transport is not None:
+                transport.assert_healthy()
             try:
                 from .auth_proxy import looks_like_html_payload
 
@@ -457,6 +462,33 @@ class ActiveStreamJob:
         ffmpeg_bin = shutil.which("ffmpeg")
 
         try:
+            if t.browser_transport is not None:
+                # Strictly separate branch: no engine/extractor fallback can open
+                # the original URL outside the selected browser.
+                transport = t.browser_transport
+                transport.stop_event = self.stop_event
+                try:
+                    if t.mode == "hls_native":
+                        if not ffmpeg_bin:
+                            raise RuntimeError("Tarayıcı HLS aktarımı için FFmpeg gerekli.")
+                        if not self._run_native_parallel_hls(t.source_url, hls_mode=t.hls_mode):
+                            raise RuntimeError("Tarayıcı HLS aktarımı tamamlanamadı.")
+                    elif t.mux_video_url and t.mux_audio_url:
+                        if not ffmpeg_bin:
+                            raise RuntimeError("Tarayıcı ses/video birleştirmesi için FFmpeg gerekli.")
+                        self.ticket = replace(t, mux_video_url=transport.source_url(t.mux_video_url), mux_audio_url=transport.source_url(t.mux_audio_url), mux_video_headers={}, mux_audio_headers={})
+                        if not self._run_prebuilt_urls_ffmpeg_mux(ffmpeg_bin):
+                            raise RuntimeError("Tarayıcı ses/video aktarımı eksik kaldı.")
+                    elif t.mode == "browser_file":
+                        self.ticket = replace(t, source_url=transport.source_url(t.source_url), cookies_header="", referer="", origin="")
+                        if not self._run_single_url_relay():
+                            raise RuntimeError("Tarayıcı dosya aktarımı tamamlanamadı.")
+                    else:
+                        raise RuntimeError("Bu kaynak tarayıcı aktarımında desteklenmiyor; doğrudan ağa geçilmedi.")
+                finally:
+                    self.ticket = t
+                    transport.close()
+                return
             # v3.2.2 ALTYAZI MOTORU: HLS segmentli / tek dosyalık altyazılar sıralı
             # indirilir, birleştirilir ve SRT'ye çevrilir -> IDM baytları NATİVE akar.
             if t.mode == "subs":
@@ -713,6 +745,8 @@ class ActiveStreamJob:
                             fh.flush()
                             got += len(blk)
             except urllib.error.HTTPError as exc:
+                if t.browser_transport is not None:
+                    raise BrowserTransportError("Tarayıcı dosya aktarımı kesildi; normal ağ denenmedi.") from exc
                 logger.info("Relay HTTP %s (%s bayt, deneme %s): %s", exc.code, got, attempt, t.source_url[:70])
                 # v3.1.0+v3.2.0: token süresi dolmuş olabilir -> kaynak URL'yi TAZELE (2 hakkı var)
                 if (
@@ -724,6 +758,8 @@ class ActiveStreamJob:
                     refreshed_count += 1
                     continue
             except Exception as exc:
+                if t.browser_transport is not None:
+                    raise BrowserTransportError("Tarayıcı dosya aktarımı kesildi; normal ağ denenmedi.") from exc
                 logger.info("Relay bağlantısı koptu (%s bayt): %s", got, exc)
                 # v3.2.0: tekrarlayan taşima hatalarında da kaynağı tazele (statik CDN oturumu ölür)
                 if (
@@ -897,6 +933,8 @@ class ActiveStreamJob:
         2) yt-dlp'yi referer sayfasına çalıştırıp progressif doğrudan URL çıkarır.
         Bulunursa ticket.source_url GÜNCELLENİR ve Range devamı yeni URL'ye taşınır."""
         t = self.ticket
+        if t.browser_transport is not None:
+            raise BrowserTransportError("Tarayıcı modunda dış ağ/kaynak çözücü yedeği yasak.")
         mgr = getattr(self, "manager", None)
         if mgr is not None:
             try:
@@ -1078,6 +1116,7 @@ class ActiveStreamJob:
                         resume_after=(-1 if cycle == 0 else seq_tracker.get("last", -1)),
                         seq_tracker=seq_tracker,
                         emit_init=(cycle == 0),
+                        browser_transport=t.browser_transport,
                     ):
                         if self.stop_event.is_set():
                             break
@@ -1091,6 +1130,8 @@ class ActiveStreamJob:
                 cycle_complete = not self.stop_event.is_set()
             except Exception as exc:
                 last_error = exc
+                if t.browser_transport is not None:
+                    raise
                 logger.warning("Native 16x HLS akış hatası (tur %s, %s): %s", cycle + 1, cur_target[:80], exc)
             if cycle_complete and written_cycle > 1024:
                 break
@@ -1102,6 +1143,9 @@ class ActiveStreamJob:
                         end_hdrs = build_stream_headers(
                             override_referer or t.referer, t.origin, t.cookies_header, override_ua or t.user_agent
                         )
+                        if t.browser_transport is not None:
+                            from .browser_transport import BrowserHeaders
+                            end_hdrs = BrowserHeaders(end_hdrs, t.browser_transport)
                         head_txt = fetch_url_bytes(cur_target, end_hdrs, timeout=10.0, retries=1).decode(
                             "utf-8", errors="ignore"
                         )
@@ -1110,7 +1154,7 @@ class ActiveStreamJob:
                             break
                     except Exception:
                         pass
-                    if t.source_url and self._refresh_source_url():
+                    if t.browser_transport is None and t.source_url and self._refresh_source_url():
                         cur_target = t.source_url
                     cur_manifest = ""
                     append_mode = "ab"
@@ -1184,6 +1228,11 @@ class ActiveStreamJob:
                 lines.append(f"Referer: {t.referer}\r\n")
             if lines:
                 ff_cmd.extend(["-headers", "".join(lines)])
+            if t.browser_transport is not None:
+                if not u.startswith(t.browser_transport.local_base.rstrip("/") + "/browser-source/"):
+                    raise BrowserTransportError("FFmpeg yalnız yerel tarayıcı kaynağını okuyabilir.")
+                # No playlist/concat demuxers: untrusted input cannot introduce upstream URLs.
+                ff_cmd.extend(["-protocol_whitelist", "http,tcp", "-format_whitelist", "mov,matroska,mpegts,aac,mp3,flac,ogg,wav"])
             ff_cmd.extend(["-i", u])
 
         _append_input(t.mux_video_url, t.mux_video_headers)
@@ -4037,6 +4086,7 @@ class StreamEngine:
         abyss_slug: str = "",
         abyss_label: str = "",
         sub_lang: str = "",
+        browser_transport=None,
     ) -> StreamTicket:
         self.cleanup_expired_tickets()
         tid = uuid.uuid4().hex[:16]
@@ -4050,7 +4100,9 @@ class StreamEngine:
         is_hls_src = is_hls or looks_like_hls_url(source_url) or is_mpd
         seg_urls = [u for u in (segment_urls or []) if u]
         seg_audio = [u for u in (audio_segment_urls or []) if u]
-        if seg_urls:
+        if browser_transport is not None:
+            backend = "browser"
+        elif seg_urls:
             backend = "segments"
         elif is_mpd and hls_mode == "vod":
             backend = "ytdlp" if find_ytdlp() else ("streamlink" if shutil.which("streamlink") else "native")
@@ -4073,6 +4125,7 @@ class StreamEngine:
             source_url=source_url,
             filename=clean_fn,
             mode=mode,
+            browser_transport=browser_transport,
             format_selector=format_selector,
             cookies_header=cookies_header,
             referer=referer,
@@ -4141,6 +4194,7 @@ class StreamEngine:
                     "filename": tk.filename,
                     "source_url": tk.source_url[:120],
                     "mode": tk.mode,
+                    "transport": "browser" if tk.browser_transport is not None else "direct",
                     "hls_mode": tk.hls_mode,
                     "backend": tk.backend,
                     "expected_total": int(tk.estimated_size or 0),

@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 from dataclasses import replace
 from .blob_transfer import BlobTransferStore
+from .browser_transport import BrowserFetchBroker, BrowserTransportError, serve_browser_source, public_http_url
 from .mediafire_resolver import is_mediafire_url, resolve_mediafire
 import concurrent.futures
 import tempfile
@@ -219,6 +220,7 @@ class DaemonState:
         self.sender = WineIdmSender(self.cfg)
         self.blob_transfers = BlobTransferStore(get_cache_dir() / "blob-uploads")
         self.stream_engine = StreamEngine(self.cfg)
+        self.browser_fetch = BrowserFetchBroker()
         self.auth_vault = AuthContextVault()
         self.diag: Deque[str] = deque(maxlen=400)  # v2.9.1 uzak-log halkası
         self.ext_disabled = False  # v2.9.3: eklenti pasifse IDM HİÇ devreye girmez
@@ -1266,6 +1268,10 @@ def make_http_handler(state: DaemonState):
 
         def do_HEAD(self) -> None:
             parsed = urllib.parse.urlparse(self.path)
+            if parsed.path.startswith("/browser-source/"):
+                serve_browser_source(self, state.browser_fetch, parsed.path.rsplit("/", 1)[-1], head_only=True)
+                return
+
             if parsed.path.startswith("/stream/"):
                 self._handle_stream(head_only=True)
                 return
@@ -1377,6 +1383,10 @@ def make_http_handler(state: DaemonState):
 
         def do_GET(self) -> None:
             parsed = urllib.parse.urlparse(self.path)
+            if parsed.path.startswith("/browser-source/"):
+                serve_browser_source(self, state.browser_fetch, parsed.path.rsplit("/", 1)[-1], head_only=False)
+                return
+
             if parsed.path.startswith("/stream/"):
                 self._handle_stream(head_only=False)
                 return
@@ -1670,6 +1680,40 @@ def make_http_handler(state: DaemonState):
 
         def _do_post_inner(self) -> None:
             parsed = urllib.parse.urlparse(self.path)
+
+            if parsed.path.startswith("/api/browser-transport/"):
+                origin = (self.headers.get("Origin") or "").strip()
+                if not origin.startswith(("chrome-extension://", "moz-extension://")):
+                    self._send_json({"ok": False, "error": "Extension origin required"}, status=403)
+                    return
+                length = int(self.headers.get("Content-Length") or "0")
+                if not 0 < length <= 700000:
+                    self._send_json({"ok": False}, status=413)
+                    return
+                data = self._read_json()
+                action = parsed.path.rsplit("/", 1)[-1]
+                token = data.get("client", "")
+                try:
+                    broker = state.browser_fetch
+                    if state.ext_disabled or not state.cfg.capture_downloads:
+                        if token:
+                            broker.revoke(token)
+                        raise BrowserTransportError("Eklenti yakalaması kapalı.")
+                    if action == "register":
+                        result = {"client": broker.register(origin, data.get("routeHash", ""))}
+                    elif action == "poll":
+                        result = broker.poll(token, origin, data.get("routeHash", ""))
+                    elif action == "revoke":
+                        broker.transport(token, origin)
+                        broker.revoke(token)
+                        result = {}
+                    else:
+                        broker.submit(token, origin, data.get("id", ""), action, data)
+                        result = {}
+                    self._send_json({"ok": True, **result})
+                except (BrowserTransportError, ValueError, TypeError) as exc:
+                    self._send_json({"ok": False, "error": str(exc)}, status=409)
+                return
 
             if parsed.path.startswith("/api/blob-transfer/"):
                 length = int(self.headers.get("Content-Length") or "0")
@@ -2547,6 +2591,9 @@ def make_http_handler(state: DaemonState):
 
                 # v3.2.2 FİLM SİTELERİ ALTYAZILARI: 'subs' teslimi — HLS segmentli/tek dosyalık
                 # altyazı motorda birleştirilir + SRT'ye çevrilir; IDM NATİVE indirir.
+                if delivery == "subs" and payload.get("networkTransport") == "browser":
+                    self._send_json({"ok": False, "error": "Tarayıcı modunda altyazı aktarımı henüz desteklenmiyor; normal ağa geçilmedi."}, status=400)
+                    return
                 if delivery == "subs" and direct_url:
                     try:
                         # v3.10.0: altyazı HANGİ biçimdeyse O uzantıyla iner (kullanıcı:
@@ -2586,6 +2633,48 @@ def make_http_handler(state: DaemonState):
                         return
                     except Exception as subs_exc:
                         logger.warning("Altyazı biletı açılamadı: %s", subs_exc)
+
+                if payload.get("networkTransport") == "browser":
+                    try:
+                        if delivery in ("subs", "yt_subs", "drm_blocked") or payload.get("abyssSlug") or payload.get("segmentUrls") or payload.get("manifestUrl"):
+                            raise BrowserTransportError("Bu kaynak tarayıcı aktarımında henüz desteklenmiyor; doğrudan ağa geçilmedi.")
+                        if sum(1 for job in state.stream_engine._jobs.values() if job.ticket.browser_transport is not None and not job.completed and not job.failed) >= 2:
+                            raise BrowserTransportError("Aynı anda en fazla iki tarayıcı indirmesi destekleniyor.")
+                        transport = state.browser_fetch.transport(payload.get("browserClient", ""), (self.headers.get("Origin") or "").strip())
+                        transport.local_base = f"http://127.0.0.1:{state.cfg.http_port}"
+                        source = payload.get("sourceUrl") or payload.get("directUrl") or ""
+                        mux_v = payload.get("muxVideoUrl") or ""
+                        mux_a = payload.get("muxAudioUrl") or ""
+                        if delivery == "direct":
+                            source = payload.get("directUrl") or source
+                        hls = bool(payload.get("isHls")) or looks_like_hls_url(source)
+                        if mux_v or mux_a:
+                            if not (mux_v and mux_a):
+                                raise BrowserTransportError("Ayrık görüntü ve ses adresleri birlikte gerekli.")
+                            public_http_url(mux_v); public_http_url(mux_a)
+                            mode = "browser_mux"
+                        elif hls:
+                            mode = "hls_native"
+                        elif delivery == "direct":
+                            mode = "browser_file"
+                        else:
+                            raise BrowserTransportError("Tarayıcı modunda çözülmüş HLS/MP4 veya ses+görüntü adresi gerekli.")
+                        public_http_url(source)
+                        hls_mode = payload.get("hlsMode") or "vod"
+                        if hls_mode not in ("vod", "dvr", "live"):
+                            raise BrowserTransportError("Geçersiz yayın modu.")
+                        ticket = state.stream_engine.create_ticket(source_url=source, filename=filename, mode=mode,
+                            is_hls=hls, hls_mode=hls_mode, browser_transport=transport,
+                            mux_video_url=mux_v, mux_audio_url=mux_a,
+                            final_dir=_categorized_final_dir(filename, Path(state.cfg.download_dir)))
+                        relay_url = f"http://127.0.0.1:{state.cfg.http_port}/stream/{ticket.ticket_id}/{urllib.parse.quote(ticket.filename)}"
+                        ok, message = state.sender.send_download(DownloadRequest(url=relay_url, filename=ticket.filename, source="browser-transport"))
+                        if not ok:
+                            transport.close()
+                        self._send_json({"ok": ok, "message": message, "filename": ticket.filename, "transport": "browser"})
+                    except (BrowserTransportError, ValueError) as exc:
+                        self._send_json({"ok": False, "error": str(exc)}, status=409)
+                    return
 
                 # 1) Doğrudan gerçek CDN / MP4 / WebM / M4A linki mevcutsa -> v3.2.0: KOPMA-DİRİLTME
                 #    RELAY biletı üzerinden IDM'ye AKITILIR. Baytlar yine IDM'den NATİVE geçer

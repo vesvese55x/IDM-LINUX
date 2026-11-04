@@ -94,11 +94,12 @@ function backgroundHarness(){
   const response=data=>({ok:true,status:200,json:async()=>data});
   const api={storage:{local:{get(keys,cb){const data={...values};if(cb){queueMicrotask(()=>cb(data));return;}return Promise.resolve(data);},set(data,cb){Object.assign(values,data);queueMicrotask(()=>{for(const fn of ev('storage').listeners)fn(Object.fromEntries(Object.entries(data).map(([k,v])=>[k,{newValue:v}])),'local');if(cb)cb();});}},onChanged:ev('storage')},
     runtime:{lastError:null,onMessage:ev('message'),onInstalled:ev('installed'),getManifest(){return{version:'1.0.0'};},sendNativeMessage(host,data,cb){cb({ok:false});}},
-    webRequest:{onBeforeSendHeaders:ev('headers'),onHeadersReceived:ev('response'),onCompleted:ev('completed')},webNavigation:{onCompleted:ev('navigation'),onHistoryStateUpdated:ev('history')},
+    webRequest:{onBeforeSendHeaders:ev('headers'),onHeadersReceived:ev('response'),onCompleted:ev('completed')},webNavigation:{onCompleted:ev('navigation'),onHistoryStateUpdated:ev('history'),onCommitted:ev('committed'),getAllFrames(q,cb){cb([]);}},
     tabs:{onRemoved:ev('tabRemoved'),onUpdated:ev('tabUpdated'),sendMessage(id,data,cb){if(cb)cb({ok:true});},query(q,cb){cb([]);}},
     cookies:{getAll(q,cb){cb([]);}},contextMenus:{onClicked:ev('menu'),removeAll(cb){cb();},create(){},update(){}},notifications:{create(){}},
     downloads:{onCreated:ev('created'),onDeterminingFilename:ev('filename'),pause(id,cb){paused.push(id);if(cb)cb();},cancel(id,cb){cancelled.push(id);if(cb)cb();},erase(q,cb){if(cb)cb();},removeFile(id,cb){if(cb)cb();},resume(id,cb){resumed.push(id);if(cb)cb();},download(q,cb){replayed.push(q);if(cb)cb();},search(q,cb){cb([]);}}};
   const context=vm.createContext({chrome:api,console,URL,Promise,AbortController,navigator:{userAgent:'test'},fetch:async(url)=>{if(String(url).includes('/api/download')){if(mode==='hold')return await new Promise(r=>release=()=>r(response({ok:true,takeover:true})));return response({ok:false});}return response(state);},setInterval(){return 1;},clearInterval(){},setTimeout(fn,ms){const t=setTimeout(fn,ms);t.unref();return t;},clearTimeout});
+  context.importScripts = (name) => vm.runInContext(fs.readFileSync(path.join(root,name),'utf8'),context);
   vm.runInContext(fs.readFileSync(path.join(root,'background.js'),'utf8'),context);
   return {api,context,events,cancelled,paused,resumed,replayed,state,setMode(v){mode=v;},release(){release();},toggle(disabled){api.storage.local.set({extDisabled:disabled});},fire(item){for(const fn of ev('created').listeners)fn(item);}};
 }

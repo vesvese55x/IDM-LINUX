@@ -1052,7 +1052,7 @@ try {
 // 4. Content Script & Popup Mesaj Yöneticisi
 // ---------------------------------------------------------------------------
 extApi.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (!msg || !msg.type) return false;
+  if (!msg || !msg.type || msg.type === "IDM_BROWSER_PIPE") return false;
   const tabId = sender && sender.tab ? sender.tab.id : msg.tabId;
   const topTabUrl = (sender && sender.tab && sender.tab.url) || "";
   const topTabTitle = (sender && sender.tab && sender.tab.title) || "";
@@ -1259,14 +1259,20 @@ extApi.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       return;
     }
 
-    if (msg.type === "IDM_DOWNLOAD_VIDEO") {
+    if (msg.type === "IDM_DOWNLOAD_VIDEO" || msg.type === "IDM_DOWNLOAD_VIDEO_BROWSER") {
+      const browserMode = msg.type === "IDM_DOWNLOAD_VIDEO_BROWSER" || msg.networkTransport === "browser";
+      let browserClient = "";
+      if (browserMode) {
+        try { browserClient = await IdmBrowserTransport.prepare(tabId, sender.frameId, msg.streamReferer || msg.pageUrl, msg.routePin !== false); }
+        catch (error) { sendResponse({ ok: false, error: error.message }); return; }
+      }
       const frameUrl = msg.pageUrl || "";
       const rawTitle = (msg.title || "").trim();
       const bestTitle = (!rawTitle || rawTitle.toLowerCase() === "video") && topTabTitle
         ? topTabTitle
         : (rawTitle || "video");
 
-      const cookies = await getMergedCookies([
+      const cookies = browserMode ? "" : await getMergedCookies([
         msg.directUrl,
         msg.sourceUrl,
         msg.streamReferer,
@@ -1278,6 +1284,8 @@ extApi.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         "/api/video/download",
         "POST",
         {
+          networkTransport: browserMode ? "browser" : "direct",
+          browserClient,
           pageUrl: topTabUrl || frameUrl,
           title: bestTitle,
           ext: msg.ext || "mp4",
@@ -1309,8 +1317,9 @@ extApi.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           referer: msg.streamReferer || frameUrl || topTabUrl,
           userAgent: msg.streamUserAgent || navigator.userAgent
         },
-        "download_video"
+        browserMode ? null : "download_video"
       );
+      if (browserMode && (!res || !res.ok)) IdmBrowserTransport.close(browserClient).catch(() => {});
       sendResponse(res);
       return;
     }
@@ -1772,3 +1781,5 @@ try {
     return false;
   });
 } catch (e) {}
+
+if (typeof importScripts === "function") importScripts("browser_transport.js");

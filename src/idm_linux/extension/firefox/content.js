@@ -1285,6 +1285,14 @@
               <option value="vod">Statik liste (VOD)</option>
             </select>
           </div>
+          <div class="idm-mode-row" style="display:flex;flex-wrap:wrap;gap:5px;">
+            <span>Bağlantı:</span><select id="networkTransport" title="Tarayıcı modu kaynak sekmesi açıkken çalışır; normal bağlantıya otomatik dönmez.">
+              <option value="direct">Doğrudan</option><option value="browser">Tarayıcı bağlantısıyla — VPN/oturum</option>
+            </select>
+            <label id="routePinRow" style="display:none;font-size:10px;white-space:normal;">
+              <input type="checkbox" id="routePin" checked>Çıkış kontrolü (api.ipify.org). VPN kill-switch yerine geçmez.
+            </label>
+          </div>
           <div id="menuList"></div>
           <button class="idm-footer-btn" id="excludeSiteBtn">Bu sitede video barını devre dışı bırak</button>
         </div>
@@ -1301,12 +1309,19 @@
       closeBtn: shadow.getElementById("closeBtn"),
       menu: shadow.getElementById("menu"),
       menuList: shadow.getElementById("menuList"),
+      networkTransport: shadow.getElementById("networkTransport"),
+      routePin: shadow.getElementById("routePin"),
+      routePinRow: shadow.getElementById("routePinRow"),
       hlsMode: shadow.getElementById("hlsMode"),
       modeRow: shadow.getElementById("modeRow"),
       menuTitle: shadow.getElementById("menuTitle"),
       refreshBtn: shadow.getElementById("refreshBtn"),
       excludeSiteBtn: shadow.getElementById("excludeSiteBtn")
     };
+
+    uiRefs.networkTransport.addEventListener("change", () => {
+      uiRefs.routePinRow.style.display = uiRefs.networkTransport.value === "browser" ? "block" : "none";
+    });
 
     // v3.2.1 → v3.9.0: bar fareyle SERBEST taşınabilir — EŞİKLİ sürükleme.
     // KÖK NEDEN: pill'in tamamı bir <button> olduğu için eski kod 'closest(button)'
@@ -1714,7 +1729,10 @@
         closeDropdown();
 
         const dlRes = await sendMsg({
-          type: "IDM_DOWNLOAD_VIDEO",
+          // A legacy background must reject browser mode, never silently send a direct download.
+          type: uiRefs.networkTransport.value === "browser" ? "IDM_DOWNLOAD_VIDEO_BROWSER" : "IDM_DOWNLOAD_VIDEO",
+          networkTransport: uiRefs.networkTransport.value,
+          routePin: uiRefs.routePin.checked,
           pageUrl: location.href,
           title: fmt._title || document.title || "video",
           // v3.2.2: altyazı seçeneklerinde dosya adı 'Video [Altyazı Adı].srt' olsun
@@ -2235,3 +2253,98 @@ chrome.runtime.onMessage.addListener((msg, _s, sendResponse) => {
   }
   return false;
 });
+
+// Strict browser transport: only extension messages, bound to this exact frame.
+(() => {
+  const api = typeof browser !== "undefined" ? browser : chrome;
+  const controllers = new Map();
+  let routeCache = null;
+  let routePending = null;
+  async function routeHash() {
+    if (routeCache && Date.now() - routeCache.at < 2000) return routeCache.hash;
+    if (!routePending) routePending = (async () => {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 8000);
+      try {
+        const response = await fetch("https://api.ipify.org?format=json", { credentials: "omit", cache: "no-store", redirect: "error", signal: controller.signal });
+        if (!response.ok) throw new Error("Çıkış IP doğrulaması başarısız.");
+        const result = await response.json();
+        if (!/^[0-9a-fA-F:.]{3,60}$/.test(result.ip || "")) throw new Error("Geçersiz çıkış doğrulaması.");
+        const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(result.ip));
+        const hash = [...new Uint8Array(digest)].map((v) => v.toString(16).padStart(2, "0")).join("");
+        routeCache = { hash, at: Date.now() };
+        return hash;
+      } finally { clearTimeout(timer); }
+    })().finally(() => { routePending = null; });
+    return routePending;
+  }
+  function safeURL(value) {
+    const url = new URL(value);
+    const host = url.hostname.toLowerCase();
+    if (!["http:", "https:"].includes(url.protocol) || url.username || url.password ||
+        /^(localhost|127\.|0\.|10\.|192\.168\.|169\.254\.|\[|172\.(1[6-9]|2\d|3[01])\.)/.test(host) || /\.(local|localhost|internal)$/.test(host)) throw new Error("Yerel/özel kaynak reddedildi.");
+    return url.href;
+  }
+  function pipe(client, id, action, payload) {
+    return new Promise((resolve, reject) => {
+      api.runtime.sendMessage({ type: "IDM_BROWSER_PIPE", client, id, action, payload }, (response) => {
+        const error = api.runtime.lastError;
+        if (error || !response || !response.ok) reject(new Error("Yerel tarayıcı aktarımı kapandı."));
+        else resolve(response);
+      });
+    });
+  }
+  api.runtime.onMessage.addListener((msg, _sender, respond) => {
+    if (!msg || !["IDM_BROWSER_ROUTE", "IDM_BROWSER_FETCH", "IDM_BROWSER_ABORT"].includes(msg.type)) return false;
+    if (msg.type === "IDM_BROWSER_ABORT") {
+      const controller = controllers.get(msg.id); if (controller) controller.abort();
+      respond({ ok: true }); return false;
+    }
+    if (msg.type === "IDM_BROWSER_ROUTE") {
+      routeHash().then((hash) => respond({ ok: true, hash })).catch(() => respond({ ok: false, error: "Çıkış doğrulaması engellendi/erişilemiyor. IP kontrolü api.ipify.org kullanır." }));
+      return true;
+    }
+    (async () => {
+      const req = msg.request;
+      if (!req || !req.id || !msg.client || !Number.isInteger(req.limit) || req.limit < 1 || req.limit > 16 * 1024 * 1024) throw new Error("Geçersiz aktarım isteği.");
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 55000);
+      controllers.set(req.id, controller);
+      let reader = null;
+      try {
+        const url = safeURL(req.url);
+        const checkRoute = async () => { if (msg.routeHash && await routeHash() !== msg.routeHash) throw new Error("Tarayıcı çıkışı değişti."); };
+        let response;
+        for (const credentials of ["include", "omit"]) {
+          await checkRoute();
+          try { response = await fetch(url, { method: "GET", headers: req.headers || {}, credentials, redirect: "error", cache: "no-store", signal: controller.signal }); break; }
+          catch (error) { if (credentials === "omit" || controller.signal.aborted) throw error; }
+        }
+        if (!response || ![200, 206].includes(response.status) || !response.body) throw new Error("Medya HTTP isteği reddedildi.");
+        await pipe(msg.client, req.id, "meta", { status: response.status, contentRange: response.headers.get("Content-Range") || "", contentType: response.headers.get("Content-Type") || "" });
+        reader = response.body.getReader();
+        let offset = 0;
+        for (;;) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          if (offset + value.length > req.limit) throw new Error("Medya parçası boyut sınırını aştı.");
+          for (let at = 0; at < value.length; at += 393216) {
+            const part = value.subarray(at, at + 393216);
+            let binary = "";
+            for (let n = 0; n < part.length; n += 0x8000) binary += String.fromCharCode.apply(null, part.subarray(n, n + 0x8000));
+            await pipe(msg.client, req.id, "chunk", { offset, data: btoa(binary) });
+            offset += part.length;
+          }
+        }
+        await checkRoute();
+        await pipe(msg.client, req.id, "done", { ok: true });
+        return { ok: true };
+      } catch (error) {
+        if (reader) await reader.cancel().catch(() => {});
+        await pipe(msg.client, req.id, "done", { ok: false }).catch(() => {});
+        return { ok: false, error: "Tarayıcı/çıkış aktarımı kesildi. Doğrudan bağlantı denenmedi." };
+      } finally { controller.abort(); clearTimeout(timer); controllers.delete(req.id); }
+    })().then(respond).catch(() => respond({ ok: false, error: "Tarayıcı aktarımı başlatılamadı." }));
+    return true;
+  });
+})();

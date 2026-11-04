@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 from .config import setup_logger
+from .browser_transport import BrowserHeaders, BrowserTransportError
 
 logger = setup_logger("hls_streamer", "daemon.log")
 
@@ -65,6 +66,8 @@ def _decompress_http_body(data: bytes, content_encoding: str = "") -> bytes:
 
 
 def fetch_url_bytes(url: str, headers: Dict[str, str], timeout: float = 12.0, retries: int = 3) -> bytes:
+    if isinstance(headers, BrowserHeaders) and headers.transport is not None:
+        return headers.transport.fetch(url, headers, timeout=timeout)
     last_err: Optional[Exception] = None
     for _ in range(retries):
         try:
@@ -230,8 +233,11 @@ def looks_like_hls_url(url: str) -> bool:
 
 def probe_url_is_hls(url: str, headers: Dict[str, str]) -> Optional[str]:
     """URL uzantısı .txt veya belirsiz olduğunda ilk KB'ı kontrol edip #EXTM3U ise metni döndürür."""
+    if isinstance(headers, BrowserHeaders):
+        text = fetch_url_bytes(url, headers, timeout=6.0).decode("utf-8", errors="ignore")
+        return text if is_hls_playlist_text(text) else None
     try:
-        req_hdrs = dict(headers)
+        req_hdrs = headers.copy()
         req = urllib.request.Request(url, headers=req_hdrs)
         with urllib.request.urlopen(req, timeout=6.0) as resp:
             enc = resp.headers.get("Content-Encoding") or ""
@@ -468,7 +474,7 @@ def _iter_playlist_segments_parallel(
         if stop_event and stop_event.is_set():
             return b""
         seq_num, s_url, k_uri, k_iv, byte_rng = item
-        seg_hdrs = dict(headers)
+        seg_hdrs = headers.copy()
         if byte_rng is not None:
             seg_hdrs["Range"] = f"bytes={byte_rng[0]}-{byte_rng[1]}"
         data = fetch_url_bytes(s_url, seg_hdrs, timeout=15.0, retries=3)
@@ -485,7 +491,7 @@ def _iter_playlist_segments_parallel(
             raise RuntimeError("HLS segmenti boş veya medya yerine HTML hata sayfası döndü.")
         return data
 
-    window_size = max(concurrency * 2, 24)
+    window_size = max(concurrency * 2, 4 if isinstance(headers, BrowserHeaders) else 24)
     with concurrent.futures.ThreadPoolExecutor(max_workers=concurrency) as pool:
         futures: List[Tuple[int, concurrent.futures.Future[bytes]]] = []
         next_to_submit = 0
@@ -506,6 +512,8 @@ def _iter_playlist_segments_parallel(
                 try:
                     chunk = fut.result()
                     break
+                except BrowserTransportError:
+                    raise
                 except Exception as exc:
                     # v2.9.11: TEK ölü segment tüm kaydı öldüremez -> sırayı bozmadan yerinde 5 deneme
                     tries += 1
@@ -531,8 +539,14 @@ def iter_raw_hls_segments(
     user_agent: str = "",
     concurrency: int = 16,
     initial_manifest_text: str = "",
+    browser_transport=None,
 ) -> Iterator[bytes]:
     headers = build_stream_headers(referer=referer, origin=origin, cookies=cookies, user_agent=user_agent)
+    if browser_transport is not None:
+        headers = BrowserHeaders(headers, browser_transport)
+        concurrency = min(concurrency, 2)
+        # Only the bound browser frame may resolve the upstream manifests.
+        initial_manifest_text = ""
     v_url, v_body, _, _ = resolve_media_playlists(
         m3u8_url, headers, initial_manifest_text=initial_manifest_text
     )
@@ -550,7 +564,7 @@ def _needs_aac_adtstoasc(ffmpeg_bin: str, sample: bytes) -> bool:
         return False
     try:
         res = subprocess.run(
-            [ffmpeg_bin, "-hide_banner", "-i", "pipe:0"],
+            [ffmpeg_bin, "-hide_banner", "-protocol_whitelist", "pipe", "-format_whitelist", "mov,matroska,mpegts,aac,mp3,flac,ogg,wav", "-i", "pipe:0"],
             input=sample[:131072],
             capture_output=True,
             timeout=2.5,
@@ -574,6 +588,7 @@ def stream_hls_as_mp4(
     resume_after: int = -1,
     seq_tracker: Optional[Dict[str, int]] = None,
     emit_init: bool = True,
+    browser_transport=None,
 ) -> Iterator[bytes]:
     """
     16x paralel indirilen temiz HLS segmentlerini (varsa ayrık Türkçe ses akışıyla birlikte!)
@@ -583,6 +598,11 @@ def stream_hls_as_mp4(
     kez yazmaz (kopya kareler yok); emit_init=False -> ikinci turda init segmenti tekrarlanmaz.
     """
     headers = build_stream_headers(referer=referer, origin=origin, cookies=cookies, user_agent=user_agent)
+    if browser_transport is not None:
+        headers = BrowserHeaders(headers, browser_transport)
+        concurrency = min(concurrency, 2)
+        # Never trust a captured prefix or resolve via backend networking here.
+        initial_manifest_text = ""
     v_url, v_body, a_url, a_body = resolve_media_playlists(
         m3u8_url, headers, initial_manifest_text=initial_manifest_text
     )
@@ -616,7 +636,7 @@ def stream_hls_as_mp4(
     first_a = b""
     if a_url and a_body:
         a_iter = iter_playlist_segments_smart(
-            a_url, a_body, headers, concurrency=8, stop_event=stop_ev,
+            a_url, a_body, headers, concurrency=(2 if browser_transport is not None else 8), stop_event=stop_ev,
             hls_mode=(hls_mode if hls_mode in ("dvr", "live") else "vod"),
             resume_after=resume_after, seq_tracker=seq_tracker,
         )
@@ -646,10 +666,17 @@ def stream_hls_as_mp4(
             "pipe:0",
         ]
 
+        if browser_transport is not None:
+            # Even adversarial segment bytes may not make FFmpeg open a URL.
+            at = cmd.index("-i")
+            cmd[at:at] = ["-protocol_whitelist", "file,pipe", "-format_whitelist", "mov,matroska,mpegts,aac,mp3,flac,ogg,wav"]
+
         if a_iter is not None and first_a:
             fifo_dir = tempfile.mkdtemp(prefix="idm_hls_fifo_")
             audio_fifo_path = os.path.join(fifo_dir, "audio.pipe")
             os.mkfifo(audio_fifo_path)
+            if browser_transport is not None:
+                cmd.extend(["-protocol_whitelist", "file,pipe", "-format_whitelist", "mov,matroska,mpegts,aac,mp3,flac,ogg,wav"])
             cmd.extend(["-i", audio_fifo_path, "-map", "0:v:0", "-map", "1:a:0"])
 
         cmd.extend(["-c", "copy"])
@@ -872,7 +899,7 @@ def iter_playlist_segments_smart(
         seq_num, s_url, k_uri, k_iv, byte_rng = item
         if seq_tracker is not None and seq_num > seq_tracker.get("last", -1):
             seq_tracker["last"] = seq_num
-        seg_hdrs = dict(headers)
+        seg_hdrs = headers.copy()
         if byte_rng is not None:
             seg_hdrs["Range"] = f"bytes={byte_rng[0]}-{byte_rng[1]}"
         try:
@@ -886,6 +913,8 @@ def iter_playlist_segments_smart(
                     ivb = k_iv if k_iv is not None else seq_num.to_bytes(16, byteorder="big")
                     data = _decrypt_aes128_cbc(data, kb, ivb)
             return strip_disguised_image_header(data)
+        except BrowserTransportError:
+            raise
         except Exception as exc:
             # v2.9.11: CANLI/DVR kaydında tek ölü segment kaydı öldürmez (yayın devam eder)
             logger.info("Canlı segment atlandı (%s): %s", s_url[:60], exc)
@@ -909,11 +938,15 @@ def iter_playlist_segments_smart(
                     yield chunk
             else:
                 with concurrent.futures.ThreadPoolExecutor(max_workers=min(concurrency, len(fresh))) as pool:
-                    for chunk in pool.map(_download_one, fresh):
+                    batches = (fresh[i:i + 4] for i in range(0, len(fresh), 4)) if isinstance(headers, BrowserHeaders) else [fresh]
+                    for batch in batches:
+                        for chunk in pool.map(_download_one, batch):
+                            if stop_event and stop_event.is_set():
+                                break
+                            if chunk:
+                                yield chunk
                         if stop_event and stop_event.is_set():
                             break
-                        if chunk:
-                            yield chunk
             cursor = fresh[-1][0] + 1
         if cur["endlist"]:
             break
@@ -929,6 +962,8 @@ def iter_playlist_segments_smart(
             raw = fetch_url_bytes(playlist_url, headers, timeout=10.0, retries=2)
             body_now = raw.decode("utf-8", errors="ignore")
             fails = 0
+        except BrowserTransportError:
+            raise
         except Exception:
             fails += 1
             # v3.2.0: üstel geri çekilme — token ölümünde hızlıca pes etme (20 deneme ≈ 2-3 dk)
@@ -1211,7 +1246,7 @@ def assemble_subtitle_text(
 
     def _fetch_one(item: Tuple[int, str, Optional[str], Optional[bytes], Optional[Tuple[int, int]]]) -> str:
         _seq, s_url, k_uri, k_iv, byte_rng = item
-        seg_hdrs = dict(headers)
+        seg_hdrs = headers.copy()
         if byte_rng is not None:
             seg_hdrs["Range"] = f"bytes={byte_rng[0]}-{byte_rng[1]}"
         data = fetch_url_bytes(s_url, seg_hdrs, timeout=15.0, retries=3)
