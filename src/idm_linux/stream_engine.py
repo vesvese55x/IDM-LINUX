@@ -929,6 +929,7 @@ class ActiveStreamJob:
             return False
         cookie_file = cookies_header_to_netscape_file(t.cookies_header, page)
         cmd = [yb, "-J", "--no-playlist", "--no-warnings", "--no-check-certificates", "--socket-timeout", "10"]
+        cmd.extend(_ytdlp_compat_args(page))
         if cookie_file:
             cmd.extend(["--cookies", str(cookie_file)])
         if t.user_agent:
@@ -2015,6 +2016,7 @@ class ActiveStreamJob:
             "-o",
             str(out_path),
         ]
+        cmd.extend(_ytdlp_compat_args(t.source_url))
         if extractor_args:
             cmd.extend(["--extractor-args", extractor_args])
         cookie_file = cookies_header_to_netscape_file(t.cookies_header, t.source_url)
@@ -2890,6 +2892,20 @@ def _extractor_page_url(url: str) -> str:
     return url
 
 
+def _ytdlp_compat_args(page_url: str) -> List[str]:
+    """Explicit metadata-only plugin; never alter the user's yt-dlp installation."""
+    try:
+        host = (urllib.parse.urlsplit(page_url).hostname or "").lower()
+    except ValueError:
+        return []
+    if not any(host == domain or host.endswith("." + domain) for domain in ("vk.com", "vk.ru", "vkvideo.ru", "vkontakte.ru")):
+        return []
+    plugin_dir = Path(__file__).parent / "extractor_plugins"
+    if not (plugin_dir / "idm_vk_compat/yt_dlp_plugins/extractor/vk_nullable_subtitles.py").is_file():
+        return []
+    return ["--plugin-dirs", str(plugin_dir)]
+
+
 def _extracted_subtitle_streams(info: Dict[str, Any], page_url: str) -> List[Dict[str, Any]]:
     """External subtitle URLs from any supported extractor, including OK/VK.
 
@@ -2952,6 +2968,7 @@ def _run_ytdlp_probe(
             "--extractor-retries",
             "2",
         ]
+        cmd.extend(_ytdlp_compat_args(page_url))
         if extractor_args:
             cmd.extend(["--extractor-args", extractor_args])
         if cookie_file:
@@ -3728,6 +3745,8 @@ def _subtitle_options(
         # yerel dil adına çevrilir ('Türkçe' / 'English' ...)
         if lbl.lower().startswith("lang:"):
             lbl = sub_lang_name(lbl[5:].strip())
+        elif re.fullmatch(r"[a-z]{2,3}(?:[-_][A-Za-z0-9]{2,8})?", lbl):
+            lbl = sub_lang_name(lbl)
         if not lbl:
             lang_code = guess_lang_from_url(url)
             if lang_code:
@@ -5187,6 +5206,7 @@ def probe_playlist_entries(
         "--dump-single-json",
         "-J",
     ]
+    cmd.extend(_ytdlp_compat_args(page_url))
     if cookie_file:
         cmd.extend(["--cookies", str(cookie_file)])
     if user_agent:

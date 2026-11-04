@@ -24,6 +24,7 @@ where = ["src"]
 # Yeni depo düzeni: tüm uygulama verileri idm_linux paketi içindedir.
 idm_linux = [
   "assets/*.png",
+  "extractor_plugins/*/yt_dlp_plugins/extractor/*.py",
   "language/*.txt",
   "bin/*",
   "docs/*.md",
