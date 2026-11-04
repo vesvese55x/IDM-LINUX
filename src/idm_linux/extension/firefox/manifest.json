@@ -38,8 +38,7 @@
   ],
   "background": {
     "scripts": [
-      "background.js",
-      "browser_transport.js"
+      "background.js"
     ],
     "persistent": true
   },
