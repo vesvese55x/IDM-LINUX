@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections import deque
+from collections import deque, OrderedDict
 
 import json
 import os
@@ -122,6 +122,46 @@ def _never_ytdlp_probe(url: str) -> bool:
         except re.error:
             continue
     return False
+
+
+_MEDIA_AVAILABLE_AT: OrderedDict = OrderedDict()
+_MEDIA_AVAILABILITY_LOCK = threading.Lock()
+
+
+def _remember_media_availability(info: Dict[str, Any]) -> None:
+    """Preserve yt-dlp's per-format not-before time, without exporting signed URLs.
+
+    URLs obtained from YouTube can deliberately become usable several seconds
+    AFTER extraction. yt-dlp's own downloader honors available_at; a direct
+    FFmpeg/HEAD handoff must honor it too, rather than hitting a premature 403.
+    """
+    now = time.time()
+    records = [info] + list(info.get("formats") or []) + list(info.get("requested_formats") or [])
+    with _MEDIA_AVAILABILITY_LOCK:
+        for url in [u for u, ts in _MEDIA_AVAILABLE_AT.items() if ts <= now]:
+            _MEDIA_AVAILABLE_AT.pop(url, None)
+        for fmt in records:
+            if not isinstance(fmt, dict):
+                continue
+            url = fmt.get("url") or ""
+            try:
+                deadline = float(fmt.get("available_at") or 0)
+            except (TypeError, ValueError):
+                continue
+            if not isinstance(url, str) or not url.startswith(("https://", "http://")):
+                continue
+            if not now < deadline < float("inf"):
+                continue
+            _MEDIA_AVAILABLE_AT[url] = max(deadline, _MEDIA_AVAILABLE_AT.get(url, 0))
+            _MEDIA_AVAILABLE_AT.move_to_end(url)
+        while len(_MEDIA_AVAILABLE_AT) > 300:
+            _MEDIA_AVAILABLE_AT.popitem(last=False)
+
+
+def media_availability_delay(*urls: str) -> float:
+    with _MEDIA_AVAILABILITY_LOCK:
+        deadline = max((_MEDIA_AVAILABLE_AT.get(url, 0) for url in urls), default=0)
+    return max(0.0, deadline - time.time())
 
 
 @dataclass
@@ -429,7 +469,14 @@ class ActiveStreamJob:
                     return
                 logger.info("Tek-URL relay başarısız -> motor zinciri (%s)", t.source_url[:70])
 
-            # v2.9.8: DASH video+ses CANLI mux — IDM ilerlemeyi anlık gösterir
+            # Direct DASH inputs can be muxed concurrently. The legacy segment
+            # helper buffers the WHOLE audio track first; do not use it as the
+            # first choice for HTTP inputs (IDM otherwise sits at zero bytes).
+            if ffmpeg_bin and t.mux_video_url:
+                if self._run_prebuilt_urls_ffmpeg_mux(ffmpeg_bin):
+                    return
+
+            # Segment concatenation / compatibility fallback.
             if shutil.which("ffmpeg") and (
                 (t.segment_urls and t.audio_segment_urls) or (t.mux_video_url and t.mux_audio_url)
             ):
@@ -1076,9 +1123,22 @@ class ActiveStreamJob:
         self.stream_file.unlink(missing_ok=True)
         return False
 
+    def _wait_for_media_availability(self, *urls: str) -> bool:
+        delay = media_availability_delay(*urls)
+        if delay > 86400:
+            self.error_msg = "Medya kaynağı henüz erişime açılmamış; daha sonra yeniden deneyin."
+            return False
+        if delay:
+            logger.info("Medya kaynağının erişim zamanı bekleniyor: %.2f sn", delay)
+            if self.stop_event.wait(delay):
+                return False
+        return not self.stop_event.is_set()
+
     def _run_prebuilt_urls_ffmpeg_mux(self, ffmpeg_bin: str) -> bool:
         """Önceden çözülmüş HTTP DASH video + ses URL'lerini 0.25 sn aralıklarla canlı fMP4 olarak akıtır!"""
         t = self.ticket
+        if not self._wait_for_media_availability(t.mux_video_url, t.mux_audio_url):
+            return False
         ff_cmd = [
             ffmpeg_bin,
             "-y",
@@ -1110,7 +1170,6 @@ class ActiveStreamJob:
         _append_input(t.mux_video_url, t.mux_video_headers)
         if t.mux_audio_url:
             _append_input(t.mux_audio_url, t.mux_audio_headers)
-            ff_cmd.extend(["-map", "0:v:0", "-map", "1:a:0"])
 
         # v3.2.0: ses KOPYALAMA önce (m4a/aac kaynakta yeniden kodlama YOK — CPU boşa
         # yorulmaz, kalite kaybı olmaz); opus/vorbis gibi mp4'e kopyalanamayan codec'de
@@ -1245,6 +1304,7 @@ class ActiveStreamJob:
         except json.JSONDecodeError:
             return False
 
+        _remember_media_availability(info)
         req_fmts = info.get("requested_formats")
         if not req_fmts:
             single_url = info.get("url")
@@ -1261,6 +1321,9 @@ class ActiveStreamJob:
         p_ua = p_hdrs.get("User-Agent") or t.user_agent
 
         if not p_url.startswith("http"):
+            return False
+
+        if not self._wait_for_media_availability(*(f.get("url") or "" for f in req_fmts)):
             return False
 
         # Eğer dönen kaynak HLS ise (veya gizli .txt HLS manifestiyse) -> 16x paralel canlı HLS motoru!
@@ -4005,7 +4068,10 @@ class StreamEngine:
             hls_mode=hls_mode if hls_mode in ("vod", "dvr", "live") else "vod",
             backend=backend,
             estimated_size=estimated_size,
-            size_exact=size_exact,
+            # A muxed container is NOT byte-for-byte the sum of its input
+            # files. Keep the estimate for UI, but never truncate HTTP delivery
+            # by advertising that input sum as an exact Content-Length.
+            size_exact=bool(size_exact and not (mux_video_url or mux_audio_url or format_selector)),
             segment_urls=seg_urls,
             audio_segment_urls=seg_audio,
             abyss_slug=abyss_slug,
@@ -4572,6 +4638,7 @@ class StreamEngine:
                     ytdlp_bin, page_url, cookie_file, user_agent, referer
                 )
                 if info is not None:
+                    _remember_media_availability(info)
                     title = info.get("title") or ""
                     ytdlp_live_status = str(info.get("live_status") or "")
                     if bool(info.get("is_live")) or ytdlp_live_status == "is_live":
@@ -4923,7 +4990,7 @@ class StreamEngine:
                             mux_audio_url=a_url,
                             mux_video_headers=v_hdrs,
                             mux_audio_headers=a_hdrs,
-                            filesize_exact=bool(vf.get("filesize")) and (best_audio_size_exact or not a_url),
+                            filesize_exact=False,  # remuxed MP4 overhead changes the final byte count
                         )
                     )
 

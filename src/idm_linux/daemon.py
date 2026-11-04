@@ -15,6 +15,7 @@ import re
 import secrets
 import shutil
 import signal
+import sys
 import socket
 import struct
 import subprocess
@@ -71,6 +72,7 @@ from .stream_engine import (
     mpd_has_drm,
     set_probe_done_notifier,
     StreamEngine,
+    media_availability_delay,
     _is_known_ytdlp_site,
     is_playlist_url,
     probe_playlist_entries,
@@ -2587,6 +2589,14 @@ def make_http_handler(state: DaemonState):
                 #    MB'ta kestiğinde relay Range + header rotasyonu + kaynak tazelemeyle
                 #    KENDİLİĞİNDEN dirilir — IDM'nin bağlantısı kopmaz, indirme yarıda bitmez!
                 if delivery == "direct" and direct_url:
+                    # Keep yt-dlp's not-before time even for native real-URL
+                    # delivery. Do not send IDM a URL which is still premature.
+                    available_delay = media_availability_delay(direct_url)
+                    if available_delay > 30:
+                        self._send_json({"ok": False, "error": "Medya kaynağı henüz erişime açılmadı; daha sonra yeniden deneyin.", "retry_after": round(available_delay)})
+                        return
+                    if available_delay:
+                        time.sleep(available_delay)
                     # v3.10.1 (kullanıcı isteği): IDM'de LOCALHOST köprüsü değil
                     # DOSYANIN GERÇEK BAĞLANTISI görünsün. Önce gerçek CDN adresi
                     # referer/çerez/UA ile doğrudan IDM'ye verilir; IDM'ye iletilemezse
@@ -3216,9 +3226,39 @@ def _rss_mb() -> int:
         return 0
 
 
+def _daemon_has_active_transfers(state: "DaemonState") -> bool:
+    """Do not recycle a daemon holding stream, torrent, eD2K or playlist work.
+
+    Paused/queued sessions also retain in-memory ticket identity. Unknown state
+    or a failed status query is conservatively busy, never permission to exit.
+    """
+    terminal = {"complete", "completed", "error", "failed", "removed", "cancelled", "canceled", "stopped"}
+    try:
+        streams_idle = state.stream_engine.active_job_count() == 0
+        if not streams_idle:
+            return True
+        for sessions in (state.torrent_bridge.list_active_summary(), ed2k_list_sessions()):
+            if any(str(s.get("status") or "").lower() not in terminal for s in sessions):
+                return True
+        for batch in state.playlist_manager.list_batches():
+            if batch.get("done"):
+                continue
+            if any(str(e.get("status") or "").lower() not in terminal for e in batch.get("entries", [])):
+                return True
+        return False
+    except Exception:
+        return True
+
+
 def _self_restart_daemon(state: "DaemonState") -> None:
-    """v3.2.2 Bellek KALKANI: zarif self-exit -> systemd (Restart=always) saniyeler içinde
-    SIFIR bellekle yeniden başlatır. Kernel OOM katliamı ve 'Bellek Sıkıntısı' bildirimi ASLA."""
+    """Recycle an idle process without assuming systemd exists (desktop/container).
+
+    Re-exec also works under systemd. Python sockets are non-inheritable, so the
+    new interpreter starts with fresh listeners and module/cache state.
+    """
+    if _daemon_has_active_transfers(state):
+        logger.info("Daemon yeniden başlatma ertelendi: aktif/bekleyen aktarım var.")
+        return
     try:
         threading.Thread(target=state.torrent_bridge.shutdown_all, daemon=True).start()
         threading.Thread(target=ed2k_shutdown_all, daemon=True).start()
@@ -3235,7 +3275,7 @@ def _self_restart_daemon(state: "DaemonState") -> None:
         pid_file.unlink(missing_ok=True)
     except OSError:
         pass
-    logger.warning("Daemon bellek kalkanı: zarif yeniden başlatma (os._exit(0)).")
+    logger.warning("Daemon bellek kalkanı: aynı kullanıcı/ortam ile yeniden başlatma (exec).")
     try:
         for h in logger.handlers:
             try:
@@ -3244,7 +3284,12 @@ def _self_restart_daemon(state: "DaemonState") -> None:
                 pass
     except Exception:
         pass
-    os._exit(0)
+    try:
+        os.execvpe(sys.executable, [sys.executable, "-m", "idm_linux.cli", "daemon-run"], dict(os.environ))
+    except OSError:
+        # A failed re-exec must not leave an unsupervised desktop bridge dead.
+        state.running = True
+        logger.exception("Daemon yeniden başlatılamadı; mevcut köprü çalışmaya devam ediyor.")
 
 
 def _background_maintenance_loop(state: DaemonState) -> None:
@@ -3266,8 +3311,8 @@ def _background_maintenance_loop(state: DaemonState) -> None:
         # v3.2.2 BELLEK NÖBETÇİSİ (yeniden yapıldı):
         #   RSS > 250MB -> tüm önbellekleri boşalt (GC dahil)
         #   RSS > 450MB -> 60 sn'de inmiyor VE aktif indirme yoksa -> ZARİF SELF-RESTART
-        #   (systemd Restart=always saniyeler içinde sıfır bellekle kaldırır; aktif indirme
-        #    varken ASLA restart etmez — indirme yarıda kesilmez.)
+        #   Yeniden başlatma exec ile yapılır; systemd olmayan masaüstlerinde de çalışır.
+        #   Stream yanında torrent/eD2K/playlist bekleyen işleri de korunur.
         rss_now = _rss_mb()
         if rss_now > 250:
             try:
@@ -3278,7 +3323,7 @@ def _background_maintenance_loop(state: DaemonState) -> None:
         if rss_now > 450:
             if over_soft_since == 0.0:
                 over_soft_since = now
-            idle = state.stream_engine.active_job_count() == 0
+            idle = not _daemon_has_active_transfers(state)
             if idle and (now - over_soft_since) > 60.0:
                 logger.warning(
                     "Daemon RSS %sMB (limit 450MB) 60 sn'de inmedi, aktif indirme yok — bellek kalkanı devrede.",

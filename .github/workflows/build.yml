@@ -95,6 +95,8 @@ jobs:
           python3 packaging/rebuild_extensions.py --check
           python3 -m unittest discover -s packaging/tests -v
           python3 -m unittest discover -s src/idm_linux/tests -p test_subtitle_delivery.py -v
+          python3 -m unittest discover -s src/idm_linux/tests -p test_remote_recovery.py -v
+          python3 -m unittest discover -s src/idm_linux/tests -p test_live_mux_delivery.py -v
       - name: Diagnose real progressive HLS media startup
         shell: bash
         run: |
