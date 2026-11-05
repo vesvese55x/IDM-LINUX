@@ -10,7 +10,6 @@ public static class ConsoleWatch {
  public static string[] VisibleConsoles(){var result=new List<string>();foreach(var pair in VisibleWindowMap()){var parts=pair.Split(new[]{'|'},3);if(parts[1]=="ConsoleWindowClass"||parts[1]=="CASCADIA_HOSTING_WINDOW_CLASS")result.Add(parts[0]);}return result.ToArray();}
  public static string[] VisibleWindows(){var result=new List<string>();foreach(var pair in VisibleWindowMap()){result.Add(pair.Split(new[]{'|'},2)[1]);}return result.ToArray();}
  [DllImport("user32.dll",CharSet=CharSet.Unicode)]static extern int GetWindowText(IntPtr window,StringBuilder text,int length);
- public static string[] VisibleWindowMapStub(){return VisibleWindowMap();}
  public static List<string> VisibleWindowMap(){var result=new List<string>();EnumWindows(delegate(IntPtr w,IntPtr s){var name=new StringBuilder(256);GetClassName(w,name,256);if(IsWindowVisible(w)){var text=new StringBuilder(256);GetWindowText(w,text,256);result.Add(w.ToString()+"|"+name.ToString()+"|"+text.ToString().Replace("|","/"));}return true;},IntPtr.Zero);return result;}
 }
 '@
