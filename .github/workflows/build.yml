@@ -77,7 +77,7 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq rpm zstd file ffmpeg aria2 xvfb xauth python3-tk libtk8.6 libxcb1 wine cpio x11-utils
-          python3 -m pip install pillow playwright
+          python3 -m pip install pillow playwright pytest
           if command -v google-chrome >/dev/null; then
             echo "PLAYWRIGHT_BROWSER_EXECUTABLE=$(command -v google-chrome)" >> "$GITHUB_ENV"
           else
@@ -89,14 +89,20 @@ jobs:
           node-version: '22'
       - name: Bounded Blob and browser-passthrough regressions
         run: |
+          set -o pipefail
           export PYTHONPATH="$GITHUB_WORKSPACE/src"
-          python3 -m unittest discover -s src/idm_linux/tests -v
+          python3 -m unittest discover -s src/idm_linux/tests -v 2>&1 | tee full-suite.log
+          grep -qx 'OK' <(tail -n 1 full-suite.log) || grep -q '^OK' full-suite.log
+          executed=$(sed -n 's/^Ran \([0-9][0-9]*\) tests.*/\1/p' full-suite.log | tail -n 1)
+          test -n "$executed" && test "$executed" -ge 300
+          # Discover the explicit delivery regressions as well, so a silently skipped
+          # module cannot masquerade as a pass.
+          python3 -m unittest discover -s src/idm_linux/tests -p 'test_subtitle_delivery.py' -v
+          python3 -m unittest discover -s src/idm_linux/tests -p 'test_remote_recovery.py' -v
+          python3 -m unittest discover -s src/idm_linux/tests -p 'test_live_mux_delivery.py' -v
           node src/idm_linux/tests/test_browser_capture.cjs
           python3 packaging/rebuild_extensions.py --check
           python3 -m unittest discover -s packaging/tests -v
-          python3 -m unittest discover -s src/idm_linux/tests -p test_subtitle_delivery.py -v
-          python3 -m unittest discover -s src/idm_linux/tests -p test_remote_recovery.py -v
-          python3 -m unittest discover -s src/idm_linux/tests -p test_live_mux_delivery.py -v
       - name: Diagnose real progressive HLS media startup
         shell: bash
         run: |
