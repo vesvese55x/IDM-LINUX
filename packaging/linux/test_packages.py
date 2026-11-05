@@ -62,7 +62,8 @@ def startup(kind, payload, command, output, mode):
         if 'v1.0.0' not in status.stdout or 'Durum Raporu' not in status.stdout:
             raise AssertionError('Actual package CLI did not produce its status report')
         captures = []
-        for page, args in [('installer', []), ('overview', ['panel'])]:
+        installer_args = ['install'] if mode.startswith('extracted-payload') else []
+        for page, args in [('installer', installer_args), ('overview', ['panel'])]:
             log = output / (kind+'-'+page+'.log')
             with log.open('w') as stream:
                 process = subprocess.Popen([str(x) for x in command] + args, env=env,
