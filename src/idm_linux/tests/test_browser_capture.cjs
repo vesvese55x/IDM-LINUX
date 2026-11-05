@@ -244,6 +244,19 @@ async function backgroundTests(){
   h.toggle(true);await flush();h.fire({id:4,url:'https://arena.ai/api/new.zip',mime:'application/zip'});await flush();assert(!h.paused.includes(4));assert(!h.cancelled.includes(4));
   console.log('PASS background passive listeners, pause-before-ACK, accepted purge and original-item resume');
 }
+async function streamingOriginTest(){
+  const h=backgroundHarness();await flush();h.toggle(false);await flush();
+  vm.runInContext('globalThis.streamBegins=0;callBridge=async()=>{globalThis.streamBegins++;return {ok:true,transferId:"fixture-stream"};};',h.context);
+  async function begin(sender,pageUrl){let result;for(const fn of h.events.message.listeners)fn({type:'IDM_BLOB_TRANSFER',action:'begin',streaming:true,size:null,filename:'fixture.zip',pageUrl},sender,r=>{result=r;});await until(()=>result!==undefined);return result;}
+  const tab={id:41,url:'https://justbeamit.com/fixture'};
+  assert.equal((await begin({tab,frameId:2,url:'https://untrusted.example/frame'},tab.url)).ok,false);
+  assert.equal((await begin({tab,frameId:0,url:'https://untrusted.example/frame'},tab.url)).ok,false);
+  assert.equal((await begin({tab,frameId:0,url:'http://justbeamit.com/fixture'},tab.url)).ok,false);
+  assert.equal(vm.runInContext('globalThis.streamBegins',h.context),0);
+  assert.equal((await begin({tab,frameId:0,url:tab.url},'https://untrusted.example/spoof')).ok,true);
+  assert.equal(vm.runInContext('globalThis.streamBegins',h.context),1);
+  console.log('PASS unknown-length quota requires browser-authenticated JustBeamIt receiver origin, not spoofed pageUrl');
+}
 async function navigationCaptionTest(){
   const h=backgroundHarness();await flush();h.toggle(false);await flush();
   let registered;
@@ -265,4 +278,4 @@ async function probeRecoveryTest(){
   assert.equal(vm.runInContext('globalThis.probeCalls',h.context),2);
   console.log('PASS video probe recovers after bridge wake without assigning to const');
 }
-(async()=>{await arenaWorkspaceTests();await justBeamItTests();await pageTests();await backgroundTests();await probeRecoveryTest();await externalCaptionTests();await textTrackCaptionTests();await staleCaptionTests();await youtubeCaptionQueueTests();await youtubeCaptionTimeoutTest();await navigationCaptionTest();console.log('BROWSER_CAPTURE_HARNESS_PASS');})().catch(e=>{console.error(e);process.exitCode=1;});
+(async()=>{await arenaWorkspaceTests();await justBeamItTests();await pageTests();await backgroundTests();await probeRecoveryTest();await externalCaptionTests();await textTrackCaptionTests();await staleCaptionTests();await youtubeCaptionQueueTests();await youtubeCaptionTimeoutTest();await navigationCaptionTest();await streamingOriginTest();console.log('BROWSER_CAPTURE_HARNESS_PASS');})().catch(e=>{console.error(e);process.exitCode=1;});

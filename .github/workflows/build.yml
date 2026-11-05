@@ -76,7 +76,7 @@ jobs:
       - name: Sistem bağımlılıkları (rpm, zstd)
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq rpm zstd file ffmpeg aria2 xvfb xauth python3-tk libtk8.6 libxcb1
+          sudo apt-get install -y -qq rpm zstd file ffmpeg aria2 xvfb xauth python3-tk libtk8.6 libxcb1 wine cpio x11-utils
           python3 -m pip install pillow playwright
           if command -v google-chrome >/dev/null; then
             echo "PLAYWRIGHT_BROWSER_EXECUTABLE=$(command -v google-chrome)" >> "$GITHUB_ENV"
@@ -90,7 +90,7 @@ jobs:
       - name: Bounded Blob and browser-passthrough regressions
         run: |
           export PYTHONPATH="$GITHUB_WORKSPACE/src"
-          python3 -m unittest discover -s src/idm_linux/tests -p test_safe_capture.py -v
+          python3 -m unittest discover -s src/idm_linux/tests -v
           node src/idm_linux/tests/test_browser_capture.cjs
           python3 packaging/rebuild_extensions.py --check
           python3 -m unittest discover -s packaging/tests -v
@@ -162,6 +162,17 @@ jobs:
           [ "$(echo "$ZST_LIST" | sed -n 2p)" = ".MTREE" ] || { echo "HATA: .MTREE ikinci giriş değil/yok — pamac paketi reddeder"; exit 1; }
           echo "paket doğrulaması (deb-xz / rpm-header / zst-metadata) ✓"
 
+      - name: Start the actual payload of every Linux package under Xvfb
+        timeout-minutes: 8
+        run: xvfb-run -a -s "-screen 0 1600x1000x24" python3 packaging/linux/test_packages.py
+      - name: Keep package startup and payload integrity evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-package-startup-evidence
+          path: artifacts/package-smoke/
+          if-no-files-found: warn
+
       - name: Keep the four verified Linux packages (do not publish yet)
         uses: actions/upload-artifact@v4
         with:
@@ -204,10 +215,53 @@ jobs:
       # Screenshots stay in the CI evidence artifact. Do not auto-push source/doc
       # commits while the other platform's quality gate may still be failing.
 
+  native_packages:
+    name: Native ${{ matrix.distro }} package install and actual GUI startup
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        distro: [fedora, arch]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: linux-release-candidates
+          path: native-candidates
+      - name: Install with native package manager and start the installed application
+        shell: bash
+        env:
+          DISTRO: ${{ matrix.distro }}
+        run: |
+          set -euo pipefail
+          mkdir -p "artifacts/native-$DISTRO"
+          if [ "$DISTRO" = fedora ]; then IMAGE=fedora:latest; else IMAGE=archlinux:base; fi
+          docker run --rm -e DISTRO -e GITHUB_SHA \
+            -v "$PWD:/qa:ro" -v "$PWD/artifacts/native-$DISTRO:/evidence" "$IMAGE" bash -eu -c '
+              if [ "$DISTRO" = fedora ]; then
+                dnf -y install /qa/native-candidates/*.rpm python3-pillow procps-ng /usr/bin/Xvfb /usr/bin/xvfb-run /usr/bin/xwininfo
+                KIND=rpm
+              else
+                pacman -Syu --noconfirm --needed wine python tk python-pillow xorg-server-xvfb xorg-xauth xorg-xwininfo procps-ng
+                pacman -U --noconfirm /qa/native-candidates/*.pkg.tar.zst
+                KIND=zst
+              fi
+              xvfb-run -a -s "-screen 0 1600x1000x24" python3 /qa/packaging/linux/test_packages.py --installed-kind "$KIND" --output /evidence
+            '
+      - name: Keep native package installation and GUI evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-${{ matrix.distro }}-package-evidence
+          path: artifacts/native-${{ matrix.distro }}/
+          if-no-files-found: warn
+
   publish:
     name: Replace the same five assets only after both platforms pass
-    needs: [build, windows]
-    if: needs.build.result == 'success' && needs.windows.result == 'success' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.publish_release
+    needs: [build, windows, native_packages]
+    if: needs.build.result == 'success' && needs.windows.result == 'success' && needs.native_packages.result == 'success' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.publish_release
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

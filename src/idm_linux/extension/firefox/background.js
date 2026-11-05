@@ -1392,6 +1392,16 @@ extApi.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       }
       const actions = new Set(["begin", "chunk", "finish", "cancel"]);
       if (!actions.has(msg.action)) { sendResponse({ ok: false }); return; }
+      // The larger unknown-length quota is only for the targeted receiver.
+      // Trust browser-provided sender metadata, never the page's pageUrl field.
+      if (msg.action === "begin" && msg.streaming === true) {
+        let allowed = false;
+        try {
+          const frame = new URL(sender.url || (sender.frameId === 0 ? topTabUrl : ""));
+          allowed = frame.protocol === "https:" && frame.hostname === "justbeamit.com" && /^\/[A-Za-z0-9_-]+\/?$/.test(frame.pathname);
+        } catch (_) {}
+        if (!allowed) { sendResponse({ ok: false, error: "Streaming origin is not allowed" }); return; }
+      }
       const owner = `${tabId}:${sender.frameId || 0}`;
       if (msg.action !== "begin" && blobUploadOwners.get(msg.transferId) !== owner) {
         sendResponse({ ok: false, error: "Unknown blob owner" }); return;

@@ -23,6 +23,7 @@ mkdir -p "$APPDIR/usr/bin" "$APPDIR/usr/share/applications" "$APPDIR/usr/share/i
 
 # Uygulama ağacını AppDir içine kopyala (yeni düzen)
 tar -cf - --exclude=./.git --exclude=./.github --exclude=./build --exclude=./dist \
+  --exclude=./artifacts --exclude=./release-assets --exclude=./release-backup \
   --exclude='__pycache__' --exclude='*.pyc' \
   --exclude=./src/idm_linux/tests --exclude=./src/idm_linux/docs --exclude=./src/idm_linux/packaging \
   . | tar -xf - -C "$APPDIR/usr/share/idm-linux"
