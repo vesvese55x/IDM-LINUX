@@ -4117,8 +4117,11 @@ def test_97_async_probe_for_known_sites():
             _time.sleep(0.1)
         assert events, "arka plan tamamlanınca IDM_MEDIA_UPDATED bildirimi gelmedi"
         assert events[0].get("type") == "IDM_MEDIA_UPDATED"
-        # tam sonuç artık önbellekte
-        cached = eng._probe_cache.get("https://www.youtube.com/watch?v=abc|0")
+        # tam sonuç artık önbellekte (v3.2.2 anahtarı: sayfa|kova|içerik özeti)
+        cached = next(
+            (v for k, v in list(eng._probe_cache.items()) if k.startswith("https://www.youtube.com/watch?v=abc|")),
+            None,
+        )
         assert cached and cached[1].get("formats"), "arka plan sonucu önbelleğe yazılmadı"
         assert not cached[1].get("ytdlp_pending")
 
