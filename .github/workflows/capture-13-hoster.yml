@@ -88,14 +88,19 @@ jobs:
           {
             echo "# 13. bölüm hoster indirme kanıtı"
             echo "Tarih: $(date -u)"
-            for f in out/*.mp4 out/*.m4a out/*.webm; do
+            for f in out/*; do
               [ -f "$f" ] || continue
+              case "$f" in *KANIT*|*ekran*|*failures*) continue ;; esac
               echo "## $f"
               ls -l "$f"
+              file "$f"
               ffprobe -v error -show_entries format=duration,size,format_name \
-                -show_entries stream=codec_name,width,height -of default=noprint_wrappers=1 "$f" || true
+                -show_entries stream=codec_name,width,height -of default=noprint_wrappers=1 "$f" 2>/dev/null || true
               sha256sum "$f"
+              echo
             done
+            echo "## ortam"
+            yt-dlp --version; ffmpeg -version | head -1
           } > out/KANIT.txt
           cat out/KANIT.txt
           DISPLAY=:99 import -window root out/ekran.png || true
