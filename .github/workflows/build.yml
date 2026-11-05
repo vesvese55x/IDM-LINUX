@@ -247,10 +247,10 @@ jobs:
           docker run --rm -e DISTRO -e GITHUB_SHA \
             -v "$PWD:/qa:ro" -v "$PWD/artifacts/native-$DISTRO:/evidence" "$IMAGE" bash -eu -c '
               if [ "$DISTRO" = fedora ]; then
-                dnf -y install /qa/native-candidates/*.rpm python3-pillow procps-ng /usr/bin/Xvfb /usr/bin/xvfb-run /usr/bin/xwininfo
+                dnf -y install /qa/native-candidates/*.rpm python3-pillow procps-ng /usr/bin/Xvfb /usr/bin/xvfb-run /usr/bin/xwininfo fontconfig dejavu-sans-fonts
                 KIND=rpm
               else
-                pacman -Syu --noconfirm --needed wine python tk python-pillow xorg-server-xvfb xorg-xauth xorg-xwininfo procps-ng
+                pacman -Syu --noconfirm --needed wine python tk python-pillow xorg-server-xvfb xorg-xauth xorg-xwininfo procps-ng fontconfig ttf-dejavu xorg-mkfontscale
                 pacman -U --noconfirm /qa/native-candidates/*.pkg.tar.zst
                 KIND=zst
               fi
