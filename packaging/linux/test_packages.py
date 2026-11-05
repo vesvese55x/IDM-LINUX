@@ -75,7 +75,14 @@ def startup(kind, payload, command, output, mode):
                     while time.monotonic() < deadline:
                         if process.poll() is not None:
                             raise AssertionError('Package GUI exited early: '+log.read_text()[-2000:])
-                        tree = run('xwininfo', '-root', '-tree', env=env, capture_output=True, text=True).stdout
+                        try:
+                            tree = run('xwininfo', '-root', '-tree', env=env, capture_output=True, text=True).stdout
+                        except subprocess.CalledProcessError as error:
+                            # x11-utils can exit non-zero while the display is still being
+                            # set up; retry until the deadline instead of aborting the gate.
+                            tree = (error.stdout or '') if isinstance(error.stdout, str) else ''
+                            time.sleep(.4)
+                            continue
                         if gui_ready(tree):
                             time.sleep(3)
                             break
@@ -91,13 +98,20 @@ def startup(kind, payload, command, output, mode):
                     captures.append({'page':page, 'screenshot':screenshot.name,
                                      'sha256':hashlib.sha256(screenshot.read_bytes()).hexdigest()})
                 finally:
+                    # Killing the process group must never mask an assertion above.
                     if process.poll() is None:
                         os.killpg(process.pid, signal.SIGTERM)
                     try:
                         process.wait(timeout=8)
                     except subprocess.TimeoutExpired:
-                        os.killpg(process.pid, signal.SIGKILL)
-                        process.wait(timeout=5)
+                        try:
+                            os.killpg(process.pid, signal.SIGKILL)
+                        except OSError:
+                            pass
+                        try:
+                            process.wait(timeout=5)
+                        except subprocess.TimeoutExpired:
+                            pass
             if 'Traceback (most recent call last)' in log.read_text():
                 raise AssertionError('GUI exception in '+str(log))
         return {'kind':kind, 'mode':mode, 'runtime_files_sha_equal':checked,
