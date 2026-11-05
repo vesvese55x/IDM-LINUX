@@ -1,0 +1,10 @@
+# 13. bölüm hoster indirme kanıtı
+Tarih: Thu Nov  5 15:39:14 UTC 2026
+## out/idm-release-bafcf418-b97e-4963-bd2d-4395076902b1.unknown_video
+-rw-r--r-- 1 runner runner 2562552 Nov  5 15:39 out/idm-release-bafcf418-b97e-4963-bd2d-4395076902b1.unknown_video
+out/idm-release-bafcf418-b97e-4963-bd2d-4395076902b1.unknown_video: ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), static-pie linked, BuildID[sha1]=ef655b05ac26feebfd3bc24ec7ccb30389cefc33, stripped
+a21b16be488bbc1a51b560dc89a73a6914a66462bf1fd3a63ff73a2346787f10  out/idm-release-bafcf418-b97e-4963-bd2d-4395076902b1.unknown_video
+
+## ortam
+2026.10.26
+ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers
