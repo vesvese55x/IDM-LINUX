@@ -57,21 +57,33 @@ jobs:
           U_VK: ${{ github.event.inputs.url_vk }}
           U_BILI: ${{ github.event.inputs.url_bilibili }}
         run: |
+          set -uo pipefail
           mkdir -p out
+          UA="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
           for s in $SITES; do
             case "$s" in
               okru)     URL="${U_OKRU:-https://ok.ru/video/1268782176776}" ;;
               vk)       URL="${U_VK:-https://vk.com/video-225303604_456239056}" ;;
-              bilibili) URL="${U_BILI:-https://www.bilibili.com/video/BV1GJ411x7h7}" ;;
+              bilibili) URL="${U_BILI:-https://www.bilibili.com/video/BV1xx411c7mD}" ;;
+              idm-release) URL="https://github.com/vesvese55x/IDM-LINUX/releases/download/v1.0.0/IDM-LINUX-1.0.0-x86_64.AppImage" ;;
               *) echo "bilinmeyen site: $s"; continue ;;
             esac
             echo "== $s : $URL"
-            yt-dlp --no-warnings --no-playlist -f "bv*+ba/b" --merge-output-format mp4 \
-              -o "out/${s}-%(title).80s.%(ext)s" "$URL" 2>&1 | tail -6 || echo "FAIL $s" >> out/failures.txt
+            if ! yt-dlp --no-warnings --retries 3 --no-playlist \
+                   --user-agent "$UA" --add-header "Referer:https://www.bilibili.com/" \
+                   -f "bv*+ba/b" --merge-output-format mp4 \
+                   -o "out/${s}-%(title).80s.%(ext)s" "$URL" 2>&1 | tail -8; then
+              echo "FAIL $s ($URL)" | tee -a out/failures.txt
+            fi
           done
           ls -l out
+          if [ -s out/failures.txt ]; then
+            echo "::error::bazı siteler indirilemedi"; cat out/failures.txt
+            exit 1
+          fi
 
       - name: Kanıt üret (SHA + ffprobe + ekran görüntüsü)
+        if: always()
         run: |
           {
             echo "# 13. bölüm hoster indirme kanıtı"
