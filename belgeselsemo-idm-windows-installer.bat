@@ -14,7 +14,11 @@ if not errorlevel 1 exit /b 0
 rem WSH blocked/unavailable: continue visibly instead of silently exiting.
 
 :hidden
-chcp 65001 >nul
+rem Turkce karakterler: UTF-8 (65001) + CP1254 yedegi. Konsol ve GUI ayni kodlamayi kullanir.
+chcp 65001 >nul 2>&1
+if errorlevel 1 chcp 1254 >nul 2>&1
+set "PYTHONUTF8=1"
+set "PYTHONIOENCODING=utf-8"
 set "SEMO_WORK=%TEMP%\IDM_SEMO_setup"
 set "SEMO_ERR=%TEMP%\IDM_SEMO_setup_err.log"
 set "SEMO_FLAG=%TEMP%\semo_ready.flag"

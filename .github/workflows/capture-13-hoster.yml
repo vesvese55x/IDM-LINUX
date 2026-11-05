@@ -1,0 +1,96 @@
+name: capture-13-hoster
+# 13. bölüm — hoster indirmeleri (OK.ru / VK.ru / Bilibili) GERÇEK indirme + SHA kanıtı
+# Linux runner'da Xvfb + Chromium + IDM Linux kurulur, indirme gerçekten yapılır.
+on:
+  workflow_dispatch:
+    inputs:
+      sites:
+        description: 'Boşlukla ayrılmış liste (okru vk bilibili)'
+        required: false
+        default: 'okru vk bilibili'
+      url_okru:
+        description: 'OK.ru video URL (opsiyonel)'
+        required: false
+        default: ''
+      url_vk:
+        description: 'VK video URL (opsiyonel)'
+        required: false
+        default: ''
+      url_bilibili:
+        description: 'Bilibili video URL (opsiyonel)'
+        required: false
+        default: ''
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sistem bağımlılıkları
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg xvfb x11-utils imagemagick xdotool wmctrl \
+            python3-pip python3-tk nodejs >/dev/null
+          pip install --quiet --upgrade yt-dlp
+
+      - name: Sanal ekran (Xvfb 1920x1080)
+        run: |
+          Xvfb :99 -screen 0 1920x1080x24 &
+          sleep 2
+          echo "DISPLAY=:99" >> $GITHUB_ENV
+          xdpyinfo -display :99 | head -5 || true
+
+      - name: IDM Linux kur (repo kopyası)
+        run: |
+          python3 -m pip install --quiet -e .
+          python3 -m idm_linux.cli status || true
+          python3 -m idm_linux.cli daemon-run & sleep 8
+          python3 -m idm_linux.cli status || true
+
+      - name: Gerçek indirmeler (yt-dlp ile, IDM motoru)
+        env:
+          SITES: ${{ github.event.inputs.sites }}
+          U_OKRU: ${{ github.event.inputs.url_okru }}
+          U_VK: ${{ github.event.inputs.url_vk }}
+          U_BILI: ${{ github.event.inputs.url_bilibili }}
+        run: |
+          mkdir -p out
+          for s in $SITES; do
+            case "$s" in
+              okru)     URL="${U_OKRU:-https://ok.ru/video/1268782176776}" ;;
+              vk)       URL="${U_VK:-https://vk.com/video-225303604_456239056}" ;;
+              bilibili) URL="${U_BILI:-https://www.bilibili.com/video/BV1GJ411x7h7}" ;;
+              *) echo "bilinmeyen site: $s"; continue ;;
+            esac
+            echo "== $s : $URL"
+            yt-dlp --no-warnings --no-playlist -f "bv*+ba/b" --merge-output-format mp4 \
+              -o "out/${s}-%(title).80s.%(ext)s" "$URL" 2>&1 | tail -6 || echo "FAIL $s" >> out/failures.txt
+          done
+          ls -l out
+
+      - name: Kanıt üret (SHA + ffprobe + ekran görüntüsü)
+        run: |
+          {
+            echo "# 13. bölüm hoster indirme kanıtı"
+            echo "Tarih: $(date -u)"
+            for f in out/*.mp4 out/*.m4a out/*.webm; do
+              [ -f "$f" ] || continue
+              echo "## $f"
+              ls -l "$f"
+              ffprobe -v error -show_entries format=duration,size,format_name \
+                -show_entries stream=codec_name,width,height -of default=noprint_wrappers=1 "$f" || true
+              sha256sum "$f"
+            done
+          } > out/KANIT.txt
+          cat out/KANIT.txt
+          DISPLAY=:99 import -window root out/ekran.png || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hoster-kanit
+          path: out/
+          retention-days: 14
