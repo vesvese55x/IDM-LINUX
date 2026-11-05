@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 from .config import IdmLinuxConfig, get_cache_dir, setup_logger
-from .distro import find_ytdlp
+from .distro import find_ytdlp, ytdlp_js_runtime_args
 from .hls_streamer import (
     build_stream_headers,
     fetch_url_bytes,
@@ -1310,6 +1310,7 @@ class ActiveStreamJob:
             "--socket-timeout",
             "8",
         ]
+        cmd.extend(ytdlp_js_runtime_args())
         if t.format_selector:
             cmd.extend(["-f", t.format_selector])
         if cookie_file:
@@ -1404,6 +1405,7 @@ class ActiveStreamJob:
             "-o",
             "-",
         ]
+        cmd.extend(ytdlp_js_runtime_args())
         if t.format_selector:
             cmd.extend(["-f", t.format_selector])
         if cookie_file:
@@ -1993,7 +1995,9 @@ class ActiveStreamJob:
         else:
             out_path = live_out
         if t.sub_lang:  # v2.9.4: yalnızca altyazı dosyası indir
-            out_path = self.work_dir / "yt_sub"
+            # 2026-11: yt-dlp çıktı adı açık verilir. Eski hâlde "--skip-download" olmadan
+            # yt-dlp videoyu da indiriyordu; şimdi -o ile YALNIZ altyazı dosyası üretilir.
+            out_path = self.work_dir / ("yt_sub." + (Path(t.filename).suffix.lstrip(".") or "vtt"))
         cmd = [
             yb,
             "-f",
@@ -2003,8 +2007,8 @@ class ActiveStreamJob:
             "--no-check-certificates",
             "--continue",
             "--no-part",
-            "--concurrent-fragments",
-            "8",
+            "--skip-download" if t.sub_lang else "--concurrent-fragments",
+            "1" if t.sub_lang else "8",
             "--retries",
             "2" if t.sub_lang else "10",
             "--fragment-retries",
@@ -2018,6 +2022,7 @@ class ActiveStreamJob:
             "-o",
             str(out_path),
         ]
+        cmd.extend(ytdlp_js_runtime_args())
         cmd.extend(_ytdlp_compat_args(t.source_url))
         if extractor_args:
             cmd.extend(["--extractor-args", extractor_args])
@@ -2029,7 +2034,11 @@ class ActiveStreamJob:
         if t.referer:
             cmd.extend(["--referer", t.referer])
         if t.sub_lang:
-            cmd.extend(["--write-subs", "--write-auto-subs", "--sub-langs", re.escape(t.sub_lang), "--sub-format", "srt/vtt", "--skip-download"])
+            cmd.extend(["--write-subs", "--write-auto-subs", "--sub-langs", re.escape(t.sub_lang),
+                        "--sub-format", "srt/vtt", "--skip-download",
+                        # 2026-11: YouTube --skip-download tek başına "Requested format is not available"
+                        # üretiyor; geçerli bir ses formatı + JS motoru (n-challenge) şart.
+                        "--ignore-no-formats-error", "-f", "bestaudio/best"])
         cmd.append(_extractor_page_url(t.source_url))
         logger.info("yt-dlp birleştirme kaydı başlatıldı: %s", t.source_url[:80])
         try:
@@ -2097,12 +2106,23 @@ class ActiveStreamJob:
                     key=lambda f: f.stat().st_size,
                     reverse=True,
                 )
-                if rc == 0:
+                # 2026-11: YouTube bazen rc=0 ile hiçbir dosya üretmiyor ya da tersi; kararı
+                # rc'ye değil ELDEKİ GERÇEK ALTYAZI DOSYASINA göre ver (HTML/gzip gövde elenir).
+                if subs or rc == 0:
                     from .hls_streamer import detect_subtitle_kind, normalize_srt_text, normalize_vtt_text, vtt_to_srt
                     for subtitle in subs:
                         if not 0 < subtitle.stat().st_size <= 8 * 1024 * 1024:
                             continue
-                        text = subtitle.read_text(encoding="utf-8-sig", errors="replace")
+                        raw = subtitle.read_bytes()
+                        if raw[:2] == b"\x1f\x8b":  # gzip: YouTube CDN sıkıştırılmış gövde gönderiyor
+                            import gzip
+                            try:
+                                raw = gzip.decompress(raw)
+                            except OSError:
+                                continue
+                        text = raw.decode("utf-8-sig", errors="replace")
+                        if "<!DOCTYPE html" in text[:400] or "<html" in text[:400].lower():
+                            continue  # YouTube hata sayfası/consent gövdesi altyazı DEĞİL
                         kind = detect_subtitle_kind(text)
                         if kind not in ("srt", "vtt"):
                             continue  # HTML/empty/unsupported bodies are not subtitle success.
@@ -2970,6 +2990,7 @@ def _run_ytdlp_probe(
             "--extractor-retries",
             "2",
         ]
+        cmd.extend(ytdlp_js_runtime_args())
         cmd.extend(_ytdlp_compat_args(page_url))
         if extractor_args:
             cmd.extend(["--extractor-args", extractor_args])

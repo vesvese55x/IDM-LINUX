@@ -520,3 +520,17 @@ def ensure_ytdlp(log_fn: Optional[Callable[[str], None]] = None, upgrade: bool =
         except Exception:
             continue
     return False
+
+
+def ytdlp_js_runtime_args():
+    """2026-11: YouTube n-challenge/PO-token çözümü için JS motoru şart.
+    deno/node varsa otomatik geçilir; EJS betikleri yoksa GitHub'dan alınır.
+    Kullanıcının yt-dlp kurulumu DEĞİŞTİRİLMEZ; yalnız bayrak eklenir."""
+    args = []
+    for rt in ("deno", "node"):
+        if shutil.which(rt):
+            args.extend(["--js-runtimes", rt])
+            break
+    if args:
+        args.extend(["--remote-components", "ejs:github"])
+    return args

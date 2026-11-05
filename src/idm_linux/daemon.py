@@ -148,7 +148,8 @@ def _prepare_subtitle_job(job, timeout=20):
         return False
     ready = False
     try:
-        ready = bool(job.wait_complete(timeout=timeout) and not job.failed and job.final_size > 0)
+        size = job.final_size or 0
+        ready = bool(job.wait_complete(timeout=timeout) and not job.failed and size > 0)
         return ready
     finally:
         if not ready:
