@@ -43,11 +43,15 @@ async def main():
   await page.goto('https://www.youtube.com/watch?v=one')
   data={'videoDetails':{'videoId':'one'},'captions':{'playerCaptionsTracklistRenderer':{'captionTracks':[{'baseUrl':'https://www.youtube.com/api/timedtext?v=one&lang=en&fmt=srv3','languageCode':'en','name':{'simpleText':'English'},'kind':'asr'}]}}}
   await page.evaluate('(data)=>{window.ytInitialPlayerResponse=data;dispatchEvent(new Event("yt-player-updated"))}',data)
-  await page.wait_for_function('window.__subMessages.length===1')
+  # The production hook may announce the same track from several detectors; the bar
+  # de-duplicates by normalised key. Assert per-video coverage, not a raw message count.
+  await page.wait_for_function('window.__subMessages.some(m=>m.sourceUrl&&m.sourceUrl.includes("v=one"))')
+  first=await page.evaluate('window.__subMessages.map(m=>m.sourceUrl)')
+  assert set(first)=={'https://www.youtube.com/api/timedtext?v=one&lang=en&fmt=vtt'}, first
   data['videoDetails']['videoId']='two';data['captions']['playerCaptionsTracklistRenderer']['captionTracks'][0]['baseUrl']='https://www.youtube.com/api/timedtext?v=two&lang=en&fmt=srv3'
   await page.evaluate('(data)=>{history.pushState({},"","/watch?v=two");window.ytInitialPlayerResponse=data;dispatchEvent(new Event("yt-navigate-finish"))}',data)
-  await page.wait_for_function('window.__subMessages.length===2')
-  assert len(caption_urls)==2 and all(u.count('fmt=')==1 and 'fmt=vtt' in u for u in caption_urls)
+  await page.wait_for_function('window.__subMessages.some(m=>m.sourceUrl&&m.sourceUrl.includes("v=two"))')
+  assert len(caption_urls)==2 and len({u for u in caption_urls})==2 and all(u.count('fmt=')==1 and 'fmt=vtt' in u for u in caption_urls), caption_urls
   results.append({'source':'chromium','test':'YouTube SPA same-language captions refreshed; one fmt=vtt parameter','status':'PASS'})
   await browser.close()
  out=ROOT/'artifacts/linux-gui';out.mkdir(parents=True,exist_ok=True)
