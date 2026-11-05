@@ -11,3 +11,4 @@ dist/
 *.pkg.tar.zst
 .env
 .DS_Store
+artifacts/

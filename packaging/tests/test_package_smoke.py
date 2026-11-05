@@ -33,6 +33,12 @@ class PackageSmokeTests(unittest.TestCase):
                 with self.assertRaisesRegex(AssertionError, 'background.js'):
                     smoke.verify_payload(payload)
 
+    def test_actual_mixed_case_translated_window_title(self):
+        self.assertTrue(smoke.gui_ready('IDM Linux Kontrol Merkezi — v1.0.0'))
+        self.assertTrue(smoke.gui_ready('IDM Linux Control Center — v1.0.0'))
+        self.assertFalse(smoke.gui_ready('IDM Linux v2.0.0'))
+        self.assertFalse(smoke.gui_ready('unrelated window v1.0.0'))
+
     def test_empty_payload_cannot_pass(self):
         with tempfile.TemporaryDirectory() as directory:
             with patch.object(smoke, 'ROOT', Path(directory)):

@@ -32,6 +32,7 @@ mkdir -p "${STAGE}/DEBIAN" "${STAGE}/opt/${APP_ID}" "${STAGE}/usr/bin" \
 # Uygulama ağacı (yeni düzen: src/idm_linux altında HER ŞEY — packaging/tests/docs hariç)
 tar -cf - --exclude=./.git --exclude=./.github --exclude=./build --exclude=./dist \
   --exclude=./artifacts --exclude=./release-assets --exclude=./release-backup \
+  --exclude=./belgeselsemo-idm-windows-installer.bat --exclude=./promo --exclude=./docs \
   --exclude='__pycache__' --exclude='*.pyc' \
   --exclude=./src/idm_linux/tests --exclude=./src/idm_linux/docs --exclude=./src/idm_linux/packaging \
   . | tar -xf - -C "${STAGE}/opt/${APP_ID}"

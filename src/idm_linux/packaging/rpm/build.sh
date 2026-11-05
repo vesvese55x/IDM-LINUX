@@ -27,6 +27,7 @@ mkdir -p "$TOP/BUILD" "$TOP/RPMS" "$TOP/SOURCES" "$TOP/SPECS" "$TOP/SRPMS" dist
 tar -czf "$TOP/SOURCES/${APP_ID}.tar.gz" \
   --exclude=./.git --exclude=./.github --exclude=./build --exclude=./dist \
   --exclude=./artifacts --exclude=./release-assets --exclude=./release-backup \
+  --exclude=./belgeselsemo-idm-windows-installer.bat --exclude=./promo --exclude=./docs \
   --exclude='__pycache__' --exclude='*.pyc' \
   --exclude=./src/idm_linux/tests --exclude=./src/idm_linux/docs \
   .

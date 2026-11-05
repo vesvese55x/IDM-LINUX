@@ -44,6 +44,10 @@ def verify_payload(payload):
     return checked
 
 
+def gui_ready(tree):
+    return 'idm linux' in tree.lower() and 'v1.0.0' in tree
+
+
 def startup(kind, payload, command, output, mode):
     from PIL import ImageGrab
     checked = verify_payload(payload)
@@ -71,12 +75,13 @@ def startup(kind, payload, command, output, mode):
                         if process.poll() is not None:
                             raise AssertionError('Package GUI exited early: '+log.read_text()[-2000:])
                         tree = run('xwininfo', '-root', '-tree', env=env, capture_output=True, text=True).stdout
-                        if 'IDM LINUX' in tree and '1.0.0' in tree:
+                        if gui_ready(tree):
                             time.sleep(3)
                             break
                         time.sleep(.4)
                     else:
-                        raise AssertionError('Package did not show its production GUI: '+tree[-1500:])
+                        (output/(kind+'-'+page+'-windows.log')).write_text(tree)
+                        raise AssertionError('Package did not show its production GUI: '+tree[:1500])
                     image = ImageGrab.grab(xdisplay=env['DISPLAY'])
                     if len(image.resize((100,100)).getcolors(10001) or []) < 15:
                         raise AssertionError('Blank GUI screen')
