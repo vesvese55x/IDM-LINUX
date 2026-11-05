@@ -21,7 +21,7 @@ on:
         required: false
         default: ''
 permissions:
-  contents: read
+  contents: write
 jobs:
   capture:
     runs-on: ubuntu-24.04
@@ -87,6 +87,21 @@ jobs:
           } > out/KANIT.txt
           cat out/KANIT.txt
           DISPLAY=:99 import -window root out/ekran.png || true
+
+      - name: Kanıtı repoya işle (herkese açık kanıt dalı)
+        if: always()
+        run: |
+          mkdir -p kanit/13
+          cp -f out/KANIT.txt kanit/13/KANIT.txt 2>/dev/null || true
+          cp -f out/ekran.png kanit/13/ekran.png 2>/dev/null || true
+          cp -f out/failures.txt kanit/13/failures.txt 2>/dev/null || true
+          ls -lR kanit/13 || true
+          git config user.name  "capture-13 bot"
+          git config user.email "capture-13@users.noreply.github.com"
+          git checkout -B kanit-13
+          git add -f kanit/13
+          git commit -m "kanit(13): hoster indirme kanitlari $(date -u +%FT%TZ)" || echo "degisiklik yok"
+          git push -f origin kanit-13
 
       - uses: actions/upload-artifact@v4
         if: always()
