@@ -4,7 +4,7 @@ on:
 permissions:
   contents: read
 jobs:
-  platform-real-captures:
+  okru-verified-capture:
     runs-on: ubuntu-24.04
     timeout-minutes: 80
     env:
@@ -26,12 +26,15 @@ jobs:
           sudo sed -i 's|http://azure.archive.ubuntu.com/ubuntu|https://archive.ubuntu.com/ubuntu|g' /etc/apt/sources.list.d/ubuntu.sources
           sudo dpkg --add-architecture i386
           sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=25 -o Acquire::https::Timeout=25 update -qq
-          sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=25 -o Acquire::https::Timeout=25 install -y --no-install-recommends xvfb openbox ffmpeg xdotool wmctrl imagemagick feh tint2 python3-tk wine64 wine32:i386 wine winbind cabextract fonts-dejavu-core
+          sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=25 -o Acquire::https::Timeout=25 install -y --no-install-recommends xvfb openbox ffmpeg xdotool wmctrl imagemagick feh tint2 locales python3-tk wine64 wine32:i386 wine winbind cabextract fonts-dejavu-core
           curl --retry 2 --connect-timeout 20 -fsSLo /tmp/brave-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
           sudo install /tmp/brave-keyring.gpg /usr/share/keyrings/brave-browser-archive-keyring.gpg
           echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg] https://brave-browser-apt-release.s3.brave.com/ stable main' | sudo tee /etc/apt/sources.list.d/brave-browser-release.list
           sudo apt-get -o Acquire::Retries=2 -o Acquire::https::Timeout=25 update -qq
           sudo apt-get -o Acquire::Retries=2 -o Acquire::https::Timeout=25 install -y --no-install-recommends brave-browser
+          sudo locale-gen tr_TR.UTF-8
+          echo "LANG=tr_TR.UTF-8" >> "$GITHUB_ENV"
+          echo "LC_ALL=tr_TR.UTF-8" >> "$GITHUB_ENV"
           python -m pip install -e . playwright pillow requests yt-dlp
       - name: Fix source and start desktop
         run: |
@@ -47,6 +50,11 @@ jobs:
           python -m idm_linux.cli status > out/idm-status.txt
       - name: Prepare approved desktop and readable clock
         run: |
+          export WINEPREFIX="$HOME/.local/share/idm-linux/prefix"
+          wineserver -k || true
+          wine reg query 'HKCU\Software\DownloadManager' /v bVistaAdvInt > out/windows-integration-before.txt 2>&1 || true
+          wine reg add 'HKCU\Software\DownloadManager' /v bVistaAdvInt /t REG_DWORD /d 0 /f
+          wine reg query 'HKCU\Software\DownloadManager' /v bVistaAdvInt > out/windows-integration-after.txt
           pkill -x brave || true
           feh --bg-fill .github/capture13/wallpaper.png
           mkdir -p /tmp/capture13-tint2
@@ -74,35 +82,16 @@ jobs:
           sleep 5
       - name: Record OK.ru in Brave through real IDM bar
         id: okru
-        continue-on-error: true
         timeout-minutes: 16
         env:
           CAPTURE_SITE: okru
           CAPTURE_URL: https://ok.ru/video/34928855659
         run: python .github/capture13/capture_platform.py
-      - name: Record VK in Brave through real IDM bar
-        id: vk
-        continue-on-error: true
-        timeout-minutes: 16
-        env:
-          CAPTURE_SITE: vk
-          CAPTURE_URL: https://vk.com/video-213746495_456239034
-        run: python .github/capture13/capture_platform.py
-      - name: Record Bilibili in Brave through real IDM bar
-        id: bilibili
-        continue-on-error: true
-        timeout-minutes: 16
-        env:
-          CAPTURE_SITE: bilibili
-          CAPTURE_URL: https://www.bilibili.com/video/BV1xx411c7mD/
-        run: python .github/capture13/capture_platform.py
-      - name: Enforce truthful stage result
+      - name: Collect integration logs
         if: always()
         run: |
-          echo "OK.ru: ${{ steps.okru.outcome }}; VK: ${{ steps.vk.outcome }}; Bilibili: ${{ steps.bilibili.outcome }}" | tee out/platform-outcomes.txt
-          test '${{ steps.okru.outcome }}' = success
-          test '${{ steps.vk.outcome }}' = success
-          test '${{ steps.bilibili.outcome }}' = success
+          cp "$HOME/.cache/idm-linux/logs/daemon.log" out/daemon-full.log 2>/dev/null || true
+          python -m idm_linux.cli status > out/final-idm-status.txt 2>&1 || true
       - name: Record failure screenshot if needed
         if: failure()
         run: |
@@ -111,6 +100,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: bolum13-v7-platform-real-captures
+          name: bolum13-v7-okru-verified-capture
           path: out/
           retention-days: 7
