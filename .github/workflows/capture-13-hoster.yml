@@ -4,9 +4,9 @@ on:
 permissions:
   contents: read
 jobs:
-  youtube-real-capture:
+  platform-real-captures:
     runs-on: ubuntu-24.04
-    timeout-minutes: 65
+    timeout-minutes: 80
     env:
       DISPLAY: ':99'
       DEBIAN_FRONTEND: noninteractive
@@ -26,7 +26,7 @@ jobs:
           sudo sed -i 's|http://azure.archive.ubuntu.com/ubuntu|https://archive.ubuntu.com/ubuntu|g' /etc/apt/sources.list.d/ubuntu.sources
           sudo dpkg --add-architecture i386
           sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=25 -o Acquire::https::Timeout=25 update -qq
-          sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=25 -o Acquire::https::Timeout=25 install -y --no-install-recommends xvfb openbox ffmpeg xdotool wmctrl imagemagick python3-tk wine64 wine32:i386 wine winbind cabextract fonts-dejavu-core
+          sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=25 -o Acquire::https::Timeout=25 install -y --no-install-recommends xvfb openbox ffmpeg xdotool wmctrl imagemagick feh tint2 python3-tk wine64 wine32:i386 wine winbind cabextract fonts-dejavu-core
           curl --retry 2 --connect-timeout 20 -fsSLo /tmp/brave-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
           sudo install /tmp/brave-keyring.gpg /usr/share/keyrings/brave-browser-archive-keyring.gpg
           echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg] https://brave-browser-apt-release.s3.brave.com/ stable main' | sudo tee /etc/apt/sources.list.d/brave-browser-release.list
@@ -45,16 +45,64 @@ jobs:
         run: |
           python -m idm_linux.cli install --cli --yes --skip-pkgs 2>&1 | tee out/install-idm.log
           python -m idm_linux.cli status > out/idm-status.txt
-      - name: Real Brave menu and complete 4K download recording
-        timeout-minutes: 35
+      - name: Prepare approved desktop and readable clock
         run: |
+          pkill -x brave || true
+          feh --bg-fill .github/capture13/wallpaper.png
+          mkdir -p /tmp/capture13-tint2
+          cat > /tmp/capture13-tint2/tint2rc <<'EOF'
+          panel_items = TC
+          panel_size = 100% 48
+          panel_position = bottom center horizontal
+          panel_background_id = 0
+          time1_format = %H:%M:%S
+          time1_font = DejaVu Sans Bold 12
+          time2_format = %d.%m.%Y
+          time2_font = DejaVu Sans 10
+          clock_padding = 18 3
+          clock_font_color = #ffffff 100
+          taskbar_mode = single_desktop
+          EOF
+          tint2 -c /tmp/capture13-tint2/tint2rc >out/taskbar.log 2>&1 &
+          /usr/bin/python3 .github/capture13/desktop_card.py >out/system-card.log 2>&1 &
+          xdotool key Escape || true
           python -m idm_linux.cli daemon-run >out/daemon.log 2>&1 &
           sleep 6
           EXT="$HOME/.local/share/idm-linux/extensions/chromium"
           test -f "$EXT/manifest.json"
           brave-browser --no-sandbox --no-first-run --disable-dev-shm-usage --remote-debugging-port=9222 --user-data-dir=/tmp/capture13-brave --load-extension="$EXT" --window-position=380,40 --window-size=1500,940 about:blank >out/brave.log 2>&1 &
           sleep 5
-          python .github/capture13/capture_youtube.py
+      - name: Record OK.ru in Brave through real IDM bar
+        id: okru
+        continue-on-error: true
+        timeout-minutes: 16
+        env:
+          CAPTURE_SITE: okru
+          CAPTURE_URL: https://ok.ru/video/34928855659
+        run: python .github/capture13/capture_platform.py
+      - name: Record VK in Brave through real IDM bar
+        id: vk
+        continue-on-error: true
+        timeout-minutes: 16
+        env:
+          CAPTURE_SITE: vk
+          CAPTURE_URL: https://vk.com/video-213746495_456239034
+        run: python .github/capture13/capture_platform.py
+      - name: Record Bilibili in Brave through real IDM bar
+        id: bilibili
+        continue-on-error: true
+        timeout-minutes: 16
+        env:
+          CAPTURE_SITE: bilibili
+          CAPTURE_URL: https://www.bilibili.com/video/BV1xx411c7mD/
+        run: python .github/capture13/capture_platform.py
+      - name: Enforce truthful stage result
+        if: always()
+        run: |
+          echo "OK.ru: ${{ steps.okru.outcome }}; VK: ${{ steps.vk.outcome }}; Bilibili: ${{ steps.bilibili.outcome }}" | tee out/platform-outcomes.txt
+          test '${{ steps.okru.outcome }}' = success
+          test '${{ steps.vk.outcome }}' = success
+          test '${{ steps.bilibili.outcome }}' = success
       - name: Record failure screenshot if needed
         if: failure()
         run: |
@@ -63,6 +111,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: bolum13-v7-youtube-real-capture
+          name: bolum13-v7-platform-real-captures
           path: out/
           retention-days: 7
