@@ -4,9 +4,9 @@ on:
 permissions:
   contents: read
 jobs:
-  desktop-preflight:
+  quality-regression:
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -15,43 +15,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install real desktop and capture tools
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y xvfb openbox ffmpeg xdotool imagemagick python3-tk wine64 wine winbind cabextract fonts-dejavu-core
-          curl -fsSLo /tmp/brave-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
-          sudo install /tmp/brave-keyring.gpg /usr/share/keyrings/brave-browser-archive-keyring.gpg
-          echo 'deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg] https://brave-browser-apt-release.s3.brave.com/ stable main' | sudo tee /etc/apt/sources.list.d/brave-browser-release.list
-          sudo apt-get update -qq
-          sudo apt-get install -y brave-browser
-          python -m pip install -e . playwright pillow requests yt-dlp
-      - name: Preserve runner facts and check latest release
+      - name: Apply quality and audio mux fixes with regression assertion
+        env:
+          PYTHONPATH: src
         run: |
           mkdir -p out
-          python - <<'PY'
-          import json,urllib.request,platform,subprocess
-          d=json.load(urllib.request.urlopen('https://api.github.com/repos/vesvese55x/IDM-LINUX/releases/latest'))
-          json.dump({'release':d['tag_name'],'source_commit':'${{ github.sha }}','platform':platform.platform(),'node':subprocess.check_output(['node','--version'],text=True).strip(),'phase':'desktop preflight only, no completed downloads claimed'},open('out/environment.json','w'),indent=2)
-          PY
-          python -m idm_linux.cli --help > out/cli-help.txt
-      - name: Start Brave and real screen recording
-        env:
-          DISPLAY: ':99'
-        run: |
-          Xvfb :99 -screen 0 1920x1080x24 >out/xvfb.log 2>&1 &
-          sleep 2
-          openbox >out/openbox.log 2>&1 &
-          brave-browser --no-sandbox --no-first-run --disable-dev-shm-usage --remote-debugging-port=9222 --user-data-dir=/tmp/bolum13-brave 'https://www.youtube.com/watch?v=LXb3EKWsInQ' >out/brave.log 2>&1 &
-          ffmpeg -y -v warning -f x11grab -video_size 1920x1080 -framerate 24 -i :99 -t 35 -an -c:v libx264 -preset ultrafast -crf 23 -bf 0 out/runner-desktop-preflight.mp4
-          import -window root out/runner-desktop.png
-          python - <<'PY'
-          import urllib.request,json
-          data=json.load(urllib.request.urlopen('http://127.0.0.1:9222/json/list'))
-          json.dump([{'type':t.get('type'),'title':t.get('title'),'url':t.get('url')} for t in data],open('out/brave-tabs.json','w'),indent=2)
-          PY
+          python -m pip install -e .
+          python .github/capture13/apply_quality_fix.py | tee out/regression.txt
+          git diff -- src/idm_linux/stream_engine.py > out/quality-fix.patch
+          python -m compileall -q src/idm_linux
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: bolum13-v7-runner-preflight
+          name: bolum13-v7-quality-regression
           path: out/
           retention-days: 7
