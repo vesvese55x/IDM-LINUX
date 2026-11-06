@@ -1,4 +1,4 @@
-import os,time,json,subprocess,signal
+import os,time,json,subprocess,signal,hashlib,shutil
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 site=os.environ.get('CAPTURE_SITE','youtube')
@@ -73,7 +73,7 @@ try:
   if not completed:raise RuntimeError('No IDM completion dialog within 10 minutes')
   event('idm_completion_dialog_seen');time.sleep(8)
   candidates=[]
-  for root in [Path.home()/'Downloads',Path.home()/'.local/share/idm-linux/prefix/drive_c/users']:
+  for root in [Path.home()]:
    if root.exists():
     for f in root.rglob('*'):
      if f.is_file() and f.suffix.lower() in ['.mp4','.mkv','.webm'] and f.stat().st_mtime>=epoch:
@@ -82,7 +82,13 @@ try:
        if any(s.get('height',0)>=min_height for s in d['streams']) and any(s.get('codec_type')=='audio' for s in d['streams']):candidates.append((f,d))
       except Exception:pass
   if not candidates:raise RuntimeError('Completion not accepted: no newly downloaded video with required resolution and audio verified')
-  f,d=candidates[0];(R/'download-ffprobe.json').write_text(json.dumps(d,indent=2));event('VERIFIED_VIDEO_WITH_AUDIO',file=str(f),bytes=f.stat().st_size)
+  f,d=candidates[0]
+  retained=R/('download-original'+f.suffix);shutil.copyfile(f,retained)
+  h=hashlib.sha256()
+  with retained.open('rb') as source:
+   for chunk in iter(lambda:source.read(4*1024*1024),b''):h.update(chunk)
+  (R/'download-ffprobe.json').write_text(json.dumps(d,indent=2))
+  event('VERIFIED_VIDEO_WITH_AUDIO',file=str(f),retained=str(retained),bytes=f.stat().st_size,sha256=h.hexdigest())
 except Exception as e:
  subprocess.run(['import','-window','root',str(R/'failure.png')],check=False)
  event('FAIL',reason=str(e));raise

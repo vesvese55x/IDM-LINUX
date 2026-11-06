@@ -4,7 +4,7 @@ on:
 permissions:
   contents: read
 jobs:
-  okru-verified-capture:
+  platform-verified-capture:
     runs-on: ubuntu-24.04
     timeout-minutes: 80
     env:
@@ -82,11 +82,39 @@ jobs:
           sleep 5
       - name: Record OK.ru in Brave through real IDM bar
         id: okru
+        continue-on-error: true
         timeout-minutes: 16
         env:
           CAPTURE_SITE: okru
           CAPTURE_URL: https://ok.ru/video/34928855659
         run: python .github/capture13/capture_platform.py
+      - name: Record VK in Brave through real IDM bar
+        continue-on-error: true
+        timeout-minutes: 16
+        env:
+          CAPTURE_SITE: vk
+          CAPTURE_URL: https://vk.com/video-213746495_456239034
+        run: python .github/capture13/capture_platform.py
+      - name: Record Bilibili in Brave through real IDM bar
+        continue-on-error: true
+        timeout-minutes: 16
+        env:
+          CAPTURE_SITE: bilibili
+          CAPTURE_URL: https://www.bilibili.com/video/BV1xx411c7mD
+        run: python .github/capture13/capture_platform.py
+      - name: Require three genuinely verified downloads
+        run: |
+          python - <<'PYTEST'
+          import json
+          from pathlib import Path
+          states={}
+          for site in ['okru','vk','bilibili']:
+              p=Path('out')/site/'events.json'
+              events=json.loads(p.read_text()) if p.exists() else []
+              states[site]=any(e['event']=='VERIFIED_VIDEO_WITH_AUDIO' for e in events)
+          Path('out/platform-verification.json').write_text(json.dumps(states,indent=2))
+          assert all(states.values()), states
+          PYTEST
       - name: Collect integration logs
         if: always()
         run: |
@@ -100,6 +128,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: bolum13-v7-okru-verified-capture
+          name: bolum13-v7-platform-verified-capture
           path: out/
           retention-days: 7
