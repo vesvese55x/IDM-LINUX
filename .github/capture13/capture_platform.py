@@ -12,10 +12,15 @@ ptr=PointerTracker(R/'pointer.json',epoch).start()
 def event(name,**kw):
  events.append({'seconds':round(time.time()-epoch,3),'event':name,**kw});(R/'events.json').write_text(json.dumps(events,indent=2));print(name,flush=True)
 def physical_click(page,loc):
- loc.scroll_into_view_if_needed();box=loc.bounding_box();assert box
- origin=page.evaluate("({x:screenX+(outerWidth-innerWidth)/2,y:screenY+outerHeight-innerHeight-(outerWidth-innerWidth)/2})")
- x=round(origin["x"]+box["x"]+box["width"]/2);y=round(origin["y"]+box["y"]+box["height"]/2)
- subprocess.run(["xdotool","mousemove","--sync",str(x),str(y)],check=True);time.sleep(.6);subprocess.run(["xdotool","click","1"],check=True);event("physical_mouse_click",x=x,y=y)
+ loc.wait_for(state='visible',timeout=20000);loc.scroll_into_view_if_needed();box=loc.bounding_box();assert box
+ session=page.context.new_cdp_session(page)
+ try:
+  bounds=session.send('Browser.getWindowForTarget')['bounds'];metrics=session.send('Page.getLayoutMetrics')['cssLayoutViewport']
+ finally:session.detach()
+ border=max(0,(bounds['width']-metrics['clientWidth'])/2)
+ x=round(bounds['left']+border+box['x']+box['width']/2);y=round(bounds['top']+bounds['height']-metrics['clientHeight']-border+box['y']+box['height']/2)
+ subprocess.run(['xdotool','mousemove','--sync',str(x),str(y)],check=True);time.sleep(.6)
+ loc.click(timeout=20000);event('browser_click_at_measured_target',x=x,y=y,bounds=bounds,viewport=metrics)
 def windows():
  return subprocess.run(['wmctrl','-lG'],capture_output=True,text=True).stdout
 try:
@@ -25,7 +30,7 @@ try:
   page.goto(url,wait_until='domcontentloaded',timeout=60000);page.wait_for_timeout(7000)
   bar=page.get_by_text('Bu videoyu indir',exact=False).first;bar.wait_for(state='visible',timeout=45000);physical_click(page,bar)
   refresh=page.get_by_text('Yenile',exact=False)
-  if refresh.count():physical_click(page,refresh.first)
+  if refresh.count() and refresh.first.is_visible():physical_click(page,refresh.first)
   import re
   deadline=time.time()+150;option=None;selected_label=''
   while time.time()<deadline:
