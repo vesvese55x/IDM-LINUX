@@ -1,128 +1,57 @@
 name: capture-13-hoster
-# 13. bölüm — hoster indirmeleri (OK.ru / VK.ru / Bilibili) GERÇEK indirme + SHA kanıtı
-# Linux runner'da Xvfb + Chromium + IDM Linux kurulur, indirme gerçekten yapılır.
 on:
   workflow_dispatch:
-    inputs:
-      sites:
-        description: 'Boşlukla ayrılmış liste (okru vk bilibili)'
-        required: false
-        default: 'okru vk bilibili'
-      url_okru:
-        description: 'OK.ru video URL (opsiyonel)'
-        required: false
-        default: ''
-      url_vk:
-        description: 'VK video URL (opsiyonel)'
-        required: false
-        default: ''
-      url_bilibili:
-        description: 'Bilibili video URL (opsiyonel)'
-        required: false
-        default: ''
 permissions:
-  contents: write
+  contents: read
 jobs:
-  capture:
+  desktop-preflight:
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
-
-      - name: Sistem bağımlılıkları
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install real desktop and capture tools
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg xvfb x11-utils imagemagick xdotool wmctrl \
-            python3-pip python3-tk nodejs >/dev/null
-          pip install --quiet --upgrade yt-dlp
-
-      - name: Sanal ekran (Xvfb 1920x1080)
+          sudo apt-get install -y xvfb openbox ffmpeg xdotool imagemagick python3-tk wine64 wine winbind cabextract fonts-dejavu-core
+          curl -fsSLo /tmp/brave-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
+          sudo install /tmp/brave-keyring.gpg /usr/share/keyrings/brave-browser-archive-keyring.gpg
+          echo 'deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg] https://brave-browser-apt-release.s3.brave.com/ stable main' | sudo tee /etc/apt/sources.list.d/brave-browser-release.list
+          sudo apt-get update -qq
+          sudo apt-get install -y brave-browser
+          python -m pip install -e . playwright pillow requests yt-dlp
+      - name: Preserve runner facts and check latest release
         run: |
-          Xvfb :99 -screen 0 1920x1080x24 &
-          sleep 2
-          echo "DISPLAY=:99" >> $GITHUB_ENV
-          xdpyinfo -display :99 | head -5 || true
-
-      - name: IDM Linux kur (repo kopyası)
-        run: |
-          python3 -m pip install --quiet -e .
-          python3 -m idm_linux.cli status || true
-          python3 -m idm_linux.cli daemon-run & sleep 8
-          python3 -m idm_linux.cli status || true
-
-      - name: Gerçek indirmeler (yt-dlp ile, IDM motoru)
-        env:
-          SITES: ${{ github.event.inputs.sites }}
-          U_OKRU: ${{ github.event.inputs.url_okru }}
-          U_VK: ${{ github.event.inputs.url_vk }}
-          U_BILI: ${{ github.event.inputs.url_bilibili }}
-        run: |
-          set -uo pipefail
           mkdir -p out
-          UA="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
-          for s in $SITES; do
-            case "$s" in
-              okru)     URL="${U_OKRU:-https://ok.ru/video/1268782176776}" ;;
-              vk)       URL="${U_VK:-https://vk.com/video-225303604_456239056}" ;;
-              bilibili) URL="${U_BILI:-https://www.bilibili.com/video/BV1xx411c7mD}" ;;
-              idm-release) URL="https://github.com/vesvese55x/IDM-LINUX/releases/download/v1.0.0/IDM-LINUX-1.0.0-x86_64.AppImage" ;;
-              *) echo "bilinmeyen site: $s"; continue ;;
-            esac
-            echo "== $s : $URL"
-            if ! yt-dlp --no-warnings --retries 3 --no-playlist \
-                   --user-agent "$UA" --add-header "Referer:https://www.bilibili.com/" \
-                   -f "bv*+ba/b" --merge-output-format mp4 \
-                   -o "out/${s}-%(title).80s.%(ext)s" "$URL" 2>&1 | tail -8; then
-              echo "FAIL $s ($URL)" | tee -a out/failures.txt
-            fi
-          done
-          ls -l out
-          if [ -s out/failures.txt ]; then
-            echo "::error::bazı siteler indirilemedi"; cat out/failures.txt
-            exit 1
-          fi
-
-      - name: Kanıt üret (SHA + ffprobe + ekran görüntüsü)
-        if: always()
+          python - <<'PY'
+          import json,urllib.request,platform,subprocess
+          d=json.load(urllib.request.urlopen('https://api.github.com/repos/vesvese55x/IDM-LINUX/releases/latest'))
+          json.dump({'release':d['tag_name'],'source_commit':'${{ github.sha }}','platform':platform.platform(),'node':subprocess.check_output(['node','--version'],text=True).strip(),'phase':'desktop preflight only, no completed downloads claimed'},open('out/environment.json','w'),indent=2)
+          PY
+          python -m idm_linux.cli --help > out/cli-help.txt
+      - name: Start Brave and real screen recording
+        env:
+          DISPLAY: ':99'
         run: |
-          {
-            echo "# 13. bölüm hoster indirme kanıtı"
-            echo "Tarih: $(date -u)"
-            for f in out/*; do
-              [ -f "$f" ] || continue
-              case "$f" in *KANIT*|*ekran*|*failures*) continue ;; esac
-              echo "## $f"
-              ls -l "$f"
-              file "$f"
-              ffprobe -v error -show_entries format=duration,size,format_name \
-                -show_entries stream=codec_name,width,height -of default=noprint_wrappers=1 "$f" 2>/dev/null || true
-              sha256sum "$f"
-              echo
-            done
-            echo "## ortam"
-            yt-dlp --version; ffmpeg -version | head -1
-          } > out/KANIT.txt
-          cat out/KANIT.txt
-          DISPLAY=:99 import -window root out/ekran.png || true
-
-      - name: Kanıtı repoya işle (herkese açık kanıt dalı)
-        if: always()
-        run: |
-          mkdir -p kanit/13
-          cp -f out/KANIT.txt kanit/13/KANIT.txt 2>/dev/null || true
-          cp -f out/ekran.png kanit/13/ekran.png 2>/dev/null || true
-          cp -f out/failures.txt kanit/13/failures.txt 2>/dev/null || true
-          ls -lR kanit/13 || true
-          git config user.name  "capture-13 bot"
-          git config user.email "capture-13@users.noreply.github.com"
-          git checkout -B kanit-13
-          git add -f kanit/13
-          git commit -m "kanit(13): hoster indirme kanitlari $(date -u +%FT%TZ)" || echo "degisiklik yok"
-          git push -f origin kanit-13
-
+          Xvfb :99 -screen 0 1920x1080x24 >out/xvfb.log 2>&1 &
+          sleep 2
+          openbox >out/openbox.log 2>&1 &
+          brave-browser --no-sandbox --no-first-run --disable-dev-shm-usage --remote-debugging-port=9222 --user-data-dir=/tmp/bolum13-brave 'https://www.youtube.com/watch?v=LXb3EKWsInQ' >out/brave.log 2>&1 &
+          ffmpeg -y -v warning -f x11grab -video_size 1920x1080 -framerate 24 -i :99 -t 35 -an -c:v libx264 -preset ultrafast -crf 23 -bf 0 out/runner-desktop-preflight.mp4
+          import -window root out/runner-desktop.png
+          python - <<'PY'
+          import urllib.request,json
+          data=json.load(urllib.request.urlopen('http://127.0.0.1:9222/json/list'))
+          json.dump([{'type':t.get('type'),'title':t.get('title'),'url':t.get('url')} for t in data],open('out/brave-tabs.json','w'),indent=2)
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: hoster-kanit
+          name: bolum13-v7-runner-preflight
           path: out/
-          retention-days: 14
+          retention-days: 7
