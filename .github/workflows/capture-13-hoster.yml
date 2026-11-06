@@ -4,9 +4,13 @@ on:
 permissions:
   contents: read
 jobs:
-  quality-regression:
+  youtube-real-capture:
     runs-on: ubuntu-24.04
-    timeout-minutes: 8
+    timeout-minutes: 65
+    env:
+      DISPLAY: ':99'
+      DEBIAN_FRONTEND: noninteractive
+      WINEDEBUG: '-all'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -15,18 +19,50 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Apply quality and audio mux fixes with regression assertion
-        env:
-          PYTHONPATH: src
+      - name: Fast mirror and bounded desktop dependencies
+        timeout-minutes: 15
         run: |
           mkdir -p out
-          python -m pip install -e .
-          python .github/capture13/apply_quality_fix.py | tee out/regression.txt
-          git diff -- src/idm_linux/stream_engine.py > out/quality-fix.patch
-          python -m compileall -q src/idm_linux
+          sudo sed -i 's|http://azure.archive.ubuntu.com/ubuntu|https://archive.ubuntu.com/ubuntu|g' /etc/apt/sources.list.d/ubuntu.sources
+          sudo dpkg --add-architecture i386
+          sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=25 -o Acquire::https::Timeout=25 update -qq
+          sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=25 -o Acquire::https::Timeout=25 install -y --no-install-recommends xvfb openbox ffmpeg xdotool wmctrl imagemagick python3-tk wine64 wine32:i386 wine winbind cabextract fonts-dejavu-core
+          curl --retry 2 --connect-timeout 20 -fsSLo /tmp/brave-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
+          sudo install /tmp/brave-keyring.gpg /usr/share/keyrings/brave-browser-archive-keyring.gpg
+          echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg] https://brave-browser-apt-release.s3.brave.com/ stable main' | sudo tee /etc/apt/sources.list.d/brave-browser-release.list
+          sudo apt-get -o Acquire::Retries=2 -o Acquire::https::Timeout=25 update -qq
+          sudo apt-get -o Acquire::Retries=2 -o Acquire::https::Timeout=25 install -y --no-install-recommends brave-browser
+          python -m pip install -e . playwright pillow requests yt-dlp
+      - name: Fix source and start desktop
+        run: |
+          PYTHONPATH=src python .github/capture13/apply_quality_fix.py | tee out/quality-tests.txt
+          Xvfb :99 -screen 0 1920x1080x24 >out/xvfb.log 2>&1 &
+          sleep 2
+          openbox >out/openbox.log 2>&1 &
+          sleep 2
+      - name: Install official IDM through current IDM Linux
+        timeout-minutes: 12
+        run: |
+          python -m idm_linux.cli install --cli --yes --skip-pkgs 2>&1 | tee out/install-idm.log
+          python -m idm_linux.cli status > out/idm-status.txt
+      - name: Real Brave menu and complete 4K download recording
+        timeout-minutes: 35
+        run: |
+          python -m idm_linux.cli daemon-run >out/daemon.log 2>&1 &
+          sleep 6
+          EXT="$HOME/.local/share/idm-linux/extensions/chromium"
+          test -f "$EXT/manifest.json"
+          brave-browser --no-sandbox --no-first-run --disable-dev-shm-usage --remote-debugging-port=9222 --user-data-dir=/tmp/capture13-brave --load-extension="$EXT" --window-position=380,40 --window-size=1500,940 about:blank >out/brave.log 2>&1 &
+          sleep 5
+          python .github/capture13/capture_youtube.py
+      - name: Record failure screenshot if needed
+        if: failure()
+        run: |
+          import -window root out/failure-desktop.png || true
+          df -h > out/disk.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: bolum13-v7-quality-regression
+          name: bolum13-v7-youtube-real-capture
           path: out/
           retention-days: 7
