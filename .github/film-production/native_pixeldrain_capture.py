@@ -69,6 +69,14 @@ def measured_browser_rect(client,rect,tag):
  save(tag+'-measured-transform.json',{'css_metrics':metrics,'real_viewport_pixels':[viewport.shape[1],viewport.shape[0]],'measured_viewport_origin':origin,'actual_pixel_match':score,'DOM_target_rect':rect,'method':'unmodified actual DevTools viewport matched to actual X11 desktop, not spoofable window.screenX/Y'})
  assert score>.985,'No confidently matched actual viewport; do not click'
  return [rect[0]+origin[0],rect[1]+origin[1],rect[2]+origin[0],rect[3]+origin[1]]
+def browser_controls(client,tag):
+ values=client.read("""(()=>{let out=[];function walk(root){for(let e of root.querySelectorAll('*')){if(e.shadowRoot)walk(e.shadowRoot);if(e.matches('button,cr-button,cr-icon-button,[role=menuitem],[role=button]')){let r=e.getBoundingClientRect();let visible=r.width>0&&r.height>0&&(typeof e.checkVisibility!=='function'||e.checkVisibility({checkOpacity:true,checkVisibilityCSS:true}));if(visible)out.push({tag:e.tagName,id:e.id,label:e.getAttribute('aria-label')||e.getAttribute('title')||e.innerText||'',text:e.innerText||'',rect:[r.left,r.top,r.right,r.bottom]});}}}walk(document);return out;})()""")
+ save(tag+'-actual-controls.json',values);return values
+def find_browser_control(values,labels):
+ matches=[v for v in values if v['label'].strip() in labels or v['text'].strip() in labels]
+ unique={tuple(round(x,1) for x in v['rect']):v for v in matches}
+ assert len(unique)==1,{'need_one_visible_control_named':labels,'actual_matches':matches}
+ return next(iter(unique.values()))
 def native(tag):
  shot(tag+'-before-probe')
  with (O/(tag+'-raw.txt')).open('wb') as out,(O/(tag+'-stderr.txt')).open('wb') as err:subprocess.run(['wine',str(probe)],stdout=out,stderr=err,check=True,timeout=30)
@@ -115,11 +123,12 @@ try:
  save('actual-download-button-dom.json',candidates);assert candidates,'Visible genuine Download button was not identified'
  # Keep only the actual source window visible over the genuine approved desktop.
  rows=subprocess.check_output(['wmctrl','-lx'],text=True).splitlines()
+ save('actual-x11-windows-before-placement.json',rows)
  source_rows=[l for l in rows if 'brave' in l.lower() and name in l]
  assert len(source_rows)==1,'Require one actual source-page window'
  source_wid=source_rows[0].split()[0]
  for l in rows:
-  if 'brave' in l.lower() and l.split()[0]!=source_wid:subprocess.run(['xdotool','windowminimize',l.split()[0]],check=True)
+  if l.split()[0]!=source_wid and not any(x in l.lower() for x in ['xfce4-panel','xfdesktop']):subprocess.run(['xdotool','windowminimize',l.split()[0]],check=True)
  subprocess.run(['wmctrl','-ia',source_wid],check=True)
  subprocess.run(['wmctrl','-ir',source_wid,'-e','0,380,55,1480,930'],check=True);time.sleep(.7)
  # Re-read rects after actual window placement/reflow.
@@ -137,12 +146,23 @@ try:
  actual_url=begin['url'];u=urlsplit(actual_url)
  assert u.scheme=='https' and u.hostname==parts.hostname and u.path=='/api/file/'+file_id and u.query in ['download','download='],'Unexpected download address/token; stop'
  keys('ctrl+j');time.sleep(2);downloads=connect_url('chrome://downloads')
- cancel=downloads.read("(()=>{let m=document.querySelector('downloads-manager');if(!m||!m.shadowRoot)return null;let items=[...m.shadowRoot.querySelectorAll('downloads-item')];for(let i of items){let s=i.shadowRoot;if(!s)continue;let a=s.querySelector('#file-link');let b=s.querySelector('#cancel');if(a&&b&&a.textContent.includes("+json.dumps(name)+")){let r=b.getBoundingClientRect();if(r.width>0&&r.height>0)return {name:a.textContent,rect:[r.left,r.top,r.right,r.bottom]};}}return null;})()")
- save('browser-actual-cancel-control.json',cancel);shot('03-browser-downloads-before-cancel')
- if not cancel:
-  # Stop the real browser transfer if DOM differs, but do not certify a physical UI action.
-  browser.command('Browser.cancelDownload',{'guid':begin['guid']});event('browser-transfer-cancelled-by-command-not-physical');raise AssertionError('Real browser Cancel control not located; stopped browser transfer. Inspect actual UI before proceeding')
- physical(measured_browser_rect(downloads,cancel['rect'],'03-cancel-target'),'actual-browser-download-cancel');time.sleep(1);shot('04-browser-transfer-cancelled')
+ controls=browser_controls(downloads,'03-downloads')
+ shot('03-browser-downloads-before-copy')
+ copy=find_browser_control(controls,['İndirme bağlantısını kopyala','Copy download link'])
+ physical(measured_browser_rect(downloads,copy['rect'],'03-copy-link-target'),'actual-browser-copy-download-link');time.sleep(.3)
+ import tkinter as tk
+ clipboard=tk.Tk();clipboard.withdraw()
+ try:copied_url=clipboard.clipboard_get()
+ finally:clipboard.destroy()
+ assert copied_url==actual_url,'Only the genuine browser-copied public download URL may be pasted into native IDM'
+ event('actual-browser-clipboard-url-verified')
+ controls=browser_controls(downloads,'03-before-more-actions')
+ more=find_browser_control(controls,['Diğer işlemler','Diğer eylemler','Diğer seçenekler','More actions','Other actions','More options'])
+ physical(measured_browser_rect(downloads,more['rect'],'03-more-actions-target'),'actual-browser-more-actions');time.sleep(.3)
+ shot('03-browser-actual-actions-menu');controls=browser_controls(downloads,'03-actual-actions-menu')
+ cancel=find_browser_control(controls,['İptal','İndirmeyi iptal et','Cancel','Cancel download'])
+ physical(measured_browser_rect(downloads,cancel['rect'],'03-cancel-target'),'actual-browser-download-cancel');time.sleep(.7)
+ shot('04-browser-transfer-cancelled');save('actual-browser-download-events-after-cancel.json',browser.events)
  keys('ctrl+w');time.sleep(.5)
  # Direct ordinary public URL Add is deliberately manual, not browser interception.
  activate('Internet Download Manager');shot('05-native-before-url-add')
@@ -150,7 +170,7 @@ try:
  physical([pos[0],pos[1],pos[0]+icon.shape[1],pos[1]+icon.shape[0]],'native-url-add-icon');time.sleep(.5)
  cc,tt,ww=native('06-native-url-add');assert 'İndirilecek yeni adresi girin' in ww
  edits=[c for c in cc if c['visible'] and c['class']=='Edit' and not c['style']&0x08000000];assert len(edits)==1
- physical(edits[0]['rect'],'native-address-input');keys('ctrl+a');type_ascii(actual_url);button(cc,'Tamam');time.sleep(3)
+ physical(edits[0]['rect'],'native-address-input');keys('ctrl+a');keys('ctrl+v');event('actual-native-paste-from-browser-clipboard');button(cc,'Tamam');time.sleep(3)
  cc,tt,ww=native('07-native-file-information');assert any('Dosya İndirme Bilgisi' in w for w in ww)
  paths=[c for c in cc if c['visible'] and c['class'] in ['Edit','ComboBox'] and name in c['text'] and not c['text'].startswith(('http:','https:'))];assert paths,'Original source filename must be present unchanged in a native filename/path field'
  save('native-original-filename-controls.json',paths);event('native-original-filename-read-back',name=name)
@@ -177,6 +197,11 @@ try:
  result.update(native_completion_window_seen=completed,native_progress_pause_control_seen=progress,original_filename_on_disk=True,downloaded_files=[str(p) for p in verified],downloaded_sha256_match=True,vendor_binaries_unchanged=unchanged,browser_interception_verified=False,manual_url_add_route_verified=True,actual_native_transfer_verified=True)
  save('actual-pixeldrain-review.json',result);shot('08-native-completion-verified');time.sleep(3)
 except Exception as e:
+ if browser is not None:
+  for ev in browser.events:
+   if ev.get('method')=='Browser.downloadWillBegin':
+    try:browser.command('Browser.cancelDownload',{'guid':ev['params']['guid']})
+    except Exception:pass
  result.update(failure_type=type(e).__name__,failure=str(e),actual_native_transfer_verified=False)
  save('actual-pixeldrain-review.json',result);shot('stopped-on-real-state');raise
 finally:
