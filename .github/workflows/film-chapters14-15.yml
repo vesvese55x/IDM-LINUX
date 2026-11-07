@@ -60,7 +60,9 @@ jobs:
             xfce4-session >out/film14-preflight/desktop.log 2>&1 &
             sleep 5
             if [ "${{ github.event.inputs.stage }}" != "linux-gui-preflight" ]; then
-              .venv-film/bin/python .github/film-production/native_turkish_preflight.py || exit $?
+              EXTRA=""
+              if [ "${{ github.event.inputs.stage }}" = "linux-native-fileinfo-turkish-check" ]; then EXTRA="--isolated-fileinfo"; fi
+              .venv-film/bin/python .github/film-production/native_turkish_preflight.py $EXTRA || exit $?
               if [ "${{ github.event.inputs.stage }}" = "linux-native-fileinfo-turkish-check" ]; then
                 .venv-film/bin/python .github/film-production/native_fileinfo_turkish.py || exit $?
               fi
