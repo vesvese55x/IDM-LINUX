@@ -9,6 +9,8 @@ from idm_linux.wine_sender import build_wine_env
 from idm_linux.installer import resolve_effective_idm_language
 from turkish_quality_gate import assert_clean,catalogue_gate
 O=Path('out/film14-native-turkish');O.mkdir(parents=True,exist_ok=True);catalogue_gate(O)
+from desktop_style import apply_desktop_style
+apply_desktop_style(O/'desktop-style')
 # User-owned demonstration directory, not a renamed third-party download.
 cfg=IdmLinuxConfig.load();assert cfg.find_idm_exe() is None,'Expected an isolated fresh CI installation; do not reset existing state';cfg.language='tr';cfg.download_dir=str(Path.home()/'İndirilenler'/'Türkçe_ÇĞİÖŞÜ_çğıöşü');Path(cfg.download_dir).mkdir(parents=True,exist_ok=True);cfg.save()
 # Configure only ordinary regional/UI language settings before the first native launch.
@@ -59,7 +61,7 @@ env=build_wine_env(cfg);env.update(LANG='tr_TR.UTF-8',LC_ALL='tr_TR.UTF-8')
 subprocess.run(['i686-w64-mingw32-gcc','-O2','-o',str(O/'native-turkish-probe.exe'),'.github/film-production/native_turkish_probe.c','-lgdi32','-luser32'],check=True)
 # Initialize a credential-free CI browser before the vendor may open its welcome page.
 # No account, password, keyring unlock, human verification or browser download is performed.
-subprocess.Popen(['brave-browser','--no-sandbox','--no-first-run','--disable-sync','--password-store=basic','--disable-background-mode','about:blank'],stdout=open(O/'credential-free-browser.log','w'),stderr=subprocess.STDOUT)
+subprocess.Popen(['brave-browser','--no-sandbox','--no-first-run','--disable-sync','--password-store=basic','--disable-background-mode','--lang=tr-TR','--remote-debugging-port=9222','--remote-allow-origins=http://127.0.0.1:9222','about:blank'],stdout=open(O/'credential-free-browser.log','w'),stderr=subprocess.STDOUT)
 time.sleep(3)
 # Open the original vendor executable directly; no wrapper hooks or native download.
 subprocess.Popen(['wine',str(exe)],env=env,stdout=open(O/'unmodified-native-open.log','w'),stderr=subprocess.STDOUT)

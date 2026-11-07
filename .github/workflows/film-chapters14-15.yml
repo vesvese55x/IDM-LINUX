@@ -5,8 +5,13 @@ on:
       stage:
         description: 'Preparation is not a completed download lesson'
         type: choice
-        options: [linux-gui-preflight, linux-native-turkish-preflight, linux-native-fileinfo-turkish-check, linux-native-transfer-turkish-check]
+        options: [linux-gui-preflight, linux-native-turkish-preflight, linux-native-fileinfo-turkish-check, linux-native-transfer-turkish-check, linux-native-pixeldrain-capture]
         default: linux-gui-preflight
+      source_page_url:
+        description: 'User-authorized public Pixeldrain page URL. Never enter passwords or API keys.'
+        type: string
+        required: false
+        default: ''
 permissions:
   contents: read
 concurrency:
@@ -17,6 +22,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     env:
+      FILM_SOURCE_PAGE_URL: ${{ github.event.inputs.source_page_url }}
       DISPLAY: ':99'
       TZ: Europe/Istanbul
       LANG: tr_TR.UTF-8
@@ -25,6 +31,9 @@ jobs:
       HF_HUB_DISABLE_TELEMETRY: '1'
     steps:
       - uses: actions/checkout@v4
+      - name: Mask runtime source URL in subsequent logs
+        run: |
+          if [ -n "$FILM_SOURCE_PAGE_URL" ]; then echo "::add-mask::$FILM_SOURCE_PAGE_URL"; fi
       - name: Prepare actual desktop and fonts
         run: |
           sudo apt-get update -qq
@@ -52,6 +61,7 @@ jobs:
           .venv-film/bin/pip install yt-dlp websockets websocket-client requests opencv-python-headless
       - name: Record real read-only control-panel preparation
         run: |
+          if [ -n "$FILM_SOURCE_PAGE_URL" ]; then echo "::add-mask::$FILM_SOURCE_PAGE_URL"; fi
           mkdir -p out/film14-preflight
           Xvfb :99 -screen 0 1920x1080x24 -dpi 96 >out/film14-preflight/xvfb.log 2>&1 &
           for n in $(seq 1 40); do xdpyinfo -display :99 >/dev/null 2>&1 && break; sleep .25; done
@@ -64,9 +74,13 @@ jobs:
               if [ "${{ github.event.inputs.stage }}" != "linux-native-turkish-preflight" ]; then EXTRA="--isolated-fileinfo"; fi
               .venv-film/bin/python .github/film-production/native_turkish_preflight.py $EXTRA || exit $?
               if [ "${{ github.event.inputs.stage }}" != "linux-native-turkish-preflight" ]; then
+                if [ "${{ github.event.inputs.stage }}" = "linux-native-pixeldrain-capture" ]; then
+                  .venv-film/bin/python .github/film-production/native_pixeldrain_capture.py || exit $?
+                else
                 TRANSFER=""
                 if [ "${{ github.event.inputs.stage }}" = "linux-native-transfer-turkish-check" ]; then TRANSFER="--transfer"; fi
                 .venv-film/bin/python .github/film-production/native_fileinfo_turkish.py $TRANSFER || exit $?
+                fi
               fi
             else
               .venv-film/bin/python .github/film-production/runner_preflight.py
