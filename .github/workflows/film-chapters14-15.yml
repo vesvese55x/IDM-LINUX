@@ -44,7 +44,7 @@ jobs:
           sudo dpkg --add-architecture i386
           sudo apt-get update -qq
           sudo apt-get install -y -qq wine wine32:i386 wine64 fonts-wine fonts-liberation2 fonts-wqy-zenhei gcc-mingw-w64-i686
-          .venv-film/bin/pip install yt-dlp websockets websocket-client requests
+          .venv-film/bin/pip install yt-dlp websockets websocket-client requests opencv-python-headless
       - name: Record real read-only control-panel preparation
         run: |
           mkdir -p out/film14-preflight

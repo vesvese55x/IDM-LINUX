@@ -102,6 +102,8 @@ assert not text_failures,'Actual raw native text is still corrupted; inspect the
 assert probe.returncode==0 and fonts and all(r['missing_turkish_glyphs']==0 for r in fonts),'Actual native GDI font is missing Turkish glyphs'
 assert acp==1254,'Wine ANSI codepage is not Turkish1254; do not certify legacy text'
 assert windows>0 and len(found)>=2,'Actual Turkish native menu evidence is insufficient; no successful native lesson claimed'
+# Inspect actual settings dialogs without changing or saving any setting.
+subprocess.run([os.sys.executable,'.github/film-production/native_settings_readonly.py'],env=env,check=True,timeout=240)
 # Keep real native application processes, but minimize their actual windows before separate wrapper screenshots.
 for line in subprocess.check_output(['wmctrl','-l'],text=True).splitlines():
  if 'xfce' not in line.lower():subprocess.run(['xdotool','windowminimize',line.split()[0]],check=False)
