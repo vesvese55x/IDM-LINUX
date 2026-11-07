@@ -24,7 +24,10 @@ server=ThreadingHTTPServer(('127.0.0.1',0),Handler);threading.Thread(target=serv
 probe=Path('out/film14-native-turkish/native-turkish-probe.exe').resolve()
 def snapshot(tag):
  subprocess.run(['import','-window','root',str(O/(tag+'-before-probe.png'))],check=True)
- r=subprocess.run(['wine',str(probe)],stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=True,timeout=30);raw=r.stdout.decode('utf8',errors='strict');(O/(tag+'-raw.txt')).write_text(raw)
+ # Use regular files: an inherited Wine background-process pipe must not look like a hung UI.
+ with (O/(tag+'-raw.txt')).open('wb') as stdout,(O/(tag+'-stderr.txt')).open('wb') as stderr:
+  subprocess.run(['wine',str(probe)],stdout=stdout,stderr=stderr,check=True,timeout=30)
+ raw=(O/(tag+'-raw.txt')).read_bytes().decode('utf8',errors='strict')
  controls=[];texts=[];titles=[]
  for line in raw.splitlines():
   a=line.split('\t')
@@ -43,6 +46,11 @@ def button(controls,label):
  assert len(matches)==1,{'stop':'Unambiguous actual native button required','label':label,'matches':matches}
  click(matches[0])
 try:
+ # Dismiss only the known first-run Tip window before touching the underlying toolbar.
+ for line in subprocess.check_output(['wmctrl','-l'],text=True).splitlines():
+  if 'günün ipucu' in line.lower():
+   subprocess.run(['wmctrl','-ia',line.split()[0]],check=True);subprocess.run(['xdotool','key','Escape'],check=True);time.sleep(.5)
+ assert not any('günün ipucu' in line.lower() for line in subprocess.check_output(['wmctrl','-l'],text=True).splitlines()),'Known Tip dialog is still open; do not click through it'
  for line in subprocess.check_output(['wmctrl','-lx'],text=True).splitlines():
   if 'Internet Download Manager' in line and 'brave' not in line.lower():subprocess.run(['wmctrl','-ia',line.split()[0]],check=True)
  time.sleep(.7);subprocess.run(['import','-window','root',str(O/'before.png')],check=True)
