@@ -1,0 +1,58 @@
+name: Film chapters 14-15 — genuine GUI runner
+on:
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: 'Preparation is not a completed download lesson'
+        type: choice
+        options: [linux-gui-preflight]
+        default: linux-gui-preflight
+permissions:
+  contents: read
+concurrency:
+  group: film-production-${{ github.event.inputs.stage }}
+  cancel-in-progress: false
+jobs:
+  genuine-gui-preflight:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      DISPLAY: ':99'
+      TZ: Europe/Istanbul
+      LANG: tr_TR.UTF-8
+      LC_ALL: tr_TR.UTF-8
+      HF_HUB_DISABLE_TELEMETRY: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare actual desktop and fonts
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb xfce4 xfce4-terminal dbus-x11 xdotool wmctrl imagemagick ffmpeg python3-tk python3-venv fonts-noto-core fonts-noto-cjk fonts-noto-color-emoji locales x11-xserver-utils
+          sudo locale-gen tr_TR.UTF-8
+          python3 -m venv --system-site-packages .venv-film
+          .venv-film/bin/pip install -e . pillow
+      - name: Install official Brave, without credentials
+        run: |
+          sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
+          echo 'deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg] https://brave-browser-apt-release.s3.brave.com/ stable main' | sudo tee /etc/apt/sources.list.d/brave-browser-release.list >/dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq brave-browser
+      - name: Record real read-only control-panel preparation
+        run: |
+          mkdir -p out/film14-preflight
+          Xvfb :99 -screen 0 1920x1080x24 -dpi 96 >out/film14-preflight/xvfb.log 2>&1 &
+          for n in $(seq 1 40); do xdpyinfo -display :99 >/dev/null 2>&1 && break; sleep .25; done
+          printf 'Xft.dpi: 96\nXcursor.size: 24\n' | xrdb -merge
+          dbus-run-session -- bash -c '
+            xfce4-session >out/film14-preflight/desktop.log 2>&1 &
+            sleep 5
+            .venv-film/bin/python .github/film-production/runner_preflight.py
+          '
+      - name: Preserve evidence, not a finished lesson claim
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: film14-genuine-gui-preflight-${{ github.run_id }}
+          path: out/film14-preflight/
+          retention-days: 7
+          if-no-files-found: warn
