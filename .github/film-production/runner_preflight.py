@@ -35,6 +35,7 @@ for line in subprocess.check_output(['xfconf-query','-c','xfce4-panel','-lv'],te
  if prop.endswith('/digital-format'):setpanel(prop,'string',"<span font='DejaVu Sans Bold 10'>%H:%M:%S</span>\n<span font='DejaVu Sans 8'>%d.%m.%Y</span>")
  if prop.endswith('/timezone'):setpanel(prop,'string','Europe/Istanbul')
 subprocess.run(['xfconf-query','-c','xfce4-desktop','-p','/backdrop/screen0/monitorscreen0/workspace0/image-style','--create','--type','int','-s','3'],check=False)
+subprocess.run(['xfce4-panel','--restart'],check=False,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 subprocess.run(['xfdesktop','--reload'],check=False)
 original=tk.Tk.__init__
 def allwidgets(w):

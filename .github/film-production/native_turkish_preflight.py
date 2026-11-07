@@ -10,6 +10,34 @@ from turkish_quality_gate import assert_clean,catalogue_gate
 O=Path('out/film14-native-turkish');O.mkdir(parents=True,exist_ok=True);catalogue_gate(O)
 # User-owned demonstration directory, not a renamed third-party download.
 cfg=IdmLinuxConfig.load();assert cfg.find_idm_exe() is None,'Expected an isolated fresh CI installation; do not reset existing state';cfg.language='tr';cfg.download_dir=str(Path.home()/'İndirilenler'/'Türkçe_ÇĞİÖŞÜ_çğıöşü');Path(cfg.download_dir).mkdir(parents=True,exist_ok=True);cfg.save()
+# Configure only ordinary regional/UI language settings before the first native launch.
+from idm_linux.installer import initialize_wine_prefix
+initialize_wine_prefix(cfg,log_fn=lambda message:None)
+locale_env=build_wine_env(cfg);locale_env.update(LANG='tr_TR.UTF-8',LC_ALL='tr_TR.UTF-8',LANGUAGE='tr_TR:tr',LC_MESSAGES='tr_TR.UTF-8')
+regional=r"""Windows Registry Editor Version 5.00
+
+[HKEY_CURRENT_USER\Control Panel\International]
+"Locale"="0000041f"
+"LocaleName"="tr-TR"
+"sLanguage"="TRK"
+"sCountry"="Türkiye"
+[HKEY_CURRENT_USER\Control Panel\Desktop]
+"PreferredUILanguages"=hex(7):74,00,72,00,2d,00,54,00,52,00,00,00,00,00
+[HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Nls\Language]
+"Default"="041f"
+"InstallLanguage"="041f"
+[HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Nls\CodePage]
+"ACP"="1254"
+"OEMCP"="857"
+"MACCP"="10081"
+"""
+regional_file=O/'ordinary-turkish-regional-settings.reg';regional_file.write_bytes(b'\xff\xfe'+regional.replace('\n','\r\n').encode('utf-16-le'))
+subprocess.run(['wine','regedit','/S',str(regional_file.resolve())],env=locale_env,check=True,timeout=60)
+# Restart the new Wine session, retaining every prefix/registry file; this is not a trial reset.
+subprocess.run(['wineserver','-k'],env=locale_env,check=True,timeout=30)
+subprocess.run(['wineserver','-w'],env=locale_env,check=True,timeout=30)
+os.environ.update({k:locale_env[k] for k in ['LANG','LC_ALL','LANGUAGE','LC_MESSAGES']})
+
 # Supported application installer, fresh CI environment. No reset/update/repair of existing licensing state.
 with (O/'normal-install.log').open('w') as log:
  result=subprocess.run([os.sys.executable,'-m','idm_linux.cli','install','--cli','--yes','--skip-pkgs'],stdout=log,stderr=subprocess.STDOUT,timeout=900)
@@ -23,17 +51,32 @@ subprocess.Popen([os.sys.executable,'-m','idm_linux.cli','open'],stdout=open(O/'
 # Finite startup wait, no clicking unexpected dialogs and no human verification automation.
 time.sleep(15)
 probe=subprocess.run(['wine',str((O/'native-turkish-probe.exe').resolve())],env=env,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=90);raw=probe.stdout.decode('utf-8',errors='strict');(O/'native-font-and-text-readonly.txt').write_text(raw);(O/'native-probe-stderr.txt').write_bytes(probe.stderr)
-rows=[];fonts=[];acp=None;windows=0
+subprocess.run(['import','-window','root',str(O/'actual-native-application-before-text-gate.png')],check=True)
+owner_locales=[]
+for entry in Path('/proc').iterdir():
+ if not entry.name.isdigit():continue
+ try:
+  name=(entry/'comm').read_text().strip()
+  if name.lower()!='idman.exe':continue
+  proc_env=dict(x.split(b'=',1) for x in (entry/'environ').read_bytes().split(b'\0') if b'=' in x)
+  if proc_env.get(b'WINEPREFIX',b'').decode()!=cfg.wine_prefix:continue
+  owner_locales.append({'pid':int(entry.name),'locale_only':{k:proc_env.get(k.encode(),b'').decode(errors='strict') for k in ['LANG','LC_ALL','LC_MESSAGES','LANGUAGE']}})
+ except (OSError,UnicodeDecodeError):continue
+rows=[];fonts=[];acp=None;windows=0;text_failures=[]
 for line in raw.splitlines():
  fields=line.split('\t')
  if fields[0]=='ACP':acp=int(fields[1])
  elif fields[0] in ['TEXT','MENU','WINDOW'] and len(fields)>1:
-  text=bytes.fromhex(fields[1]).decode('utf-8',errors='strict');assert_clean(text);rows.append({'kind':fields[0],'text':text});windows+=fields[0]=='WINDOW'
+  text=bytes.fromhex(fields[1]).decode('utf-8',errors='strict')
+  try:assert_clean(text)
+  except AssertionError as e:text_failures.append(str(e))
+  rows.append({'kind':fields[0],'text':text});windows+=fields[0]=='WINDOW'
  elif fields[0]=='FONT':fonts.append({'actual_native_font':bytes.fromhex(fields[1]).decode('utf-8'),'missing_turkish_glyphs':int(fields[2])})
-menus=[r['text'].replace('&','') for r in rows if r['kind']=='MENU'];tokens=['Görev','Dosya','İndir','Görünüm','Yardım'];found=[token for token in tokens if any(token in text for text in menus)]
+menus=[r['text'].replace('&','') for r in rows if r['kind'] in ['MENU','TEXT']];tokens=['Görev','Dosya','İndir','Görünüm','Yardım','Kategoriler','Şunu bul','Ayarlar'];found=[token for token in tokens if any(token in text for text in menus)]
 subprocess.run(['import','-window','root',str(O/'actual-native-application.png')],check=True)
-report={'scope':'actual native main-window/menu and GDI preflight, not a completed chapter or all-dialogue certification','native_executable_sha256':hashlib.file_digest(exe.open('rb'),'sha256').hexdigest(),'original_turkish_language_resource_sha256':hashlib.file_digest(lng.open('rb'),'sha256').hexdigest(),'selected_language_id':langid,'language_file':langfile,'actual_wine_ansi_codepage':acp,'actual_visible_native_windows':windows,'actual_native_fonts':fonts,'actual_native_texts':rows,'turkish_native_menu_tokens_found':found,'native_probe_exit':probe.returncode,'all_download_dialogues_verified':False,'final_episode_export_allowed':False,'no_trial_or_license_reset_called':True}
+report={'scope':'actual native main-window/menu and GDI preflight, not a completed chapter or all-dialogue certification','native_executable_sha256':hashlib.file_digest(exe.open('rb'),'sha256').hexdigest(),'original_turkish_language_resource_sha256':hashlib.file_digest(lng.open('rb'),'sha256').hexdigest(),'selected_language_id':langid,'language_file':langfile,'read_only_probe_process_ansi_codepage':acp,'actual_native_owner_process_locales':owner_locales,'raw_native_text_quality_failures':text_failures,'actual_visible_native_windows':windows,'actual_native_fonts':fonts,'actual_native_texts':rows,'turkish_native_menu_tokens_found':found,'native_probe_exit':probe.returncode,'all_download_dialogues_verified':False,'final_episode_export_allowed':False,'no_trial_or_license_reset_called':True}
 (O/'native-turkish-preflight.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
+assert not text_failures,'Actual raw native text is still corrupted; inspect the real screenshot, never repaint labels'
 assert probe.returncode==0 and fonts and all(r['missing_turkish_glyphs']==0 for r in fonts),'Actual native GDI font is missing Turkish glyphs'
 assert acp==1254,'Wine ANSI codepage is not Turkish1254; do not certify legacy text'
 assert windows>0 and len(found)>=2,'Actual Turkish native menu evidence is insufficient; no successful native lesson claimed'
