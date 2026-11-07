@@ -43,7 +43,12 @@ jobs:
         run: |
           sudo dpkg --add-architecture i386
           sudo apt-get update -qq
-          sudo apt-get install -y -qq wine wine32:i386 wine64 fonts-wine fonts-liberation2 fonts-wqy-zenhei gcc-mingw-w64-i686
+          sudo mkdir -pm755 /etc/apt/keyrings
+          sudo curl -fsSLo /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key
+          sudo curl -fsSLo /etc/apt/sources.list.d/winehq-noble.sources https://dl.winehq.org/wine-builds/ubuntu/dists/noble/winehq-noble.sources
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --install-recommends winehq-stable fonts-liberation2 fonts-wqy-zenhei gcc-mingw-w64-i686
+          wine --version
           .venv-film/bin/pip install yt-dlp websockets websocket-client requests opencv-python-headless
       - name: Record real read-only control-panel preparation
         run: |

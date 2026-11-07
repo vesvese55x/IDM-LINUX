@@ -69,7 +69,11 @@ for index,name in [(100,'url'),(110,'scheduler')]:
   inspect(101)
  if name=='scheduler':
   assert receipts[-1]['tab_counts']==[2],'Unexpected scheduler tab layout'
-  subprocess.run(['xdotool','key','ctrl+Tab'],check=True);time.sleep(.5)
+  screen=cv2.imread(str(shot('111-before-queue-tab')))
+  tab=cv2.imread('.github/film-production/actual-native-queue-tab.png')
+  _,tabscore,_,tabpos=cv2.minMaxLoc(cv2.matchTemplate(screen,tab,cv2.TM_CCOEFF_NORMED))
+  assert tabscore>.985,{'stop':'Actual queue tab label not matched; no click','score':tabscore}
+  subprocess.run(['xdotool','mousemove',str(tabpos[0]+tab.shape[1]//2),str(tabpos[1]+tab.shape[0]//2),'click','1'],check=True);time.sleep(.5)
   inspect(111)
   assert receipts[-1]['selected_tab_indices']==[1],'Actual second scheduler tab not selected'
  subprocess.run(['xdotool','key','Escape'],check=True);time.sleep(.3)
