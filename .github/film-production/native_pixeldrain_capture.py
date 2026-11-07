@@ -2,7 +2,8 @@
 No automatic interception claim; no CAPTCHA/quota/authentication bypass, no renamed output.
 Source URL is workflow input, never committed. The downloaded source media is NOT an artifact.
 """
-import os,json,time,subprocess,signal,hashlib,re,sys,traceback
+import os,json,time,subprocess,signal,hashlib,re,sys,traceback,base64
+import numpy as np
 from pathlib import Path
 from urllib.parse import urlsplit
 import requests,websocket,cv2
@@ -52,6 +53,22 @@ def connect_url(prefix):
   if ts:return CDP(ts[0])
   time.sleep(.4)
  raise AssertionError('Actual browser target did not appear; stop, never paint a substitute page')
+def measured_browser_rect(client,rect,tag):
+ # Brave may intentionally report screenX/Y/outer dimensions unlike the real X11 window.
+ # Match an actual read-only viewport screenshot to the actual desktop. Never move/paint DOM.
+ metrics=client.command('Page.getLayoutMetrics')
+ png=base64.b64decode(client.command('Page.captureScreenshot',{'format':'png','captureBeyondViewport':False})['data'])
+ (O/(tag+'-actual-viewport.png')).write_bytes(png)
+ viewport=cv2.imdecode(np.frombuffer(png,np.uint8),cv2.IMREAD_COLOR)
+ css=metrics['cssLayoutViewport'];ratio=viewport.shape[1]/css['clientWidth']
+ assert abs(ratio-1)<.01,'Non-unit real viewport scale; stop instead of guessing coordinates'
+ shot(tag+'-desktop')
+ screen=cv2.imread(str(O/(tag+'-desktop.png')))
+ reference=viewport[:min(430,viewport.shape[0]),:min(780,viewport.shape[1])]
+ _,score,_,origin=cv2.minMaxLoc(cv2.matchTemplate(screen,reference,cv2.TM_CCOEFF_NORMED))
+ save(tag+'-measured-transform.json',{'css_metrics':metrics,'real_viewport_pixels':[viewport.shape[1],viewport.shape[0]],'measured_viewport_origin':origin,'actual_pixel_match':score,'DOM_target_rect':rect,'method':'unmodified actual DevTools viewport matched to actual X11 desktop, not spoofable window.screenX/Y'})
+ assert score>.985,'No confidently matched actual viewport; do not click'
+ return [rect[0]+origin[0],rect[1]+origin[1],rect[2]+origin[0],rect[3]+origin[1]]
 def native(tag):
  shot(tag+'-before-probe')
  with (O/(tag+'-raw.txt')).open('wb') as out,(O/(tag+'-stderr.txt')).open('wb') as err:subprocess.run(['wine',str(probe)],stdout=out,stderr=err,check=True,timeout=30)
@@ -96,10 +113,19 @@ try:
  browser.command('Browser.setDownloadBehavior',{'behavior':'allow','downloadPath':str(temporary),'eventsEnabled':True})
  candidates=browser.read("[...document.querySelectorAll('button,a')].map(e=>{let r=e.getBoundingClientRect();return {text:e.innerText.trim(),rect:[r.left,r.top,r.right,r.bottom],visible:r.width>0&&r.height>0}}).filter(x=>x.visible&&/^(download\\s*){1,2}$/i.test(x.text))")
  save('actual-download-button-dom.json',candidates);assert candidates,'Visible genuine Download button was not identified'
- viewport=browser.read('({x:window.screenX,y:window.screenY,outerHeight:window.outerHeight,innerHeight:window.innerHeight,outerWidth:window.outerWidth,innerWidth:window.innerWidth,dpr:devicePixelRatio})')
- assert viewport['dpr']==1 and abs(viewport['outerWidth']-viewport['innerWidth'])<10,viewport
- dx=viewport['x'];dy=viewport['y']+viewport['outerHeight']-viewport['innerHeight'];save('browser-viewport-transform.json',viewport)
- r=candidates[0]['rect'];physical([r[0]+dx,r[1]+dy,r[2]+dx,r[3]+dy],'actual-pixeldrain-download-button')
+ # Keep only the actual source window visible over the genuine approved desktop.
+ rows=subprocess.check_output(['wmctrl','-lx'],text=True).splitlines()
+ source_rows=[l for l in rows if 'brave' in l.lower() and name in l]
+ assert len(source_rows)==1,'Require one actual source-page window'
+ source_wid=source_rows[0].split()[0]
+ for l in rows:
+  if 'brave' in l.lower() and l.split()[0]!=source_wid:subprocess.run(['xdotool','windowminimize',l.split()[0]],check=True)
+ subprocess.run(['wmctrl','-ia',source_wid],check=True)
+ subprocess.run(['wmctrl','-ir',source_wid,'-e','0,380,55,1480,930'],check=True);time.sleep(.7)
+ # Re-read rects after actual window placement/reflow.
+ candidates=browser.read("[...document.querySelectorAll('button,a')].map(e=>{let r=e.getBoundingClientRect();return {text:e.innerText.trim(),rect:[r.left,r.top,r.right,r.bottom],visible:r.width>0&&r.height>0}}).filter(x=>x.visible&&/^(download\\s*){1,2}$/i.test(x.text))")
+ assert candidates,'Actual Download control disappeared after layout'
+ physical(measured_browser_rect(browser,candidates[0]['rect'],'02-download-target'),'actual-pixeldrain-download-button')
  deadline=time.monotonic()+25;begin=None
  while time.monotonic()<deadline:
   browser.command('Runtime.evaluate',{'expression':'document.title','returnByValue':True})
@@ -116,7 +142,8 @@ try:
  if not cancel:
   # Stop the real browser transfer if DOM differs, but do not certify a physical UI action.
   browser.command('Browser.cancelDownload',{'guid':begin['guid']});event('browser-transfer-cancelled-by-command-not-physical');raise AssertionError('Real browser Cancel control not located; stopped browser transfer. Inspect actual UI before proceeding')
- vp=downloads.read('({x:screenX,y:screenY,h:outerHeight-innerHeight})');r=cancel['rect'];physical([r[0]+vp['x'],r[1]+vp['y']+vp['h'],r[2]+vp['x'],r[3]+vp['y']+vp['h']],'actual-browser-download-cancel');time.sleep(1);shot('04-browser-transfer-cancelled')
+ physical(measured_browser_rect(downloads,cancel['rect'],'03-cancel-target'),'actual-browser-download-cancel');time.sleep(1);shot('04-browser-transfer-cancelled')
+ keys('ctrl+w');time.sleep(.5)
  # Direct ordinary public URL Add is deliberately manual, not browser interception.
  activate('Internet Download Manager');shot('05-native-before-url-add')
  im=cv2.imread(str(O/'05-native-before-url-add.png'));icon=cv2.imread('.github/film-production/actual-native-url-icon.png');_,score,_,pos=cv2.minMaxLoc(cv2.matchTemplate(im,icon,cv2.TM_CCOEFF_NORMED));assert score>.985,'Unverified native icon'
