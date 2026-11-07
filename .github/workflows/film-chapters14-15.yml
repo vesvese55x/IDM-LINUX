@@ -5,7 +5,7 @@ on:
       stage:
         description: 'Preparation is not a completed download lesson'
         type: choice
-        options: [linux-gui-preflight, linux-native-turkish-preflight]
+        options: [linux-gui-preflight, linux-native-turkish-preflight, linux-native-fileinfo-turkish-check]
         default: linux-gui-preflight
 permissions:
   contents: read
@@ -39,7 +39,7 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq brave-browser
       - name: Prepare normal native Wine installation dependencies
-        if: github.event.inputs.stage == 'linux-native-turkish-preflight'
+        if: github.event.inputs.stage != 'linux-gui-preflight'
         run: |
           sudo dpkg --add-architecture i386
           sudo apt-get update -qq
@@ -59,8 +59,11 @@ jobs:
           dbus-run-session -- bash -c '
             xfce4-session >out/film14-preflight/desktop.log 2>&1 &
             sleep 5
-            if [ "${{ github.event.inputs.stage }}" = "linux-native-turkish-preflight" ]; then
+            if [ "${{ github.event.inputs.stage }}" != "linux-gui-preflight" ]; then
               .venv-film/bin/python .github/film-production/native_turkish_preflight.py || exit $?
+              if [ "${{ github.event.inputs.stage }}" = "linux-native-fileinfo-turkish-check" ]; then
+                .venv-film/bin/python .github/film-production/native_fileinfo_turkish.py || exit $?
+              fi
             else
               .venv-film/bin/python .github/film-production/runner_preflight.py
             fi
