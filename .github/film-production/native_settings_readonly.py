@@ -60,5 +60,17 @@ for index,name in [(100,'url'),(110,'scheduler')]:
  tx=pos[0]+icon.shape[1]//2;ty=pos[1]+icon.shape[0]//2
  subprocess.run(['xdotool','mousemove',str(tx),str(ty),'click','1'],check=True);time.sleep(.7)
  inspect(index)
+ if name=='url':
+  dialogs=[line for line in windows() if 'İndirilecek yeni adresi girin' in line]
+  assert len(dialogs)==1,'Do not act on an unexpected dialog'
+  dialog=dialogs[0].split()[0]
+  subprocess.run(['xdotool','windowminimize',dialog],check=True);time.sleep(.4)
+  subprocess.run(['wmctrl','-ia',dialog],check=True);time.sleep(1)
+  inspect(101)
+ if name=='scheduler':
+  assert receipts[-1]['tab_counts']==[2],'Unexpected scheduler tab layout'
+  subprocess.run(['xdotool','key','ctrl+Tab'],check=True);time.sleep(.5)
+  inspect(111)
+  assert receipts[-1]['selected_tab_indices']==[1],'Actual second scheduler tab not selected'
  subprocess.run(['xdotool','key','Escape'],check=True);time.sleep(.3)
  shot(f'{index}-after-cancel-{name}')
