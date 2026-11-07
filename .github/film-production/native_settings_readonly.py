@@ -44,8 +44,13 @@ def inspect(index):
  assert all(f['missing_tr_glyphs']==0 for f in fonts),'A sampled font lacks Turkish glyphs'
  return counts
 counts=inspect(1);assert counts and 1<=max(counts)<=20,'Actual native tab control was not found; stop rather than fabricate settings coverage'
-for index in range(2,max(counts)+1):
- subprocess.run(['xdotool','key','ctrl+Tab'],check=True);time.sleep(.4);inspect(index)
+seen=set(receipts[-1]['selected_tab_indices']);attempt=1
+while seen!=set(range(max(counts))) and attempt<2*max(counts):
+ attempt+=1
+ # A new native property page may briefly consume the shortcut while it initializes.
+ # Inspect every attempt; success still requires all nine actual selected indices.
+ subprocess.run(['xdotool','key','--clearmodifiers','ctrl+Tab'],check=True);time.sleep(.8);inspect(attempt)
+ seen.update(receipts[-1]['selected_tab_indices'])
 assert {r['selected_tab_indices'][0] for r in receipts if r['selected_tab_indices']}==set(range(max(counts))),'All real native settings tabs must be observed, not merely nine screenshots'
 # Escape cancels this genuine settings dialog; no Apply/OK or data field editing.
 subprocess.run(['xdotool','key','Escape'],check=True);shot('99-after-cancel')
