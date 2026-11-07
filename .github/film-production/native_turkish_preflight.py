@@ -57,10 +57,20 @@ cfg=IdmLinuxConfig.load();exe=cfg.find_idm_exe();assert exe and exe.is_file();ln
 langid,langfile=resolve_effective_idm_language(cfg);assert cfg.language=='tr' and langid==0x1f and langfile=='idm_tr.lng','Would fall back to non-Turkish native language'
 env=build_wine_env(cfg);env.update(LANG='tr_TR.UTF-8',LC_ALL='tr_TR.UTF-8')
 subprocess.run(['i686-w64-mingw32-gcc','-O2','-o',str(O/'native-turkish-probe.exe'),'.github/film-production/native_turkish_probe.c','-lgdi32','-luser32'],check=True)
+# Initialize a credential-free CI browser before the vendor may open its welcome page.
+# No account, password, keyring unlock, human verification or browser download is performed.
+subprocess.Popen(['brave-browser','--no-sandbox','--no-first-run','--disable-sync','--password-store=basic','--disable-background-mode','about:blank'],stdout=open(O/'credential-free-browser.log','w'),stderr=subprocess.STDOUT)
+time.sleep(3)
 # Open the original vendor executable directly; no wrapper hooks or native download.
 subprocess.Popen(['wine',str(exe)],env=env,stdout=open(O/'unmodified-native-open.log','w'),stderr=subprocess.STDOUT)
 # Finite startup wait, no clicking unexpected dialogs and no human verification automation.
 time.sleep(15)
+# Reveal actual native UI, rather than accepting a desktop screenshot obscured by the welcome browser.
+for line in subprocess.check_output(['wmctrl','-lx'],text=True).splitlines():
+ if 'brave' in line.lower():subprocess.run(['xdotool','windowminimize',line.split()[0]],check=False)
+for line in subprocess.check_output(['wmctrl','-l'],text=True).splitlines():
+ if 'Internet Download Manager' in line:subprocess.run(['wmctrl','-ia',line.split()[0]],check=False)
+time.sleep(1)
 probe=subprocess.run(['wine',str((O/'native-turkish-probe.exe').resolve())],env=env,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=90);raw=probe.stdout.decode('utf-8',errors='strict');(O/'native-font-and-text-readonly.txt').write_text(raw);(O/'native-probe-stderr.txt').write_bytes(probe.stderr)
 subprocess.run(['import','-window','root',str(O/'actual-native-application-before-text-gate.png')],check=True)
 owner_locales=[]
