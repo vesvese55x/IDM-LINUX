@@ -1,12 +1,17 @@
 """Own local fixture -> genuine native File Information dialog, then Cancel.
 No native transfer start; not a Pixeldrain/playlist lesson or completion proof.
 """
-import json,time,threading,subprocess,hashlib
+import os,json,time,threading,subprocess,hashlib
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler,ThreadingHTTPServer
 from urllib.parse import quote,unquote,urlsplit
 import cv2
 from turkish_quality_gate import assert_clean
+from idm_linux.config import IdmLinuxConfig
+from idm_linux.wine_sender import build_wine_env
+cfg=IdmLinuxConfig.load()
+assert cfg.find_idm_exe() and (Path(cfg.wine_prefix)/'system.reg').is_file(),'Inspect only the already prepared native environment; never initialize/reset another prefix'
+os.environ.update(build_wine_env(cfg))
 O=Path('out/film14-native-turkish/fileinfo');O.mkdir(parents=True,exist_ok=True)
 name='Türkçe_ÇĞİÖŞÜ_çğıöşü.txt';body=('Bu dosya yalnızca Türkçe dosya adı ve arayüz kontrolü için oluşturulmuştur.\n'*512).encode('utf8');requests=[]
 class Handler(BaseHTTPRequestHandler):
@@ -62,7 +67,7 @@ try:
  click(edits[0]);url='http://127.0.0.1:'+str(server.server_port)+'/'+quote(name)
  subprocess.run(['xdotool','key','--clearmodifiers','ctrl+a'],check=True);subprocess.run(['xdotool','type','--clearmodifiers','--delay','1',url],check=True);button(controls,'Tamam');time.sleep(2)
  controls,texts,titles=snapshot('02-actual-file-information')
- (O/'fileinfo-review.json').write_text(json.dumps({'scope':'own local fixture, native File Information only; not a transfer lesson','original_fixture_filename':name,'fixture_bytes':len(body),'fixture_sha256':hashlib.sha256(body).hexdigest(),'native_window_titles':titles,'native_texts':texts,'http_metadata_requests':requests,'native_transfer_start_clicked':False,'actual_transfer_or_completion_verified':False,'all_native_fonts_verified':False,'final_film_export_allowed':False},ensure_ascii=False,indent=2))
+ (O/'fileinfo-review.json').write_text(json.dumps({'scope':'own local fixture, native File Information only; not a transfer lesson','existing_native_wine_prefix':cfg.wine_prefix,'original_fixture_filename':name,'fixture_bytes':len(body),'fixture_sha256':hashlib.sha256(body).hexdigest(),'native_window_titles':titles,'native_texts':texts,'http_metadata_requests':requests,'native_transfer_start_clicked':False,'actual_transfer_or_completion_verified':False,'all_native_fonts_verified':False,'final_film_export_allowed':False},ensure_ascii=False,indent=2))
  assert any('Dosya İndirme Bilgisi' in title for title in titles),'Actual native File Information dialog was not found'
  assert any(name in text for text in texts),'Native filename did not retain the original Unicode fixture name; do not rename it to pass'
  button(controls,'İptal');time.sleep(.3);snapshot('03-after-cancel')
