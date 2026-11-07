@@ -81,8 +81,10 @@ try:
       if row.get('text','').strip():groups.setdefault((row['block_num'],row['par_num'],row['line_num']),[]).append(row)
      chosen=None
      for group in groups.values():
-      words=' '.join(row['text'] for row in group)
-      if re.search(r'IDM\s+ile\s+[İIıi]ndir',words,re.I):chosen=group;break
+      for index in range(max(0,len(group)-2)):
+       segment=group[index:index+3];words=' '.join(row['text'] for row in segment)
+       if re.fullmatch(r'IDM\s+ile\s+[İIıi]ndir',words,re.I):chosen=segment;break
+      if chosen is not None:break
      if chosen is None:raise RuntimeError('Actual browser context-menu IDM command not located; no coordinate guessing')
      x0=min(int(row['left']) for row in chosen);y0=min(int(row['top']) for row in chosen);x1=max(int(row['left'])+int(row['width']) for row in chosen);y1=max(int(row['top'])+int(row['height']) for row in chosen)
      subprocess.run(['xdotool','mousemove','--sync',str((x0+x1)//2),str((y0+y1)//2),'click','1'],check=True)
