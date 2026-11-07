@@ -81,5 +81,14 @@ for index,name in [(100,'url'),(110,'scheduler')]:
   subprocess.run(['xdotool','mousemove',str(tabpos[0]+tab.shape[1]//2),str(tabpos[1]+tab.shape[0]//2),'click','1'],check=True);time.sleep(.5)
   inspect(111)
   assert receipts[-1]['selected_tab_indices']==[1],'Actual second scheduler tab not selected'
- subprocess.run(['xdotool','key','Escape'],check=True);time.sleep(.3)
+ if name=='scheduler':
+  # Use the vendor's explicit Close button; Escape left the modeless dialog blank/unresponsive.
+  close=[]
+  for line in (O/'111-native-raw.txt').read_text().splitlines():
+   a=line.split('\t')
+   if a[0]=='CONTROL' and len(a)>7 and a[6]=='1' and bytes.fromhex(a[2]).decode()=='Button' and bytes.fromhex(a[7]).decode().replace('&','')=='Kapat':close.append([int(v) for v in a[5].split(',')])
+  assert len(close)==1,'Unambiguous actual scheduler Close button required'
+  x1,y1,x2,y2=close[0];subprocess.run(['xdotool','mousemove',str((x1+x2)//2),str((y1+y2)//2),'click','1'],check=True)
+ else:subprocess.run(['xdotool','key','Escape'],check=True)
+ time.sleep(.7)
  shot(f'{index}-after-cancel-{name}')

@@ -23,6 +23,7 @@ class Handler(BaseHTTPRequestHandler):
 server=ThreadingHTTPServer(('127.0.0.1',0),Handler);threading.Thread(target=server.serve_forever,daemon=True).start()
 probe=Path('out/film14-native-turkish/native-turkish-probe.exe').resolve()
 def snapshot(tag):
+ subprocess.run(['import','-window','root',str(O/(tag+'-before-probe.png'))],check=True)
  r=subprocess.run(['wine',str(probe)],stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=True,timeout=30);raw=r.stdout.decode('utf8',errors='strict');(O/(tag+'-raw.txt')).write_text(raw)
  controls=[];texts=[];titles=[]
  for line in raw.splitlines():
