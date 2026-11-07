@@ -21,6 +21,7 @@ jobs:
       TZ: Europe/Istanbul
       LANG: tr_TR.UTF-8
       LC_ALL: tr_TR.UTF-8
+      IDM_LINUX_LANG: tr
       HF_HUB_DISABLE_TELEMETRY: '1'
     steps:
       - uses: actions/checkout@v4
@@ -30,7 +31,7 @@ jobs:
           sudo apt-get install -y -qq xvfb xfce4 xfce4-terminal dbus-x11 xdotool wmctrl imagemagick ffmpeg python3-tk python3-venv fonts-noto-core fonts-noto-cjk fonts-noto-color-emoji locales x11-xserver-utils
           sudo locale-gen tr_TR.UTF-8
           python3 -m venv --system-site-packages .venv-film
-          .venv-film/bin/pip install -e . pillow
+          .venv-film/bin/pip install -e . pillow fonttools
       - name: Install official Brave, without credentials
         run: |
           sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
