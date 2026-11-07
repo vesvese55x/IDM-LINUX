@@ -9,8 +9,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - site: 1fichier
-          - site: filebin
           - site: justbeamit
           - site: mediafire
     name: ${{ matrix.site }}-clean-capture

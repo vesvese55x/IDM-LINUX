@@ -42,13 +42,17 @@ try:
     send=sender.get_by_role('button',name=re.compile('^Send$|^Envoyer$|^Gönder$',re.I))
     if send.count():physical_click(sender,send.first)
     else:physical_click(sender,sender.locator('input[type=submit]').first)
+   if site=='justbeamit':physical_click(sender,sender.locator('#create-link-button'))
    deadline=time.time()+180;download_url=None
    while time.time()<deadline:
     barrier(sender)
+    if site=='justbeamit':
+     value=sender.locator('#share-link-input').input_value().strip()
+     if re.match(r'https://justbeamit.com/[A-Za-z0-9]{5,12}/?$',value):download_url=value;break
     if site=='filebin' and re.search(r'filebin.net/[A-Za-z0-9]+',sender.url):download_url=sender.url;break
     for href in sender.locator('a[href]').evaluate_all('(nodes)=>nodes.map(n=>n.href)'):
      if site=='1fichier' and re.match(r'https://1fichier.com/\?[A-Za-z0-9]+',href):download_url=href;break
-     if site=='justbeamit' and re.match(r'https://justbeamit.com/[A-Za-z0-9]+/?$',href):download_url=href;break
+     if site=='justbeamit' and re.match(r'https://justbeamit.com/[A-Za-z0-9]{5,12}/?$',href) and href.rstrip('/').split('/')[-1] not in ['help','terms','privacy']:download_url=href;break
     if download_url:break
     sender.wait_for_timeout(2000)
    if not download_url:raise RuntimeError('No genuine upload sharing URL produced')
@@ -60,8 +64,9 @@ try:
    lines=[line for line in w.splitlines() if line.split() and line.split()[0] not in baseline and (('dosya' in line.lower() and 'bilgisi' in line.lower()) or 'download file info' in line.lower())]
    if lines:info_line=lines[0];found=True;break
    if site=='filebin':loc=page.get_by_role('link',name='IDM-ornek-paketi.zip',exact=False)
-   else:loc=page.get_by_role('button',name=re.compile('download|télécharger|indir',re.I))
-   if not loc.count():loc=page.get_by_role('link',name=re.compile('download|télécharger|indir',re.I))
+   elif site=='mediafire':loc=page.locator('a#downloadButton[aria-label="Download file"]')
+   elif site=='justbeamit':loc=page.locator('button#dl-button')
+   else:raise RuntimeError('Unreviewed site selector; no generic download clicking permitted')
    for k in range(loc.count()):
     target=loc.nth(k)
     if not target.is_visible():continue
