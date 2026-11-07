@@ -1,4 +1,5 @@
-"""Normal supported installation + read-only native language/font inspection.
+"""Unmodified official vendor payload + read-only native language/font inspection.
+Never call the product installer/open pipeline: it substitutes integrity-checked helper binaries.
 No license, trial, registration, downloaded status or application UI text is patched by this test.
 """
 import os,json,subprocess,time,hashlib
@@ -38,16 +39,26 @@ subprocess.run(['wineserver','-k'],env=locale_env,check=True,timeout=30)
 subprocess.run(['wineserver','-w'],env=locale_env,check=True,timeout=30)
 os.environ.update({k:locale_env[k] for k in ['LANG','LC_ALL','LANGUAGE','LC_MESSAGES']})
 
-# Supported application installer, fresh CI environment. No reset/update/repair of existing licensing state.
-with (O/'normal-install.log').open('w') as log:
- result=subprocess.run([os.sys.executable,'-m','idm_linux.cli','install','--cli','--yes','--skip-pkgs'],stdout=log,stderr=subprocess.STDOUT,timeout=900)
-assert result.returncode==0,'Normal vendor/application installation failed; no alternate route or bypass attempted'
+# Decompress the official vendor payload byte-for-byte, preserving every driver/helper.
+# No normal-install/open/repair pipeline, hook stubs, licensing keys or integrity substitutions.
+from idm_linux.installer import download_idm_installer, resolve_latest_official_idm_release, sync_idm_language_live
+from idm_linux.sfx_unpacker import unpack_idm_installer
+url,filename,release=resolve_latest_official_idm_release(cfg.idm_installer_url)
+from urllib.parse import urlparse
+assert urlparse(url).scheme=='https' and urlparse(url).hostname in ['internetdownloadmanager.com','www.internetdownloadmanager.com','download.internetdownloadmanager.com'],'Only the official vendor HTTPS host is allowed'
+package=download_idm_installer(url,O/filename)
+target=cfg.idm_exe_candidates()[0].parent
+written=unpack_idm_installer(package,target)
+assert written and all(path.resolve().is_relative_to(target.resolve()) for path in written.values())
+original_hashes={name:hashlib.file_digest(path.open('rb'),'sha256').hexdigest() for name,path in written.items()}
+(O/'original-vendor-payload-manifest.json').write_text(json.dumps({'source':url,'release_label':release,'package_sha256':hashlib.file_digest(package.open('rb'),'sha256').hexdigest(),'mode':'original decompressed vendor payload, not a full installer certification','files':original_hashes},ensure_ascii=False,indent=2))
+sync_idm_language_live(cfg)
 cfg=IdmLinuxConfig.load();exe=cfg.find_idm_exe();assert exe and exe.is_file();lng=exe.parent/'Languages'/'idm_tr.lng';assert lng.is_file(),'Official Turkish language resource missing'
 langid,langfile=resolve_effective_idm_language(cfg);assert cfg.language=='tr' and langid==0x1f and langfile=='idm_tr.lng','Would fall back to non-Turkish native language'
 env=build_wine_env(cfg);env.update(LANG='tr_TR.UTF-8',LC_ALL='tr_TR.UTF-8')
 subprocess.run(['i686-w64-mingw32-gcc','-O2','-o',str(O/'native-turkish-probe.exe'),'.github/film-production/native_turkish_probe.c','-lgdi32','-luser32'],check=True)
-# Open the actual application through its supported command, without initiating any download.
-subprocess.Popen([os.sys.executable,'-m','idm_linux.cli','open'],stdout=open(O/'normal-open.log','w'),stderr=subprocess.STDOUT)
+# Open the original vendor executable directly; no wrapper hooks or native download.
+subprocess.Popen(['wine',str(exe)],env=env,stdout=open(O/'unmodified-native-open.log','w'),stderr=subprocess.STDOUT)
 # Finite startup wait, no clicking unexpected dialogs and no human verification automation.
 time.sleep(15)
 probe=subprocess.run(['wine',str((O/'native-turkish-probe.exe').resolve())],env=env,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=90);raw=probe.stdout.decode('utf-8',errors='strict');(O/'native-font-and-text-readonly.txt').write_text(raw);(O/'native-probe-stderr.txt').write_bytes(probe.stderr)
@@ -74,8 +85,9 @@ for line in raw.splitlines():
  elif fields[0]=='FONT':fonts.append({'actual_native_font':bytes.fromhex(fields[1]).decode('utf-8'),'missing_turkish_glyphs':int(fields[2])})
 menus=[r['text'].replace('&','') for r in rows if r['kind'] in ['MENU','TEXT']];tokens=['Görev','Dosya','İndir','Görünüm','Yardım','Kategoriler','Şunu bul','Ayarlar'];found=[token for token in tokens if any(token in text for text in menus)]
 subprocess.run(['import','-window','root',str(O/'actual-native-application.png')],check=True)
-report={'scope':'actual native main-window/menu and GDI preflight, not a completed chapter or all-dialogue certification','native_executable_sha256':hashlib.file_digest(exe.open('rb'),'sha256').hexdigest(),'original_turkish_language_resource_sha256':hashlib.file_digest(lng.open('rb'),'sha256').hexdigest(),'selected_language_id':langid,'language_file':langfile,'read_only_probe_process_ansi_codepage':acp,'actual_native_owner_process_locales':owner_locales,'raw_native_text_quality_failures':text_failures,'actual_visible_native_windows':windows,'actual_native_fonts':fonts,'actual_native_texts':rows,'turkish_native_menu_tokens_found':found,'native_probe_exit':probe.returncode,'all_download_dialogues_verified':False,'final_episode_export_allowed':False,'no_trial_or_license_reset_called':True}
+report={'scope':'actual native main-window/menu and GDI preflight, not a completed chapter or all-dialogue certification','native_executable_sha256':hashlib.file_digest(exe.open('rb'),'sha256').hexdigest(),'original_turkish_language_resource_sha256':hashlib.file_digest(lng.open('rb'),'sha256').hexdigest(),'selected_language_id':langid,'language_file':langfile,'read_only_probe_process_ansi_codepage':acp,'actual_native_owner_process_locales':owner_locales,'raw_native_text_quality_failures':text_failures,'actual_visible_native_windows':windows,'actual_native_fonts':fonts,'actual_native_texts':rows,'turkish_native_menu_tokens_found':found,'native_probe_exit':probe.returncode,'all_download_dialogues_verified':False,'final_episode_export_allowed':False,'no_trial_or_license_reset_called':True,'no_product_install_open_repair_or_stub_path_called':True,'vendor_payload_binary_files_unchanged':all(path.is_file() and hashlib.file_digest(path.open('rb'),'sha256').hexdigest()==original_hashes[name] for name,path in written.items() if path.suffix.lower() in ['.exe','.dll','.sys'])}
 (O/'native-turkish-preflight.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
+assert report['vendor_payload_binary_files_unchanged'],'Vendor binaries changed; no evidence may be certified'
 assert not text_failures,'Actual raw native text is still corrupted; inspect the real screenshot, never repaint labels'
 assert probe.returncode==0 and fonts and all(r['missing_turkish_glyphs']==0 for r in fonts),'Actual native GDI font is missing Turkish glyphs'
 assert acp==1254,'Wine ANSI codepage is not Turkish1254; do not certify legacy text'
