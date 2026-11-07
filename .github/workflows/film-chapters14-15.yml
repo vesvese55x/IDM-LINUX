@@ -5,7 +5,7 @@ on:
       stage:
         description: 'Preparation is not a completed download lesson'
         type: choice
-        options: [linux-gui-preflight]
+        options: [linux-gui-preflight, linux-native-turkish-preflight]
         default: linux-gui-preflight
 permissions:
   contents: read
@@ -15,7 +15,7 @@ concurrency:
 jobs:
   genuine-gui-preflight:
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 35
     env:
       DISPLAY: ':99'
       TZ: Europe/Istanbul
@@ -38,6 +38,13 @@ jobs:
           echo 'deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg] https://brave-browser-apt-release.s3.brave.com/ stable main' | sudo tee /etc/apt/sources.list.d/brave-browser-release.list >/dev/null
           sudo apt-get update -qq
           sudo apt-get install -y -qq brave-browser
+      - name: Prepare normal native Wine installation dependencies
+        if: github.event.inputs.stage == 'linux-native-turkish-preflight'
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq wine wine32:i386 wine64 fonts-wine fonts-liberation2 fonts-wqy-zenhei gcc-mingw-w64-i686
+          .venv-film/bin/pip install yt-dlp websockets websocket-client requests
       - name: Record real read-only control-panel preparation
         run: |
           mkdir -p out/film14-preflight
@@ -47,6 +54,9 @@ jobs:
           dbus-run-session -- bash -c '
             xfce4-session >out/film14-preflight/desktop.log 2>&1 &
             sleep 5
+            if [ "${{ github.event.inputs.stage }}" = "linux-native-turkish-preflight" ]; then
+              .venv-film/bin/python .github/film-production/native_turkish_preflight.py || exit $?
+            fi
             .venv-film/bin/python .github/film-production/runner_preflight.py
           '
       - name: Preserve evidence, not a finished lesson claim
@@ -54,6 +64,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: film14-genuine-gui-preflight-${{ github.run_id }}
-          path: out/film14-preflight/
+          path: |
+            out/film14-preflight/
+            out/film14-native-turkish/
           retention-days: 7
           if-no-files-found: warn
