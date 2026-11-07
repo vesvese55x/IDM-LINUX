@@ -30,10 +30,15 @@ setpanel('/panels/panel-1/position','string','p=10;x=960;y=1059')
 setpanel('/panels/panel-1/icon-size','int',24)
 # Default second dock is unnecessary for the approved one-panel layout.
 subprocess.run(['xfconf-query','-c','xfce4-panel','-p','/panels','-a','-t','int','-s','1'],check=True,capture_output=True)
-for line in subprocess.check_output(['xfconf-query','-c','xfce4-panel','-lv'],text=True).splitlines():
- prop=line.split()[0]
- if prop.endswith('/digital-format'):setpanel(prop,'string',"<span font='DejaVu Sans Bold 10'>%H:%M:%S</span>\n<span font='DejaVu Sans 8'>%d.%m.%Y</span>")
- if prop.endswith('/timezone'):setpanel(prop,'string','Europe/Istanbul')
+# XFCE4.18 uses separate date/time properties; the old digital-format key is obsolete.
+panel_listing=subprocess.check_output(['xfconf-query','-c','xfce4-panel','-lv'],text=True)
+clock_roots=[]
+for line in panel_listing.splitlines():
+ parts=line.split(None,1)
+ if len(parts)==2 and parts[0].startswith('/plugins/plugin-') and parts[1].strip()=='clock':clock_roots.append(parts[0])
+for clock in clock_roots:
+ for suffix,typ,value in [('digital-layout','uint',1),('digital-time-format','string','%H:%M:%S'),('digital-date-format','string','%d.%m.%Y'),('digital-time-font','string','Noto Sans Bold 10'),('digital-date-font','string','Noto Sans 8'),('timezone','string','Europe/Istanbul')]:setpanel(clock+'/'+suffix,typ,value)
+(O/'actual-clock-plugin-roots.json').write_text(json.dumps({'roots':clock_roots,'configuration':'real XFCE plugin, separate time/date labels; no painted taskbar'},ensure_ascii=False,indent=2))
 subprocess.run(['xfconf-query','-c','xfce4-desktop','-p','/backdrop/screen0/monitorscreen0/workspace0/image-style','--create','--type','int','-s','3'],check=False)
 subprocess.run(['xfce4-panel','--restart'],check=False,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 subprocess.run(['xfdesktop','--reload'],check=False)
