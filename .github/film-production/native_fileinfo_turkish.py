@@ -1,7 +1,7 @@
 """Own local fixture -> genuine native File Information dialog, then Cancel.
 No native transfer start; not a Pixeldrain/playlist lesson or completion proof.
 """
-import os,json,time,threading,subprocess,hashlib
+import os,json,time,threading,subprocess,hashlib,signal,sys
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler,ThreadingHTTPServer
 from urllib.parse import quote,unquote,urlsplit
@@ -13,15 +13,33 @@ cfg=IdmLinuxConfig.load()
 assert cfg.find_idm_exe() and (Path(cfg.wine_prefix)/'system.reg').is_file(),'Inspect only the already prepared native environment; never initialize/reset another prefix'
 os.environ.update(build_wine_env(cfg))
 O=Path('out/film14-native-turkish/fileinfo');O.mkdir(parents=True,exist_ok=True)
-name='Türkçe_ÇĞİÖŞÜ_çğıöşü.txt';body=('Bu dosya yalnızca Türkçe dosya adı ve arayüz kontrolü için oluşturulmuştur.\n'*512).encode('utf8');requests=[]
+TRANSFER='--transfer' in sys.argv
+recorder=None;events=[];epoch=time.monotonic();rate_lock=threading.Lock()
+name='Türkçe_ÇĞİÖŞÜ_çğıöşü.txt';body=('Bu dosya yalnızca Türkçe dosya adı ve arayüz kontrolü için oluşturulmuştur.\n'*(100000 if TRANSFER else 512)).encode('utf8');requests=[]
 class Handler(BaseHTTPRequestHandler):
  def log_message(self,*args):pass
  def respond(self,send):
   assert unquote(urlsplit(self.path).path)=='/'+name,'Unexpected fixture path'
-  self.send_response(200);self.send_header('Content-Type','application/octet-stream');self.send_header('Content-Length',str(len(body)));self.send_header('Content-Disposition',"attachment; filename*=UTF-8''"+quote(name));self.end_headers()
-  requests.append({'method':self.command,'path':self.path})
+  start,end=0,len(body)-1
+  range_header=self.headers.get('Range')
+  if range_header:
+   import re
+   m=re.fullmatch(r'bytes=(\d+)-(\d*)',range_header)
+   assert m,'Unexpected byte range'
+   start=int(m[1]);end=min(int(m[2]) if m[2] else end,end)
+  if not 0<=start<=end<len(body):self.send_error(416);return
+  self.send_response(206 if range_header else 200)
+  self.send_header('Content-Type','application/octet-stream');self.send_header('Content-Length',str(end-start+1));self.send_header('Accept-Ranges','bytes')
+  if range_header:self.send_header('Content-Range',f'bytes {start}-{end}/{len(body)}')
+  self.send_header('Content-Disposition',"attachment; filename*=UTF-8''"+quote(name));self.end_headers()
+  requests.append({'method':self.command,'path':self.path,'range':range_header,'start':start,'end':end})
   if send:
-   try:self.wfile.write(body)
+   try:
+    for offset in range(start,end+1,16384):
+     chunk=body[offset:min(offset+16384,end+1)]
+     with rate_lock:
+      if TRANSFER:time.sleep(len(chunk)/(256*1024))
+      self.wfile.write(chunk);self.wfile.flush()
    except (BrokenPipeError,ConnectionResetError):pass
  def do_GET(self):self.respond(True)
  def do_HEAD(self):self.respond(False)
@@ -45,6 +63,7 @@ def snapshot(tag):
  return controls,texts,titles
 def click(control):
  x1,y1,x2,y2=control['rect'];assert 0<=x1<x2<=1920 and 0<=y1<y2<=1080
+ events.append({'seconds':time.monotonic()-epoch,'native_control':control,'physical_click':[(x1+x2)//2,(y1+y2)//2]})
  subprocess.run(['xdotool','mousemove',str((x1+x2)//2),str((y1+y2)//2),'click','1'],check=True)
 def button(controls,label):
  matches=[c for c in controls if c['visible'] and c['class']=='Button' and c['text'].replace('&','')==label]
@@ -72,6 +91,30 @@ try:
  filename_controls=[c for c in controls if c['visible'] and c['class'] in ['Edit','ComboBox'] and name in c['text'] and not c['text'].lower().startswith(('http://','https://'))]
  assert filename_controls,'Original Unicode filename must be read from an actual filename/path control, not just the URL'
  (O/'verified-original-filename-controls.json').write_text(json.dumps(filename_controls,ensure_ascii=False,indent=2))
- button(controls,'İptal');time.sleep(.3);snapshot('03-after-cancel')
+ if not TRANSFER:
+  button(controls,'İptal');time.sleep(.3);snapshot('03-after-cancel')
+ else:
+  (O/'transfer-scope.json').write_text(json.dumps({'source':'own local HTTP fixture, NOT a Pixeldrain/playlist substitute','expected_filename':name,'expected_bytes':len(body),'expected_sha256':hashlib.sha256(body).hexdigest(),'controlled_real_server_rate_bytes_per_second':256*1024,'all_fonts_certified':False,'final_movie_export_allowed':False},ensure_ascii=False,indent=2))
+  video_log=(O/'uncut-transfer-ffmpeg.log').open('w')
+  recorder=subprocess.Popen(['ffmpeg','-nostdin','-y','-v','warning','-f','x11grab','-draw_mouse','0','-s','1920x1080','-r','24','-i',os.environ.get('DISPLAY',':99'),'-an','-c:v','libx264','-preset','veryfast','-crf','18','-threads','2',str(O/'uncut-native-transfer.mp4')],stdout=video_log,stderr=subprocess.STDOUT)
+  recording_start=time.monotonic()-epoch;time.sleep(1)
+  button(controls,'İndirmeyi Başlat')
+  completed=False;progress_observed=False;stages=[]
+  for iteration in range(24):
+   time.sleep(2)
+   cc,tt,ww=snapshot(f'transfer-{iteration:02}')
+   stages.append({'iteration':iteration,'titles':ww,'texts':tt,'seconds':time.monotonic()-epoch})
+   folded=[x.replace('İ','i').lower() for x in ww]
+   if any('tamamland' in x for x in folded):completed=True;break
+   if any(c['visible'] and c['class']=='Button' and 'Duraklat' in c['text'] for c in cc):progress_observed=True
+  paths=[p for p in Path.home().rglob(name) if p.is_file() and p.stat().st_size==len(body)]
+  verified=[p for p in paths if hashlib.file_digest(p.open('rb'),'sha256').hexdigest()==hashlib.sha256(body).hexdigest()]
+  result={'scope':'actual own-fixture native transfer only; NOT an external platform lesson','native_completion_window_seen':completed,'native_progress_pause_control_seen':progress_observed,'original_filename_on_disk':bool(verified),'downloaded_files':[str(p) for p in verified],'expected_bytes':len(body),'source_sha256':hashlib.sha256(body).hexdigest(),'downloaded_sha256_match':bool(verified),'recording_start_seconds':recording_start,'actual_physical_actions':events,'native_stages':stages,'http_requests':requests,'all_native_fonts_certified':False,'all_error_dialogues_verified':False,'final_film_export_allowed':False}
+  (O/'actual-transfer-review.json').write_text(json.dumps(result,ensure_ascii=False,indent=2))
+  assert completed and progress_observed and verified,'No complete native success claim without real progress/completion UI and unchanged filename/bytes/hash'
+  time.sleep(1)
+
 finally:
+ if recorder is not None:
+  recorder.send_signal(signal.SIGINT);recorder.wait(timeout=30)
  server.shutdown();server.server_close()
