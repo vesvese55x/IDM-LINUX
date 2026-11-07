@@ -69,6 +69,13 @@ jobs:
           dbus-run-session -- bash -c '
             xfce4-session >out/film14-preflight/desktop.log 2>&1 &
             sleep 5
+            # Use one ordinary non-composited XFWM session for Xvfb recording.
+            # Prior root captures retained stale moved-window pixels and missing initial paints.
+            xfconf-query -c xfwm4 -p /general/use_compositing --create --type bool -s false
+            xfwm4 --replace --compositor=off >out/film14-preflight/window-manager.log 2>&1 &
+            sleep 2
+            wmctrl -m >out/film14-preflight/actual-window-manager.txt
+            xprop -root _NET_SUPPORTING_WM_CHECK >out/film14-preflight/actual-root-wm.txt
             if [ "${{ github.event.inputs.stage }}" != "linux-gui-preflight" ]; then
               EXTRA=""
               if [ "${{ github.event.inputs.stage }}" != "linux-native-turkish-preflight" ]; then EXTRA="--isolated-fileinfo"; fi
