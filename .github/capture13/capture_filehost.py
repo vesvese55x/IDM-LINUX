@@ -1,5 +1,5 @@
 """Real browser upload/download of a self-created demonstration ZIP, not a simulated transfer."""
-import os,time,json,subprocess,signal,hashlib,zipfile,re,shutil
+import os,time,json,subprocess,signal,hashlib,zipfile,re,shutil,csv,io
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 from pointer_tracker import PointerTracker
@@ -14,13 +14,13 @@ expected=hashlib.sha256(fixture.read_bytes()).hexdigest();epoch=time.time();even
 def event(name,**kw):
  events.append({'seconds':round(time.time()-epoch,3),'event':name,**kw});(R/'events.json').write_text(json.dumps(events,indent=2));print(name,flush=True)
 def windows():return subprocess.run(['wmctrl','-lG'],capture_output=True,text=True).stdout
-def physical_click(page,loc):
+def physical_click(page,loc,button="left"):
  loc.wait_for(state='visible',timeout=20000);loc.scroll_into_view_if_needed();box=loc.bounding_box();assert box
  session=page.context.new_cdp_session(page)
  try:bounds=session.send('Browser.getWindowForTarget')['bounds'];metrics=session.send('Page.getLayoutMetrics')['cssLayoutViewport']
  finally:session.detach()
  border=max(0,(bounds['width']-metrics['clientWidth'])/2);x=round(bounds['left']+border+box['x']+box['width']/2);y=round(bounds['top']+bounds['height']-metrics['clientHeight']-border+box['y']+box['height']/2)
- subprocess.run(['xdotool','mousemove','--sync',str(x),str(y)],check=True);time.sleep(.6);loc.click(timeout=20000);event('browser_click',x=x,y=y)
+ subprocess.run(['xdotool','mousemove','--sync',str(x),str(y)],check=True);time.sleep(.6);loc.click(timeout=20000,button=button);event('browser_click',x=x,y=y)
 def barrier(page):
  for f in page.locator('iframe[src*="captcha"]').all():
   if f.is_visible():raise RuntimeError('CAPTCHA requires user; no bypass attempted')
@@ -72,7 +72,23 @@ try:
     if not target.is_visible():continue
     label=target.inner_text().strip()
     if re.search('premium|high.speed',label,re.I) or label in clicked:continue
-    physical_click(page,target);clicked.add(label);event('real_download_button',label=label);break
+    if site=='mediafire':
+     physical_click(page,target,button='right');time.sleep(2)
+     screen=R/'native-context-menu.png';subprocess.run(['import','-window','root',str(screen)],check=True)
+     tsv=subprocess.check_output(['tesseract',str(screen),'stdout','-l','tur+eng','tsv'],text=True)
+     (R/'context-menu-ocr.tsv').write_text(tsv);rows=list(csv.DictReader(io.StringIO(tsv),delimiter='\t'));groups={}
+     for row in rows:
+      if row.get('text','').strip():groups.setdefault((row['block_num'],row['par_num'],row['line_num']),[]).append(row)
+     chosen=None
+     for group in groups.values():
+      words=' '.join(row['text'] for row in group)
+      if re.search(r'IDM\s+ile\s+[İIıi]ndir',words,re.I):chosen=group;break
+     if chosen is None:raise RuntimeError('Actual browser context-menu IDM command not located; no coordinate guessing')
+     x0=min(int(row['left']) for row in chosen);y0=min(int(row['top']) for row in chosen);x1=max(int(row['left'])+int(row['width']) for row in chosen);y1=max(int(row['top'])+int(row['height']) for row in chosen)
+     subprocess.run(['xdotool','mousemove','--sync',str((x0+x1)//2),str((y0+y1)//2),'click','1'],check=True)
+     event('real_native_context_menu_idm_click',text=' '.join(row['text'] for row in chosen),box=[x0,y0,x1,y1])
+    else:physical_click(page,target)
+    clicked.add(label);event('real_download_button',label=label);break
    page.wait_for_timeout(3000)
   if not found:raise RuntimeError('Native IDM file information window not reached')
   subprocess.run(['import','-window','root',str(R/'idm-file-info.png')],check=True);time.sleep(5);subprocess.run(['xdotool','windowactivate','--sync',info_line.split()[0]],check=True);subprocess.run(['xdotool','key','Return'],check=True);event('start_pressed')
