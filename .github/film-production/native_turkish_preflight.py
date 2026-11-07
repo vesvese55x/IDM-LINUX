@@ -127,7 +127,7 @@ assert windows>0 and len(found)>=2,'Actual Turkish native menu evidence is insuf
 if '--isolated-fileinfo' not in os.sys.argv:
  subprocess.run([os.sys.executable,'.github/film-production/native_settings_readonly.py'],env=env,check=True,timeout=240)
 else:
- (O/'isolated-fileinfo-scope.json').write_text(json.dumps({'settings_navigation_performed_in_this_process':False,'reason':'Separate fixture inspection from the unresolved native scheduler close/unresponsive-window issue. Do not claim end-to-end scheduler stability.','all_fonts_certified':False}))
+ (O/'isolated-fileinfo-scope.json').write_text(json.dumps({'settings_navigation_performed_in_this_process':False,'reason':'Separate fixture inspection from unverified post-scheduler state. Earlier probe timeouts used a wrong Wine prefix and do not prove a native hang. Do not claim end-to-end scheduler stability.','all_fonts_certified':False}))
 # Keep real native application processes, but minimize their actual windows before separate wrapper screenshots.
 for line in subprocess.check_output(['wmctrl','-l'],text=True).splitlines():
  if 'xfce' not in line.lower():subprocess.run(['xdotool','windowminimize',line.split()[0]],check=False)

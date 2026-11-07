@@ -69,7 +69,9 @@ try:
  controls,texts,titles=snapshot('02-actual-file-information')
  (O/'fileinfo-review.json').write_text(json.dumps({'scope':'own local fixture, native File Information only; not a transfer lesson','existing_native_wine_prefix':cfg.wine_prefix,'original_fixture_filename':name,'fixture_bytes':len(body),'fixture_sha256':hashlib.sha256(body).hexdigest(),'native_window_titles':titles,'native_texts':texts,'http_metadata_requests':requests,'native_transfer_start_clicked':False,'actual_transfer_or_completion_verified':False,'all_native_fonts_verified':False,'final_film_export_allowed':False},ensure_ascii=False,indent=2))
  assert any('Dosya İndirme Bilgisi' in title for title in titles),'Actual native File Information dialog was not found'
- assert any(name in text for text in texts),'Native filename did not retain the original Unicode fixture name; do not rename it to pass'
+ filename_controls=[c for c in controls if c['visible'] and c['class'] in ['Edit','ComboBox'] and name in c['text'] and not c['text'].lower().startswith(('http://','https://'))]
+ assert filename_controls,'Original Unicode filename must be read from an actual filename/path control, not just the URL'
+ (O/'verified-original-filename-controls.json').write_text(json.dumps(filename_controls,ensure_ascii=False,indent=2))
  button(controls,'İptal');time.sleep(.3);snapshot('03-after-cancel')
 finally:
  server.shutdown();server.server_close()
