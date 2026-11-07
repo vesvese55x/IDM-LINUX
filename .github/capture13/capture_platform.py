@@ -6,6 +6,7 @@ R=Path('out')/site;R.mkdir(parents=True,exist_ok=True)
 url=os.environ.get('CAPTURE_URL','https://www.youtube.com/watch?v=LXb3EKWsInQ')
 min_height=int(os.environ.get('MIN_HEIGHT','144'))
 events=[];epoch=time.time();rec=None
+baseline_window_ids={line.split()[0] for line in subprocess.run(['wmctrl','-l'],capture_output=True,text=True).stdout.splitlines() if line.split()}
 from pointer_tracker import PointerTracker
 ptr=PointerTracker(R/'pointer.json',epoch).start()
 
@@ -66,7 +67,8 @@ try:
    w=windows()
    if time.time()-last_update>15:
     event('download_wait',windows=w[-1200:]);last_update=time.time()
-   if 'download complete' in w.lower() or 'tamamland' in w.lower():completed=True;break
+   new_lines=[line for line in w.splitlines() if line.split() and line.split()[0] not in baseline_window_ids]
+   if any('download complete' in line.lower() or 'tamamland' in line.lower() for line in new_lines):completed=True;break
    time.sleep(2)
   (R/'windows-end.txt').write_text(windows())
   subprocess.run(['import','-window','root',str(R/'idm-end.png')],check=True)
@@ -76,7 +78,7 @@ try:
   for root in [Path.home()]:
    if root.exists():
     for f in root.rglob('*'):
-     if f.is_file() and f.suffix.lower() in ['.mp4','.mkv','.webm'] and f.stat().st_mtime>=epoch:
+     if f.is_file() and '.cache' not in f.parts and '.local' not in f.parts and 'out' not in f.parts and f.suffix.lower() in ['.mp4','.mkv','.webm'] and f.stat().st_mtime>=epoch:
       try:
        d=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-show_format','-of','json',str(f)],text=True,timeout=30))
        if any(s.get('height',0)>=min_height for s in d['streams']) and any(s.get('codec_type')=='audio' for s in d['streams']):candidates.append((f,d))

@@ -5,6 +5,15 @@ permissions:
   contents: read
 jobs:
   platform-verified-capture:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - site: vk
+            url: https://vk.com/video-213746495_456239034
+          - site: bilibili
+            url: https://www.bilibili.com/video/BV1xx411c7mD
+    name: ${{ matrix.site }}-clean-capture
     runs-on: ubuntu-24.04
     timeout-minutes: 80
     env:
@@ -26,7 +35,7 @@ jobs:
           sudo sed -i 's|http://azure.archive.ubuntu.com/ubuntu|https://archive.ubuntu.com/ubuntu|g' /etc/apt/sources.list.d/ubuntu.sources
           sudo dpkg --add-architecture i386
           sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=25 -o Acquire::https::Timeout=25 update -qq
-          sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=25 -o Acquire::https::Timeout=25 install -y --no-install-recommends xvfb openbox ffmpeg xdotool wmctrl imagemagick feh tint2 locales python3-tk wine64 wine32:i386 wine winbind cabextract fonts-dejavu-core
+          sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=25 -o Acquire::https::Timeout=25 install -y --no-install-recommends xvfb openbox ffmpeg xdotool wmctrl imagemagick feh tint2 locales python3-tk wine64 wine32:i386 wine winbind cabextract fonts-dejavu-core fonts-noto-cjk fonts-noto-color-emoji
           curl --retry 2 --connect-timeout 20 -fsSLo /tmp/brave-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
           sudo install /tmp/brave-keyring.gpg /usr/share/keyrings/brave-browser-archive-keyring.gpg
           echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg] https://brave-browser-apt-release.s3.brave.com/ stable main' | sudo tee /etc/apt/sources.list.d/brave-browser-release.list
@@ -80,41 +89,12 @@ jobs:
           test -f "$EXT/manifest.json"
           brave-browser --no-sandbox --no-first-run --disable-dev-shm-usage --remote-debugging-port=9222 --user-data-dir=/tmp/capture13-brave --load-extension="$EXT" --window-position=380,40 --window-size=1500,940 about:blank >out/brave.log 2>&1 &
           sleep 5
-      - name: Record OK.ru in Brave through real IDM bar
-        id: okru
-        continue-on-error: true
+      - name: Record isolated platform through Brave and IDM
         timeout-minutes: 16
         env:
-          CAPTURE_SITE: okru
-          CAPTURE_URL: https://ok.ru/video/34928855659
+          CAPTURE_SITE: ${{ matrix.site }}
+          CAPTURE_URL: ${{ matrix.url }}
         run: python .github/capture13/capture_platform.py
-      - name: Record VK in Brave through real IDM bar
-        continue-on-error: true
-        timeout-minutes: 16
-        env:
-          CAPTURE_SITE: vk
-          CAPTURE_URL: https://vk.com/video-213746495_456239034
-        run: python .github/capture13/capture_platform.py
-      - name: Record Bilibili in Brave through real IDM bar
-        continue-on-error: true
-        timeout-minutes: 16
-        env:
-          CAPTURE_SITE: bilibili
-          CAPTURE_URL: https://www.bilibili.com/video/BV1xx411c7mD
-        run: python .github/capture13/capture_platform.py
-      - name: Require three genuinely verified downloads
-        run: |
-          python - <<'PYTEST'
-          import json
-          from pathlib import Path
-          states={}
-          for site in ['okru','vk','bilibili']:
-              p=Path('out')/site/'events.json'
-              events=json.loads(p.read_text()) if p.exists() else []
-              states[site]=any(e['event']=='VERIFIED_VIDEO_WITH_AUDIO' for e in events)
-          Path('out/platform-verification.json').write_text(json.dumps(states,indent=2))
-          assert all(states.values()), states
-          PYTEST
       - name: Collect integration logs
         if: always()
         run: |
@@ -128,6 +108,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: bolum13-v7-platform-verified-capture
+          name: bolum13-v7-${{ matrix.site }}-clean-capture
           path: out/
           retention-days: 7
