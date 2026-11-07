@@ -72,6 +72,26 @@ for line in subprocess.check_output(['wmctrl','-l'],text=True).splitlines():
  if 'Internet Download Manager' in line:subprocess.run(['wmctrl','-ia',line.split()[0]],check=False)
 time.sleep(1)
 probe=subprocess.run(['wine',str((O/'native-turkish-probe.exe').resolve())],env=env,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=90);raw=probe.stdout.decode('utf-8',errors='strict');(O/'native-font-and-text-readonly.txt').write_text(raw);(O/'native-probe-stderr.txt').write_bytes(probe.stderr)
+# WineHQ 11 may expose the vendor's informational administrator-token notice.
+# Acknowledge ONLY this exact known notice, without ticking its suppression box.
+# This is not an activation/authentication/trial dialog and does not fix browser interception.
+known_notice="Uyarı: IDM'yi Yönetici hakları ile çalıştırıyorsunuz."
+notice_seen=any(known_notice in bytes.fromhex(line.split('\t')[1]).decode('utf8') for line in raw.splitlines() if line.startswith('TEXT\t'))
+if notice_seen:
+ (O/'expected-administrator-notice-raw.txt').write_text(raw)
+ for line in subprocess.check_output(['wmctrl','-l'],text=True).splitlines():
+  if line.endswith(' IDM'):subprocess.run(['wmctrl','-ia',line.split()[0]],check=True)
+ time.sleep(.4)
+ notice_probe=subprocess.run(['wine',str((O/'native-turkish-probe.exe').resolve())],env=env,stdout=subprocess.PIPE,check=True,timeout=30)
+ buttons=[]
+ for line in notice_probe.stdout.decode('utf8').splitlines():
+  a=line.split('\t')
+  if a[0]=='CONTROL' and len(a)>7 and a[6]=='1' and bytes.fromhex(a[2]).decode()=='Button' and bytes.fromhex(a[7]).decode().replace('&','')=='Tamam':buttons.append([int(v) for v in a[5].split(',')])
+ assert len(buttons)==1,'Known notice did not have one unambiguous real OK button; stop'
+ x1,y1,x2,y2=buttons[0];subprocess.run(['xdotool','mousemove',str((x1+x2)//2),str((y1+y2)//2),'click','1'],check=True)
+ time.sleep(2)
+ probe=subprocess.run(['wine',str((O/'native-turkish-probe.exe').resolve())],env=env,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=90)
+ raw=probe.stdout.decode('utf8',errors='strict');(O/'native-font-and-text-readonly.txt').write_text(raw)
 subprocess.run(['import','-window','root',str(O/'actual-native-application-before-text-gate.png')],check=True)
 owner_locales=[]
 for entry in Path('/proc').iterdir():
@@ -95,7 +115,7 @@ for line in raw.splitlines():
  elif fields[0] in ['FONT_UI','FONT_TEST']:fonts.append({'measurement_kind':fields[0],'font_family':bytes.fromhex(fields[1]).decode('utf-8'),'missing_turkish_glyphs':int(fields[2])})
 menus=[r['text'].replace('&','') for r in rows if r['kind'] in ['MENU','TEXT']];tokens=['Görev','Dosya','İndir','Görünüm','Yardım','Kategoriler','Şunu bul','Ayarlar'];found=[token for token in tokens if any(token in text for text in menus)]
 subprocess.run(['import','-window','root',str(O/'actual-native-application.png')],check=True)
-report={'scope':'actual native main-window/menu and GDI preflight, not a completed chapter or all-dialogue certification','wine_runtime_version':subprocess.check_output(['wine','--version'],text=True).strip(),'native_executable_sha256':hashlib.file_digest(exe.open('rb'),'sha256').hexdigest(),'original_turkish_language_resource_sha256':hashlib.file_digest(lng.open('rb'),'sha256').hexdigest(),'selected_language_id':langid,'language_file':langfile,'read_only_probe_process_ansi_codepage':acp,'actual_native_owner_process_locales':owner_locales,'raw_native_text_quality_failures':text_failures,'actual_visible_native_windows':windows,'sampled_actual_native_control_fonts':[f for f in fonts if f['measurement_kind']=='FONT_UI'],'explicitly_created_test_fonts':[f for f in fonts if f['measurement_kind']=='FONT_TEST'],'all_native_control_fonts_verified':False,'actual_native_texts':rows,'turkish_native_menu_tokens_found':found,'native_probe_exit':probe.returncode,'all_download_dialogues_verified':False,'final_episode_export_allowed':False,'no_trial_or_license_reset_called':True,'no_product_install_open_repair_or_stub_path_called':True,'vendor_payload_binary_files_unchanged':all(path.is_file() and hashlib.file_digest(path.open('rb'),'sha256').hexdigest()==original_hashes[name] for name,path in written.items() if path.suffix.lower() in ['.exe','.dll','.sys'])}
+report={'scope':'actual native main-window/menu and GDI preflight, not a completed chapter or all-dialogue certification','wine_runtime_version':subprocess.check_output(['wine','--version'],text=True).strip(),'expected_vendor_admin_notice_acknowledged':notice_seen,'browser_interception_under_admin_token_verified':False,'native_executable_sha256':hashlib.file_digest(exe.open('rb'),'sha256').hexdigest(),'original_turkish_language_resource_sha256':hashlib.file_digest(lng.open('rb'),'sha256').hexdigest(),'selected_language_id':langid,'language_file':langfile,'read_only_probe_process_ansi_codepage':acp,'actual_native_owner_process_locales':owner_locales,'raw_native_text_quality_failures':text_failures,'actual_visible_native_windows':windows,'sampled_actual_native_control_fonts':[f for f in fonts if f['measurement_kind']=='FONT_UI'],'explicitly_created_test_fonts':[f for f in fonts if f['measurement_kind']=='FONT_TEST'],'all_native_control_fonts_verified':False,'actual_native_texts':rows,'turkish_native_menu_tokens_found':found,'native_probe_exit':probe.returncode,'all_download_dialogues_verified':False,'final_episode_export_allowed':False,'no_trial_or_license_reset_called':True,'no_product_install_open_repair_or_stub_path_called':True,'vendor_payload_binary_files_unchanged':all(path.is_file() and hashlib.file_digest(path.open('rb'),'sha256').hexdigest()==original_hashes[name] for name,path in written.items() if path.suffix.lower() in ['.exe','.dll','.sys'])}
 (O/'native-turkish-preflight.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
 assert report['vendor_payload_binary_files_unchanged'],'Vendor binaries changed; no evidence may be certified'
 assert not text_failures,'Actual raw native text is still corrupted; inspect the real screenshot, never repaint labels'
