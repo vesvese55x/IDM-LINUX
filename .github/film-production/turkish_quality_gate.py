@@ -18,18 +18,20 @@ def catalogue_gate(out):
  report={'scope':'wrapper Turkish catalogue, not vendor IDM visual acceptance','turkish_keys':len(tr),'english_reference_keys':len(en),'english_fallback_keys':sorted(set(en)-set(tr)),'strict_utf8':True,'mojibake_patterns_absent':True,'source_files':paths,'brands_and_original_filenames_not_translated':True}
  (out/'turkish-catalogue-gate.json').write_text(json.dumps(report,ensure_ascii=False,indent=2));return report
 
-def font_gate(family):
+def font_gate(family, required_characters=TURKISH):
  path=subprocess.check_output(['fc-match','-f','%{file}',family],text=True).strip();assert path
  if path.lower().endswith(('.ttc','.otc')):fonts=TTCollection(path).fonts
  else:fonts=[TTFont(path)]
- required=set(map(ord,TURKISH));coverage=set()
+ required=set(map(ord,required_characters));coverage=set()
  for font in fonts:coverage.update(font.getBestCmap() or {})
  assert required<=coverage,{'font':family,'file':path,'missing':[chr(c) for c in required-coverage]}
- return {'actual_tk_family':family,'font_file':path,'required_characters':TURKISH,'all_required_real_glyphs_present':True}
+ return {'actual_tk_family':family,'font_file':path,'required_characters':required_characters,'all_required_real_glyphs_present':True}
 
 def visible_widget_gate(root,out,stage):
  import tkinter.font as tkfont
  labels=[];fonts={}
+ from idm_linux.gui import pick_ui_font_family
+ primary=font_gate(pick_ui_font_family(root,'tr'))
  def walk(w):
   for child in w.winfo_children():yield child;yield from walk(child)
  for w in walk(root):
@@ -39,13 +41,18 @@ def visible_widget_gate(root,out,stage):
   if text:assert_clean(text);labels.append({'widget':str(w),'text':text})
   try:
    actual=tkfont.Font(root=root,font=w.cget('font')).actual();family=actual['family']
-   if family and family not in fonts:fonts[family]=font_gate(family)
+   if family:
+    # Language names/previews intentionally use CJK or other script fonts.
+    # Require full TR coverage for each font actually used to draw Turkish letters.
+    has_turkish=any(c in text for c in TURKISH)
+    old=fonts.get(family)
+    if old is None or (has_turkish and not old['required_characters']):fonts[family]=font_gate(family,TURKISH if has_turkish else '')
   except Exception as e:
    if isinstance(e,AssertionError):raise
    # Widgets without text fonts (frames/images) are not text evidence.
    continue
  assert labels and fonts
- report={'scope':'real visible Tk labels and selected font outlines; requires separate screenshot review','stage':stage,'labels':labels,'fonts':list(fonts.values()),'native_vendor_IDM_NOT_certified':True}
+ report={'scope':'real visible Tk labels and selected font outlines; requires separate screenshot review','stage':stage,'labels':labels,'fonts':list(fonts.values()),'primary_turkish_font':primary,'scope_note':'CJK-only language names are not required to contain unused Turkish glyphs; every actual Turkish label font is checked for the full Turkish set','native_vendor_IDM_NOT_certified':True}
  (out/(stage+'-turkish-widget-gate.json')).write_text(json.dumps(report,ensure_ascii=False,indent=2));return report
 
 def native_readiness(out):
