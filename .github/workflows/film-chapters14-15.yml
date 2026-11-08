@@ -5,7 +5,7 @@ on:
       stage:
         description: 'Preparation is not a completed download lesson'
         type: choice
-        options: [linux-gui-preflight, linux-native-turkish-preflight, linux-native-fileinfo-turkish-check, linux-native-transfer-turkish-check, linux-native-pixeldrain-capture, windows-native-opening-probe, linux-playlist-owned-backend-check, linux-native-speed-menu-probe, linux-playlist-owned-gui-check, linux-owned-hls-dvr-check, linux-owned-ed2k-check, linux-owned-native-streams-capture, linux-owned-native-ed2k-capture, linux-public-playlist-probe]
+        options: [linux-gui-preflight, linux-native-turkish-preflight, linux-native-fileinfo-turkish-check, linux-native-transfer-turkish-check, linux-native-pixeldrain-capture, windows-native-opening-probe, linux-playlist-owned-backend-check, linux-native-speed-menu-probe, linux-playlist-owned-gui-check, linux-owned-hls-dvr-check, linux-owned-ed2k-check, linux-owned-native-streams-capture, linux-owned-native-ed2k-capture, linux-public-playlist-probe, linux-public-playlist-transfer]
         default: linux-gui-preflight
       source_page_url:
         description: 'User-authorized public Pixeldrain page URL. Never enter passwords or API keys.'
@@ -61,14 +61,14 @@ jobs:
           .venv-film/bin/pip install -e . pillow fonttools yt-dlp streamlink pytest
           echo "$PWD/.venv-film/bin" >> "$GITHUB_PATH"
       - name: Install official Brave, without credentials
-        if: github.event.inputs.stage != 'linux-playlist-owned-backend-check' && github.event.inputs.stage != 'linux-playlist-owned-gui-check' && github.event.inputs.stage != 'linux-owned-hls-dvr-check' && github.event.inputs.stage != 'linux-owned-ed2k-check' && github.event.inputs.stage != 'linux-public-playlist-probe'
+        if: github.event.inputs.stage != 'linux-playlist-owned-backend-check' && github.event.inputs.stage != 'linux-playlist-owned-gui-check' && github.event.inputs.stage != 'linux-owned-hls-dvr-check' && github.event.inputs.stage != 'linux-owned-ed2k-check' && github.event.inputs.stage != 'linux-public-playlist-probe' && github.event.inputs.stage != 'linux-public-playlist-transfer'
         run: |
           sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
           echo 'deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg] https://brave-browser-apt-release.s3.brave.com/ stable main' | sudo tee /etc/apt/sources.list.d/brave-browser-release.list >/dev/null
           sudo apt-get update -qq
           sudo apt-get install -y -qq brave-browser
       - name: Prepare normal native Wine installation dependencies
-        if: github.event.inputs.stage != 'linux-gui-preflight' && github.event.inputs.stage != 'linux-playlist-owned-backend-check' && github.event.inputs.stage != 'linux-playlist-owned-gui-check' && github.event.inputs.stage != 'linux-owned-hls-dvr-check' && github.event.inputs.stage != 'linux-owned-ed2k-check' && github.event.inputs.stage != 'linux-public-playlist-probe'
+        if: github.event.inputs.stage != 'linux-gui-preflight' && github.event.inputs.stage != 'linux-playlist-owned-backend-check' && github.event.inputs.stage != 'linux-playlist-owned-gui-check' && github.event.inputs.stage != 'linux-owned-hls-dvr-check' && github.event.inputs.stage != 'linux-owned-ed2k-check' && github.event.inputs.stage != 'linux-public-playlist-probe' && github.event.inputs.stage != 'linux-public-playlist-transfer'
         run: |
           sudo dpkg --add-architecture i386
           sudo apt-get update -qq
@@ -98,6 +98,8 @@ jobs:
             xprop -root _NET_SUPPORTING_WM_CHECK >out/film14-preflight/actual-root-wm.txt
             if [ "${{ github.event.inputs.stage }}" = "linux-playlist-owned-gui-check" ]; then
               .venv-film/bin/python .github/film-production/playlist_owned_gui_probe.py || exit $?
+            elif [ "${{ github.event.inputs.stage }}" = "linux-public-playlist-transfer" ]; then
+              .venv-film/bin/python .github/film-production/public_playlist_transfer.py || exit $?
             elif [ "${{ github.event.inputs.stage }}" = "linux-public-playlist-probe" ]; then
               .venv-film/bin/python .github/film-production/public_playlist_probe.py || exit $?
             elif [ "${{ github.event.inputs.stage }}" = "linux-owned-ed2k-check" ]; then
@@ -135,6 +137,7 @@ jobs:
         with:
           name: film14-genuine-gui-preflight-${{ github.run_id }}
           path: |
+            out/film14-public-playlist-transfer/*.json
             out/film14-public-playlist/*.json
             out/film15-owned-native-streams/*.json
             out/film15-owned-native-streams/*.png
