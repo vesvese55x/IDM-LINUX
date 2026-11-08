@@ -12,8 +12,9 @@ public static class FilmActualDisplay {
  public delegate bool Callback(IntPtr w,IntPtr s);
  [DllImport("user32.dll")]static extern bool EnumWindows(Callback cb,IntPtr s);
  [DllImport("user32.dll",CharSet=CharSet.Unicode)]static extern int GetWindowText(IntPtr w,System.Text.StringBuilder text,int n);
+ [DllImport("user32.dll",CharSet=CharSet.Unicode)]static extern int GetClassName(IntPtr w,System.Text.StringBuilder text,int n);
  [DllImport("user32.dll")]static extern bool ShowWindow(IntPtr w,int how);
- public static void MinimizeAgentConsole(){EnumWindows(delegate(IntPtr w,IntPtr s){var t=new System.Text.StringBuilder(2048);GetWindowText(w,t,2048);if(t.ToString().Contains("HostedComputeAgent"))ShowWindow(w,6);return true;},IntPtr.Zero);}
+ public static void MinimizeAgentConsole(){EnumWindows(delegate(IntPtr w,IntPtr s){var t=new System.Text.StringBuilder(2048);GetWindowText(w,t,2048);var c=new System.Text.StringBuilder(256);GetClassName(w,c,256);if(t.ToString().Contains("HostedComputeAgent")||c.ToString()=="CabinetWClass")ShowWindow(w,6);return true;},IntPtr.Zero);}
  public static int Request1080(){IntPtr p=Marshal.AllocHGlobal(220);try{for(int i=0;i<220;i++)Marshal.WriteByte(p,i,0);Marshal.WriteInt16(p,68,220);if(!EnumDisplaySettings(null,-1,p))return -100;Marshal.WriteInt32(p,72,Marshal.ReadInt32(p,72)|0x180000);Marshal.WriteInt32(p,172,1920);Marshal.WriteInt32(p,176,1080);int test=ChangeDisplaySettings(p,2);return test==0?ChangeDisplaySettings(p,0):test;}finally{Marshal.FreeHGlobal(p);}}
 }
 '@

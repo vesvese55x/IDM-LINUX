@@ -38,8 +38,17 @@ def configure(kibps):
  shot('03-actual-value-before-confirm');click(ok[0]['rect']);menu(root)
  click([root[0]+320,root[1]+222,root[0]+340,root[1]+236])
  menu(root);shot('04-actual-popup-after-enable')
- _,states,_=inspect('04-after-enable');states=[{'text':t,'state':s} for t,s in set((x['text'],x['state']) for x in states)];on=[s for s in states if s['text']=='Aç'];off=[s for s in states if s['text']=='Kapalı']
- assert len(on)==1 and len(off)==1 and on[0]['state']&8 and not off[0]['state']&8,'Actual native menu checkmarks must certify enable state'
+ _,states,_=inspect('04-after-enable');states=[{'text':t,'state':s} for t,s in set((x['text'],x['state']) for x in states)];on=[s for s in states if s['text'] in ['Aç','Açık']];off=[s for s in states if s['text']=='Kapalı']
+ api_verified=len(on)==1 and len(off)==1 and bool(on[0]['state']&8) and not bool(off[0]['state']&8)
+ # Wine exposes a custom menu bar and may not enumerate popup handles. Check the
+ # actual rendered radio bullet, independently calibrated against both genuine
+ # OFF run42452623048 and genuine ON run42454420004. No pixels are changed.
+ from PIL import Image
+ image=Image.open(O/'04-actual-popup-after-enable.png').convert('L')
+ def dark(dy):return sum(image.getpixel((root[0]+x,root[1]+y))<100 for y in range(dy,dy+18) for x in range(294,312))
+ on_pixels,off_pixels=dark(219),dark(237)
+ (O/'actual-checkmark-pixel-measurement.json').write_text(json.dumps({'on_dark_pixels':on_pixels,'off_dark_pixels':off_pixels,'threshold':100,'on_region_relative':[294,219,312,237],'off_region_relative':[294,237,312,255],'api_verified':api_verified,'pixel_modification':False},indent=2))
+ assert 5<=on_pixels<=35 and off_pixels<=2,'Actual original menu must visibly show ON bullet and no OFF bullet'
  shot('05-actual-enabled-checkmark');subprocess.run(['xdotool','key','Escape','Escape'],check=True)
  report={'configured_by_physical_original_UI':True,'native_speed_limit_KiB_per_second':kibps,'value_read_back':True,'enabled_menu_checkmark_verified':True,'benchmark_or_maximum_speed_claim':False,'reason':'Make real progress observable in a genuine paced tutorial, not a performance test','vendor_files_or_trial_keys_modified':False}
  (O/'actual-ordinary-speed-limit-review.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))

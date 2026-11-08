@@ -17,12 +17,16 @@ public static class ActualControlClick {
  [DllImport("user32.dll",CharSet=CharSet.Unicode)]static extern IntPtr SendMessageTimeout(IntPtr w,uint m,IntPtr n,StringBuilder text,uint flags,uint timeout,out IntPtr copied);
  [DllImport("user32.dll")]static extern bool GetWindowRect(IntPtr w,out RECT r);
  [DllImport("user32.dll")]static extern bool SetForegroundWindow(IntPtr w);
+ [DllImport("user32.dll")]static extern IntPtr GetAncestor(IntPtr w,uint flags);
+ [StructLayout(LayoutKind.Sequential)]public struct POINT{public int X,Y;}
+ [DllImport("user32.dll")]static extern IntPtr WindowFromPoint(POINT p);
+ [DllImport("kernel32.dll")]static extern void Sleep(uint ms);
  [DllImport("user32.dll")]static extern int GetSystemMetrics(int metric);
  [DllImport("user32.dll")]static extern bool SetCursorPos(int x,int y);
  [DllImport("user32.dll")]static extern void mouse_event(uint f,uint x,uint y,uint d,UIntPtr e);
  public static string Text(long h){var b=new StringBuilder(2048);IntPtr got;SendMessageTimeout(new IntPtr(h),13,new IntPtr(2048),b,2,300,out got);return b.ToString();}
  public static string[] Controls(){var a=new List<string>();Callback cb=delegate(IntPtr w,IntPtr s){if(IsWindowVisible(w)){var c=new StringBuilder(256);GetClassName(w,c,256);if(c.ToString().ToUpperInvariant().Contains("BUTTON")){RECT r;GetWindowRect(w,out r);a.Add(w.ToInt64()+"|"+r.L+","+r.T+","+r.R+","+r.B+"|"+Text(w.ToInt64()).Replace("\n"," ").Replace("\r",""));}}return true;};EnumWindows(delegate(IntPtr w,IntPtr s){EnumChildWindows(w,cb,IntPtr.Zero);return true;},IntPtr.Zero);return a.ToArray();}
- public static int[] Click(long h){var w=new IntPtr(h);if(!IsWindowVisible(w))throw new Exception("Actual control is not visible");RECT r;GetWindowRect(w,out r);int x=(r.L+r.R)/2,y=(r.T+r.B)/2;if(x<0||y<0||x>=GetSystemMetrics(0)||y>=GetSystemMetrics(1))throw new Exception("Actual target outside real display");SetCursorPos(x,y);mouse_event(2,0,0,0,UIntPtr.Zero);mouse_event(4,0,0,0,UIntPtr.Zero);return new[]{x,y};}
+ public static int[] Click(long h){var w=new IntPtr(h);if(!IsWindowVisible(w)||!IsWindowEnabled(w))throw new Exception("Actual control is not visible/enabled");IntPtr root=GetAncestor(w,2);SetForegroundWindow(root);Sleep(150);RECT r;GetWindowRect(w,out r);int x=(r.L+r.R)/2,y=(r.T+r.B)/2;if(x<0||y<0||x>=GetSystemMetrics(0)||y>=GetSystemMetrics(1))throw new Exception("Actual target outside real display");POINT point=new POINT();point.X=x;point.Y=y;if(GetAncestor(WindowFromPoint(point),2)!=root)throw new Exception("Actual target is obscured by another real window; do not click blindly");SetCursorPos(x,y);mouse_event(2,0,0,0,UIntPtr.Zero);mouse_event(4,0,0,0,UIntPtr.Zero);return new[]{x,y};}
 }
 '@
 $installReport=@{scope='Actual Windows project GUI language selection and native IDM installation; wizard steps only reported when actual signed vendor controls were physically clicked';native_idm_initially_present=$false;physical_actions=@();native_install_completed=$false;manual_vendor_wizard_recorded=$false;final_film_export_allowed=$false}
