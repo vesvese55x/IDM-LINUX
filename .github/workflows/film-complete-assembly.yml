@@ -22,7 +22,7 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq ffmpeg openssh-server fonts-dejavu-core
-          python -m pip install requests numpy pillow
+          python -m pip install requests numpy pillow opencv-python-headless
       - name: Prepare restricted write-only receiver
         env:
           RECEIVER_PUBLIC_KEY: ${{ inputs.receiver_public_key }}
