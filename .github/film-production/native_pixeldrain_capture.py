@@ -141,7 +141,7 @@ try:
  recording_epoch=time.monotonic()
  event('recording-started',cursor='OS cursor excluded; actual actions only');time.sleep(.8)
  if paced:
-  save('paced-capture-scope.json',{'source_hold_until_seconds':25,'native_start_not_before_seconds':60.557642,'completion_hold_until_seconds':94.0,'method':'actual wall-clock dwell; no frozen frames, no speed changes, no simulated progress','voice_chunks_seconds':[30.708390,29.849252,30.963810]})
+  save('paced-capture-scope.json',{'actual_native_url_add_not_before_seconds':45.0,'source_hold_until_seconds':25,'native_start_not_before_seconds':60.557642,'completion_hold_until_seconds':94.0,'method':'actual wall-clock dwell; no frozen frames, no speed changes, no simulated progress','voice_chunks_seconds':[30.708390,29.849252,30.963810]})
  # Re-read rects after actual window placement/reflow.
  candidates=browser.read("[...document.querySelectorAll('button,a')].map(e=>{let r=e.getBoundingClientRect();return {text:e.innerText.trim(),rect:[r.left,r.top,r.right,r.bottom],visible:r.width>0&&r.height>0}}).filter(x=>x.visible&&/^(download\\s*){1,2}$/i.test(x.text))")
  assert candidates,'Actual Download control disappeared after layout'
@@ -186,10 +186,12 @@ try:
   event('browser-download-already-completed-no-cancel-possible',bytes=size,sha256=browser_sha)
   save('browser-completed-before-cancel.json',{'actual_file':str(browser_file),'original_filename':name,'bytes':size,'sha256':browser_sha,'real_browser_control_ids':[c['id'] for c in controls],'physical_cancel_claimed':False})
   shot('04-browser-already-completed')
+ wait_recording(43.0)
  keys('ctrl+w');time.sleep(.5)
  # Direct ordinary public URL Add is deliberately manual, not browser interception.
  activate('Internet Download Manager');shot('05-native-before-url-add')
  im=cv2.imread(str(O/'05-native-before-url-add.png'));icon=cv2.imread('.github/film-production/actual-native-url-icon.png');_,score,_,pos=cv2.minMaxLoc(cv2.matchTemplate(im,icon,cv2.TM_CCOEFF_NORMED));assert score>.985,'Unverified native icon'
+ wait_recording(45.0)
  physical([pos[0],pos[1],pos[0]+icon.shape[1],pos[1]+icon.shape[0]],'native-url-add-icon');time.sleep(.5)
  cc,tt,ww=native('06-native-url-add');assert 'İndirilecek yeni adresi girin' in ww
  edits=[c for c in cc if c['visible'] and c['class']=='Edit' and not c['style']&0x08000000];assert len(edits)==1

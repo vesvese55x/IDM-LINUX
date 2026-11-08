@@ -31,8 +31,8 @@ threading.Thread(target=server.serve_forever,daemon=True).start()
 # Supported normal on-disk server-list configuration points only to our real server.
 # No replacement fetch function, injected peers, fabricated status, or external hosts.
 (get_cache_dir(create=True)/'ed2k_servers.json').write_text(json.dumps({'ts':time.time(),'servers':[['127.0.0.1',server.server_address[1]]]}))
-link=f'ed2k://|file|{urllib.parse.quote(name)}|{len(payload)}|{node.file_hash.hex()}|/'
-report={'scope':'Real unmodified native bridge with own real TCP discovery and eD2K peer; not public-network or GUI lesson proof','engine_monkeypatches':False,'injected_client_status':False,'finished_lesson':False,'final_film_export_allowed':False,'filename':name,'source_bytes':len(payload),'source_sha256':hashlib.sha256(payload).hexdigest(),'source_ed2k_hash':node.file_hash.hex(),'actual_states':[]}
+link=f'ed2k://|file|{name}|{len(payload)}|{node.file_hash.hex()}|/'
+report={'scope':'Real unmodified native bridge with own real TCP discovery and eD2K peer; not public-network or GUI lesson proof','engine_monkeypatches':False,'injected_client_status':False,'finished_lesson':False,'final_film_export_allowed':False,'filename':name,'source_link_name_representation':'raw Unicode IRI; percent-encoded name edge case is not certified','source_bytes':len(payload),'source_sha256':hashlib.sha256(payload).hexdigest(),'source_ed2k_hash':node.file_hash.hex(),'actual_states':[]}
 def save():
  report['actual_discovery_wire_requests']=events;report['actual_peer_served_bytes']=node.served_bytes;report['actual_peer_part_requests']=node.requests
  (O/'actual-owned-ed2k-review.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
@@ -44,11 +44,12 @@ try:
  status=session.query_status();report['actual_states'].append(status)
  assert not session.error_message,session.error_message
  assert session.complete,'Bounded wait expired before actual completion'
+ assert session.target_path.name==name,'Actual own Unicode filename must be preserved, not percent-encoded'
  received=session.target_path.read_bytes()
  assert received==payload and session.compute_file_hash()==node.file_hash
  assert status['status']=='complete' and int(status['completedLength'])==len(payload)
  assert E.OP_LOGINREQUEST in [x['opcode'] for x in events] and E.OP_GETSOURCES in [x['opcode'] for x in events]
  assert node.served_bytes>=len(payload) and node.requests>0
- report.update(actual_native_ed2k_bridge_verified=True,actual_output_filename=session.target_path.name,actual_sha256=hashlib.sha256(received).hexdigest(),actual_ed2k_hash=session.compute_file_hash().hex(),multipart_count=session.num_parts,bytes_match=True)
+ report.update(actual_native_ed2k_bridge_verified=True,actual_output_filename=session.target_path.name,actual_sha256=hashlib.sha256(received).hexdigest(),actual_ed2k_hash=session.compute_file_hash().hex(),multipart_count=session.num_parts,bytes_match=True,original_unicode_filename_preserved=True)
 finally:
  ed2k_shutdown_all();node.stop();server.shutdown();server.server_close();save()
