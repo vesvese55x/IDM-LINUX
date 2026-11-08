@@ -1,0 +1,73 @@
+name: Complete film — standard runner assembly
+on:
+  workflow_dispatch:
+    inputs:
+      receiver_public_key:
+        type: string
+        required: true
+      bundle_sha256:
+        type: string
+        required: true
+      bundle_bytes:
+        type: string
+        required: true
+permissions:
+  contents: read
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - name: Prepare standard runner
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg openssh-server
+          python -m pip install requests
+      - name: Prepare restricted write-only receiver
+        env:
+          RECEIVER_PUBLIC_KEY: ${{ inputs.receiver_public_key }}
+        run: |
+          sudo useradd -m -s /bin/bash filmreceive
+          python -c 'import secrets;print("filmreceive:"+secrets.token_urlsafe(40))' | sudo chpasswd
+          sudo install -d -m 700 -o filmreceive -g filmreceive /home/filmreceive/.ssh
+          printf 'restrict,command="cat > /home/filmreceive/bundle.tar" %s\n' "$RECEIVER_PUBLIC_KEY" | sudo tee /home/filmreceive/.ssh/authorized_keys >/dev/null
+          sudo chown filmreceive:filmreceive /home/filmreceive/.ssh/authorized_keys
+          sudo chmod 600 /home/filmreceive/.ssh/authorized_keys
+          sudo mkdir -p /run/sshd
+          sudo /usr/sbin/sshd -p 2222 -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no -o PermitRootLogin=no -o AllowUsers=filmreceive
+          mkdir transfer-public
+          sudo cat /etc/ssh/ssh_host_ed25519_key.pub > transfer-public/runner-host-key.pub
+          echo 'film-assembly-${{ github.run_id }}' > transfer-public/receiver-alias.txt
+          nohup ssh -o StrictHostKeyChecking=accept-new -o ServerAliveInterval=20 -o BatchMode=no -o PreferredAuthentications=keyboard-interactive -R film-assembly-${{ github.run_id }}:22:localhost:2222 serveo.net > /tmp/film-transfer.log 2>&1 < /dev/null &
+      - uses: actions/upload-artifact@v4
+        with:
+          name: receiver-public-routing
+          path: transfer-public/
+          retention-days: 1
+      - name: Receive authorized film bundle
+        env:
+          EXPECTED_SHA256: ${{ inputs.bundle_sha256 }}
+          EXPECTED_BYTES: ${{ inputs.bundle_bytes }}
+        run: |
+          python - <<'PY'
+          import os,time,hashlib,pathlib
+          p=pathlib.Path('/home/filmreceive/bundle.tar');deadline=time.time()+1200
+          while time.time()<deadline:
+            if p.exists() and p.stat().st_size==int(os.environ['EXPECTED_BYTES']):
+              if hashlib.file_digest(p.open('rb'),'sha256').hexdigest()==os.environ['EXPECTED_SHA256']:break
+            time.sleep(10)
+          else:raise SystemExit('No complete verified input bundle received')
+          PY
+          mkdir film
+          tar -xf /home/filmreceive/bundle.tar -C film
+          python film/assemble_complete.py
+      - name: Publish completed film to requested file host
+        run: python film/upload_complete.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: complete-film-receipts
+          path: |
+            film/delivery/assembly-receipt.json
+            film/delivery/gofile-public-receipt.json
+          retention-days: 7
