@@ -138,7 +138,7 @@ try:
  recording_epoch=time.monotonic()
  event('recording-started',cursor='OS cursor excluded; actual actions only');time.sleep(.8)
  if paced:
-  save('paced-capture-scope.json',{'source_hold_until_seconds':25,'native_start_not_before_seconds':54.655283,'completion_hold_until_seconds':88.0,'method':'actual wall-clock dwell; no frozen frames, no speed changes, no simulated progress','voice_chunks_seconds':[28.637324,26.017959,30.963810]})
+  save('paced-capture-scope.json',{'source_hold_until_seconds':25,'native_start_not_before_seconds':58.451746,'completion_hold_until_seconds':92.0,'method':'actual wall-clock dwell; no frozen frames, no speed changes, no simulated progress','voice_chunks_seconds':[28.637324,29.814422,30.963810]})
  # Re-read rects after actual window placement/reflow.
  candidates=browser.read("[...document.querySelectorAll('button,a')].map(e=>{let r=e.getBoundingClientRect();return {text:e.innerText.trim(),rect:[r.left,r.top,r.right,r.bottom],visible:r.width>0&&r.height>0}}).filter(x=>x.visible&&/^(download\\s*){1,2}$/i.test(x.text))")
  assert candidates,'Actual Download control disappeared after layout'
@@ -166,12 +166,23 @@ try:
  assert copied_url==actual_url,'Only the genuine browser-copied public download URL may be pasted into native IDM'
  event('actual-browser-clipboard-url-verified')
  controls=browser_controls(downloads,'03-before-more-actions')
- more=find_browser_control(controls,['Diğer işlemler','Diğer eylemler','Diğer seçenekler','More actions','Other actions','More options'])
- physical(measured_browser_rect(downloads,more['rect'],'03-more-actions-target'),'actual-browser-more-actions');time.sleep(.3)
- shot('03-browser-actual-actions-menu');controls=browser_controls(downloads,'03-actual-actions-menu')
- cancel=find_browser_control(controls,['İptal','İndirmeyi iptal et','Cancel','Cancel download'])
- physical(measured_browser_rect(downloads,cancel['rect'],'03-cancel-target'),'actual-browser-download-cancel');time.sleep(.7)
- shot('04-browser-transfer-cancelled');save('actual-browser-download-events-after-cancel.json',browser.events)
+ more_matches=[v for v in controls if v['id']=='more-actions']
+ if more_matches:
+  more=find_browser_control(controls,['Diğer işlemler','Diğer eylemler','Diğer seçenekler','More actions','Other actions','More options'])
+  physical(measured_browser_rect(downloads,more['rect'],'03-more-actions-target'),'actual-browser-more-actions');time.sleep(.3)
+  shot('03-browser-actual-actions-menu');controls=browser_controls(downloads,'03-actual-actions-menu')
+  cancel=find_browser_control(controls,['İptal','İndirmeyi iptal et','Cancel','Cancel download'])
+  physical(measured_browser_rect(downloads,cancel['rect'],'03-cancel-target'),'actual-browser-download-cancel');time.sleep(.7)
+  shot('04-browser-transfer-cancelled');save('actual-browser-download-events-after-cancel.json',browser.events)
+ else:
+  # A genuinely completed browser download has no Cancel menu. Never fabricate one.
+  browser_file=temporary/name
+  assert browser_file.is_file() and browser_file.stat().st_size==size,'No menu is not proof of completion'
+  browser_sha=hashlib.file_digest(browser_file.open('rb'),'sha256').hexdigest()
+  assert browser_sha==sha,'Completed browser copy must match public source before skipping cancellation'
+  event('browser-download-already-completed-no-cancel-possible',bytes=size,sha256=browser_sha)
+  save('browser-completed-before-cancel.json',{'actual_file':str(browser_file),'original_filename':name,'bytes':size,'sha256':browser_sha,'real_browser_control_ids':[c['id'] for c in controls],'physical_cancel_claimed':False})
+  shot('04-browser-already-completed')
  keys('ctrl+w');time.sleep(.5)
  # Direct ordinary public URL Add is deliberately manual, not browser interception.
  activate('Internet Download Manager');shot('05-native-before-url-add')
@@ -183,7 +194,7 @@ try:
  cc,tt,ww=native('07-native-file-information');assert any('Dosya İndirme Bilgisi' in w for w in ww)
  paths=[c for c in cc if c['visible'] and c['class'] in ['Edit','ComboBox'] and name in c['text'] and not c['text'].startswith(('http:','https:'))];assert paths,'Original source filename must be present unchanged in a native filename/path field'
  save('native-original-filename-controls.json',paths);event('native-original-filename-read-back',name=name)
- time.sleep(2);wait_recording(54.655283);button(cc,'İndirmeyi Başlat')
+ time.sleep(2);wait_recording(58.451746);button(cc,'İndirmeyi Başlat')
  completed=False;progress=False;stages=[];deadline=time.monotonic()+720
  for n in range(180):
   time.sleep(.4 if n<10 else 3)
@@ -204,7 +215,7 @@ try:
  unchanged=all((vendor/f).is_file() and hashlib.file_digest((vendor/f).open('rb'),'sha256').hexdigest()==digest for f,digest in manifest['files'].items() if Path(f).suffix.lower() in ['.exe','.dll','.sys'])
  assert unchanged,'Vendor binary changed'
  result.update(native_completion_window_seen=completed,native_progress_pause_control_seen=progress,original_filename_on_disk=True,downloaded_files=[str(p) for p in verified],downloaded_sha256_match=True,vendor_binaries_unchanged=unchanged,browser_interception_verified=False,manual_url_add_route_verified=True,actual_native_transfer_verified=True)
- save('actual-pixeldrain-review.json',result);shot('08-native-completion-verified');wait_recording(88.0);time.sleep(3)
+ save('actual-pixeldrain-review.json',result);shot('08-native-completion-verified');wait_recording(92.0);time.sleep(3)
 except Exception as e:
  if browser is not None:
   for ev in browser.events:
