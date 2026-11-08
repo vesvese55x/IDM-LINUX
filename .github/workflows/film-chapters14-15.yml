@@ -142,9 +142,9 @@ jobs:
       - name: Build byte-exact repository launcher without installing IDM
         shell: pwsh
         run: ./packaging/windows/build.ps1
-      - name: Actual desktop and EXE opening only, never DrawToBitmap
+      - name: Actual desktop video and original EXE/native wizard, never DrawToBitmap
         shell: pwsh
-        run: ./.github/film-production/windows_opening_probe.ps1
+        run: ./.github/film-production/windows_desktop_recording.ps1
       - name: Keep actual evidence, not a completed installation claim
         if: always()
         uses: actions/upload-artifact@v4

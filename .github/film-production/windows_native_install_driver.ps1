@@ -61,7 +61,7 @@ while([DateTime]::UtcNow -lt $deadline){
  $wizardClicked=$false
  foreach($row in [ActualControlClick]::Controls()){
   $parts=$row.Split([char]'|',3);$h=[long]$parts[0];$caption=$parts[2].Replace('&','').Trim()
-  if($caption -notmatch '^(Next\s*>?|Install|Finish|I accept the terms.*|I agree.*)$'){continue}
+  if($caption -notmatch '^(Next\s*>?|Install|Finish\s*>?|I accept the terms.*|I agree.*)$'){continue}
   if(-not [ActualControlClick]::IsWindowEnabled([IntPtr]$h)){continue}
   $owner=Get-Process -Id ([ActualControlClick]::OwnerPid($h)) -ErrorAction SilentlyContinue
   if(-not $owner -or -not $owner.Path){continue}
@@ -104,7 +104,8 @@ while([DateTime]::UtcNow -lt $deadline){
   Save-Install;$wizardClicked=$true;break
  }
  $found=@($nativePaths | Where-Object {Test-Path $_}) | Select-Object -First 1
- if($found -and -not $wizardClicked -and -not (Get-Process semo_idm_setup -ErrorAction SilentlyContinue)){Start-Sleep -Seconds 5;break}
+ $wizardAlive=@(Get-Process -ErrorAction SilentlyContinue | Where-Object {$_.ProcessName -like 'IDM*.tmp' -and $_.Path -like (Join-Path $env:TEMP 'IDM_Setup_Temp\*')})
+ if($found -and -not $wizardClicked -and $wizardAlive.Count -eq 0 -and -not (Get-Process semo_idm_setup -ErrorAction SilentlyContinue)){Start-Sleep -Seconds 5;break}
 }
 $installReport.actual_buttons_after=[ActualControlClick]::Controls();Save-Install
 if(-not $found){throw 'No native installed executable appeared; preserve real error/UI rather than declare success'}
@@ -118,6 +119,7 @@ if($signature.Status -ne 'Valid' -or $installReport.signer_subject -notmatch 'To
 $registrations=@(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*','HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*' -ErrorAction SilentlyContinue | Where-Object {$_.DisplayName -eq 'Internet Download Manager'})
 $installReport.native_uninstall_registration=@($registrations | Select-Object DisplayName,DisplayVersion,Publisher,InstallLocation)
 if($registrations.Count -eq 0){Save-Install;throw 'Native installer registry registration not verified'}
+$installReport.actual_finish_button_clicked=@($installReport.physical_actions | Where-Object {$_.actual_caption.Replace('&','').Trim() -match '^Finish\s*>?$'}).Count -gt 0
 $installReport.native_install_completed=$true
 Save-Install
 Real-Shot 'native-install-04-installed-verified.png'
