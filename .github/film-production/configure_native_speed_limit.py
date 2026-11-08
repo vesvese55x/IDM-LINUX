@@ -24,7 +24,7 @@ def menu(root):
  click([root[0]+123,root[1]+32,root[0]+143,root[1]+48])
  subprocess.run(['xdotool','mousemove',str(root[0]+190),str(root[1]+226)],check=True);time.sleep(.8)
 def configure(kibps):
- assert kibps==10000,'Only the documented ordinary demonstration rate is supported'
+ assert kibps in (100,1000,10000),'Only explicitly documented ordinary demonstration rates are supported'
  rows=[l for l in subprocess.check_output(['wmctrl','-l'],text=True).splitlines() if re.search(r'Internet Download Manager \d+\.\d+$',l)];assert len(rows)==1
  subprocess.run(['wmctrl','-ia',rows[0].split()[0]],check=True);time.sleep(.4)
  controls,_,_=inspect('01-before')
