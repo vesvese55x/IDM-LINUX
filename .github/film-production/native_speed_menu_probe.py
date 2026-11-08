@@ -26,4 +26,8 @@ assert 0<x<1920 and 0<y<1080
 subprocess.run(['xdotool','mousemove',str(x),str(y),'click','1'],check=True);time.sleep(.8)
 subprocess.run(['import','-window','root',str(O/'02-actual-downloads-menu.png')],check=True)
 r=subprocess.run(['wine',str(p)],capture_output=True,check=True,timeout=30);(O/'actual-menu-open-raw.txt').write_bytes(r.stdout)
+# Actual visually measured Speed Limiter submenu; observe only, never enable/change.
+subprocess.run(['xdotool','mousemove',str(a[0][0]+190),str(a[0][1]+226)],check=True);time.sleep(1)
+subprocess.run(['import','-window','root',str(O/'03-actual-speed-limiter-submenu.png')],check=True)
+r=subprocess.run(['wine',str(p)],capture_output=True,check=True,timeout=30);(O/'actual-speed-submenu-raw.txt').write_bytes(r.stdout)
 subprocess.run(['xdotool','key','Escape'],check=True)
