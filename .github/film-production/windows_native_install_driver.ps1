@@ -50,15 +50,19 @@ $start=Button-Match '^Start Operation Now$'
 $languageNav=Button-Match '^Language Selection'
 Actual-Click $languageNav 'Open actual language page'
 Real-Shot 'native-install-01-language-page.png'
-$turkish=Button-Match '^Türkçe'
-Actual-Click $turkish 'Select actual Turkish option'
-Real-Shot 'native-install-02-turkish-selected.png'
+$requestedEnglish=$env:FILM_WINDOWS_LANG -eq 'en'
+$languageName=if($requestedEnglish){'English'}else{'Türkçe'}
+$languageButton=Button-Match ('^'+[regex]::Escape($languageName))
+Actual-Click $languageButton ('Select actual language option: '+$languageName)
+$installReport.actual_selected_language=$languageName
+if($requestedEnglish){Real-Shot 'native-install-02-english-selected.png'}else{Real-Shot 'native-install-02-turkish-selected.png'}
 Actual-Click $installNav 'Return to actual installer page'
 Real-Shot 'native-install-03-before-start.png'
 # Choose the ordinary manual browser-extension route, explicitly not auto-store success.
 # The previous default run genuinely opened an unavailable store link; preserve that
 # evidence for troubleshooting instead of claiming the extension installed.
-$autoBrowser=Button-Match '^Tarayıcı Eklentisini Otomatik Aç & Kur$'
+$autoPattern=if($requestedEnglish){'^Auto-Open & Install Browser Extension$'}else{'^Tarayıcı Eklentisini Otomatik Aç & Kur$'}
+$autoBrowser=Button-Match $autoPattern
 $checkBefore=(& python './.github/film-production/windows_read_checkbox.py' $autoBrowser | ConvertFrom-Json)
 if($LASTEXITCODE -ne 0){throw 'Real accessibility checkbox-state read failed'}
 if($checkBefore.checked){Actual-Click $autoBrowser 'Choose manual separate browser-extension setup, not automatic store opening'}
@@ -69,7 +73,7 @@ $installReport.actual_optional_browser_checkbox_after=$checkAfter
 $installReport.browser_extension_step_separate_and_not_verified=$true
 $installReport.auto_store_open_disabled_by_explicit_normal_UI_choice=$true
 Real-Shot 'native-install-03b-manual-browser-extension-choice.png'
-$installReport.actual_turkish_start_caption=[ActualControlClick]::Text($start)
+if($requestedEnglish){$installReport.actual_english_start_caption=[ActualControlClick]::Text($start)}else{$installReport.actual_turkish_start_caption=[ActualControlClick]::Text($start)}
 Actual-Click $start 'Start actual project native Windows IDM installation'
 $deadline=[DateTime]::UtcNow.AddMinutes(12);$found=$null;$n=0
 while([DateTime]::UtcNow -lt $deadline){
@@ -82,7 +86,7 @@ while([DateTime]::UtcNow -lt $deadline){
  foreach($row in [ActualControlClick]::Controls()){
   $parts=$row.Split([char]'|',3);$h=[long]$parts[0];$caption=$parts[2].Replace('&','').Trim()
   if($caption -notmatch '^(Next\s*>?|İleri\s*>?|Install|Finish\s*>?|Bitir\s*>?|I accept the terms.*|I agree.*|Lisans anlaşmasındaki şartları kabul ediyorum|OK)$'){continue}
-  if($caption -eq 'OK' -and ([ActualControlClick]::RootTitle($h) -notin @('IDM Setup','IDM Kurulumu') -or [ActualControlClick]::RootCombo($h) -ne 'Türkçe')){continue}
+  if($caption -eq 'OK' -and ([ActualControlClick]::RootTitle($h) -notin @('IDM Setup','IDM Kurulumu') -or [ActualControlClick]::RootCombo($h) -ne $languageName)){continue}
   if(-not [ActualControlClick]::IsWindowEnabled([IntPtr]$h)){continue}
   $owner=Get-Process -Id ([ActualControlClick]::OwnerPid($h)) -ErrorAction SilentlyContinue
   if(-not $owner -or -not $owner.Path){continue}
@@ -144,3 +148,25 @@ $installReport.actual_finish_button_clicked=@($installReport.physical_actions | 
 $installReport.native_install_completed=$true
 Save-Install
 Real-Shot 'native-install-04-installed-verified.png'
+
+if($requestedEnglish){
+ # Ordinary launch of the genuine, signed, newly installed original application.
+ # No registration/activation/trial/license dialogs are clicked or modified.
+ Start-Process -FilePath $found | Out-Null
+ Start-Sleep -Seconds 3
+ Add-Type @'
+using System;using System.Runtime.InteropServices;
+public static class EnglishNativeWindowFocus {
+ [DllImport("user32.dll")]public static extern bool ShowWindow(IntPtr h,int n);
+ [DllImport("user32.dll")]public static extern bool SetForegroundWindow(IntPtr h);
+}
+'@
+ foreach($np in @(Get-Process IDMan -ErrorAction SilentlyContinue)){
+  $np.Refresh();if($np.Path -eq $found -and $np.MainWindowHandle -ne 0){[void][EnglishNativeWindowFocus]::ShowWindow($np.MainWindowHandle,9);[void][EnglishNativeWindowFocus]::SetForegroundWindow($np.MainWindowHandle)}
+ }
+ Start-Sleep -Seconds 1
+ Real-Shot 'native-install-05-actual-original-IDM-English.png'
+ $installReport.actual_original_windows=@([RealDesktopProbe]::Windows())
+ $installReport.english_reference_capture_only=$true
+ Save-Install
+}

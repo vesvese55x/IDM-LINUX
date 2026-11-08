@@ -21,7 +21,7 @@ public static class FilmActualDisplay {
 $modeResult=[FilmActualDisplay]::Request1080();Start-Sleep -Seconds 2
 # Ordinary real desktop preparation, never altering application pixels.
 Set-TimeZone -Id 'Turkey Standard Time'
-Set-Culture -CultureInfo 'tr-TR'
+if($env:FILM_WINDOWS_LANG -eq 'en'){Set-Culture -CultureInfo 'en-US'}else{Set-Culture -CultureInfo 'tr-TR'}
 $intl='HKCU:\Control Panel\International'
 Set-ItemProperty $intl -Name sShortDate -Value 'dd.MM.yyyy'
 Set-ItemProperty $intl -Name sShortTime -Value 'HH:mm:ss'
