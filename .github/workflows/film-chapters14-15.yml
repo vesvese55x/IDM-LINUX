@@ -5,7 +5,7 @@ on:
       stage:
         description: 'Preparation is not a completed download lesson'
         type: choice
-        options: [linux-gui-preflight, linux-native-turkish-preflight, linux-native-fileinfo-turkish-check, linux-native-transfer-turkish-check, linux-native-pixeldrain-capture, windows-native-opening-probe, linux-playlist-owned-backend-check, linux-native-speed-menu-probe]
+        options: [linux-gui-preflight, linux-native-turkish-preflight, linux-native-fileinfo-turkish-check, linux-native-transfer-turkish-check, linux-native-pixeldrain-capture, windows-native-opening-probe, linux-playlist-owned-backend-check, linux-native-speed-menu-probe, linux-playlist-owned-gui-check]
         default: linux-gui-preflight
       source_page_url:
         description: 'User-authorized public Pixeldrain page URL. Never enter passwords or API keys.'
@@ -56,14 +56,14 @@ jobs:
           python3 -m venv --system-site-packages .venv-film
           .venv-film/bin/pip install -e . pillow fonttools yt-dlp
       - name: Install official Brave, without credentials
-        if: github.event.inputs.stage != 'linux-playlist-owned-backend-check'
+        if: github.event.inputs.stage != 'linux-playlist-owned-backend-check' && github.event.inputs.stage != 'linux-playlist-owned-gui-check'
         run: |
           sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
           echo 'deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg] https://brave-browser-apt-release.s3.brave.com/ stable main' | sudo tee /etc/apt/sources.list.d/brave-browser-release.list >/dev/null
           sudo apt-get update -qq
           sudo apt-get install -y -qq brave-browser
       - name: Prepare normal native Wine installation dependencies
-        if: github.event.inputs.stage != 'linux-gui-preflight' && github.event.inputs.stage != 'linux-playlist-owned-backend-check'
+        if: github.event.inputs.stage != 'linux-gui-preflight' && github.event.inputs.stage != 'linux-playlist-owned-backend-check' && github.event.inputs.stage != 'linux-playlist-owned-gui-check'
         run: |
           sudo dpkg --add-architecture i386
           sudo apt-get update -qq
@@ -91,7 +91,9 @@ jobs:
             sleep 2
             wmctrl -m >out/film14-preflight/actual-window-manager.txt
             xprop -root _NET_SUPPORTING_WM_CHECK >out/film14-preflight/actual-root-wm.txt
-            if [ "${{ github.event.inputs.stage }}" = "linux-playlist-owned-backend-check" ]; then
+            if [ "${{ github.event.inputs.stage }}" = "linux-playlist-owned-gui-check" ]; then
+              .venv-film/bin/python .github/film-production/playlist_owned_gui_probe.py || exit $?
+            elif [ "${{ github.event.inputs.stage }}" = "linux-playlist-owned-backend-check" ]; then
               .venv-film/bin/python .github/film-production/playlist_owned_source_preflight.py || exit $?
             elif [ "${{ github.event.inputs.stage }}" != "linux-gui-preflight" ]; then
               EXTRA=""
@@ -121,6 +123,10 @@ jobs:
             out/film14-preflight/
             out/film14-native-turkish/
             out/film14-playlist-owned/
+            out/film14-playlist-gui-owned/*.png
+            out/film14-playlist-gui-owned/*.json
+            out/film14-playlist-gui-owned/*.txt
+            out/film14-playlist-gui-owned/*.mp4
           retention-days: 7
           if-no-files-found: warn
 
