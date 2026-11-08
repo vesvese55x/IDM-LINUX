@@ -15,7 +15,12 @@ if($i -lt 0){throw 'Authoritative CAB marker missing'}
 $cab=Join-Path $work 'payload.cab';[IO.File]::WriteAllBytes($cab,[Convert]::FromBase64String($text.Substring($i+$marker.Length)))
 & "$env:WINDIR/System32/expand.exe" $cab '-F:*' $work | Out-Null
 if($LASTEXITCODE -ne 0){throw 'CAB extraction failed'}
-Get-ChildItem 'src/idm_linux/language' -Filter '*.txt' | Copy-Item -Destination $work
+# Preserve the CAB's complete Windows dictionaries. Linux dictionaries lack SEMO-only keys.
+$english=Join-Path $work 'en.txt'
+if(-not (Test-Path $english) -or -not (Select-String -Path $english -Pattern '^semo\.nav_p2p\s*=' -Quiet)){throw 'Authoritative Windows English dictionary missing'}
+$report.english_dictionary_sha256=(Get-FileHash $english -Algorithm SHA256).Hash.ToLowerInvariant()
+Copy-Item $english (Join-Path $out 'authoritative-Windows-en.txt')
+Copy-Item (Join-Path $work 'tr.txt') (Join-Path $out 'authoritative-Windows-tr.txt')
 $settingsDir=Join-Path $env:APPDATA 'IDM_SEMO';New-Item -ItemType Directory -Force $settingsDir | Out-Null
 [IO.File]::WriteAllText((Join-Path $settingsDir 'settings.ini'),"lang=en`r`nwarm=0`r`ncapture=0`r`nclip=0`r`n",[Text.Encoding]::UTF8)
 $paths=@("${env:ProgramFiles(x86)}\Internet Download Manager\IDMan.exe","$env:ProgramFiles\Internet Download Manager\IDMan.exe")
