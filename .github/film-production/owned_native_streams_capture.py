@@ -12,6 +12,7 @@ from idm_linux.config import IdmLinuxConfig,get_cache_dir
 from idm_linux.wine_sender import build_wine_env
 from turkish_quality_gate import assert_clean
 O=Path('out/film15-owned-native-streams').resolve();O.mkdir(parents=True,exist_ok=True)
+os.environ['PATH']=str(Path(sys.executable).parent)+os.pathsep+os.environ['PATH']
 native_cfg=IdmLinuxConfig.load();assert native_cfg.find_idm_exe();os.environ.update(build_wine_env(native_cfg));probe=Path('out/film14-native-turkish/native-turkish-probe.exe').resolve()
 # Reuse only our existing read-only native inspector and real input/browser primitives.
 helpers={'save','event','shot','physical','keys','type_ascii','activate','CDP','targets','connect_url','native','button'}
