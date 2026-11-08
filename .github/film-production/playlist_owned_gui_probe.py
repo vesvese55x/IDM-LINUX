@@ -80,9 +80,9 @@ def row_controls():
  return sorted([w for w in widgets(ROOT) if isinstance(w,tk.Checkbutton) and w.winfo_ismapped() and str(w.cget('text'))==''],key=lambda w:w.winfo_rooty())
 def select_and_start():
  cbs=row_controls();assert len(cbs)==3
- assert all(bool(ROOT.getvar(w.cget('variable'))) for w in cbs)
+ assert all(ROOT.getboolean(ROOT.getvar(w.cget('variable'))) for w in cbs)
  click(cbs[1],'deselect-second-actual-checkbox')
- assert [bool(ROOT.getvar(w.cget('variable'))) for w in cbs]==[True,False,True]
+ assert [ROOT.getboolean(ROOT.getvar(w.cget('variable'))) for w in cbs]==[True,False,True]
  shot('04-actual-selection-first-third');click(find(T('ov.pl_btn_download')),'start-selected-through-original-GUI')
  ROOT.after(1300,lambda:wait_pause(0))
 def wait_pause(attempt):
@@ -108,7 +108,7 @@ def start_cancel_demo():
  cbs=row_controls()
  for i,w in enumerate(cbs):
   wanted=(i==1)
-  if bool(ROOT.getvar(w.cget('variable')))!=wanted:click(w,'actual-new-selection-for-cancel-demo')
+  if ROOT.getboolean(ROOT.getvar(w.cget('variable')))!=wanted:click(w,'actual-new-selection-for-cancel-demo')
  click(find(T('ov.pl_btn_download')),'start-own-second-clip-for-real-cancel-demo');ROOT.after(1200,lambda:wait_cancel(0))
 def wait_cancel(attempt):
  a=[w for w in widgets(ROOT) if isinstance(w,ttk.Button) and w.winfo_ismapped() and str(w.cget('text'))=='⏸']
