@@ -76,8 +76,15 @@ try:
  button(cc,'Tamam');time.sleep(1)
  cc,tt,ww=native('11-real-category-selected-in-file-information');assert any(c['visible'] and c['class']=='ComboBox' and c['text']=='Film-Dersleri' for c in cc)
  r['actual_category_created']={'name':'Film-Dersleri','extension':'lesson','native_folder':win_dest,'fields_read_back':True}
+ paths=[c for c in cc if c['visible'] and c['class']=='ComboBox' and 'film-dersi.lesson' in c['text']];assert len(paths)==1
+ actual_save=win_dest+'film-dersi.lesson';physical(paths[0]['rect'],'actual-current-file-save-path');keys('ctrl+a');type_ascii(actual_save)
+ cc,tt,ww=native('11b-real-current-category-output-path');assert any(c['class']=='ComboBox' and c['text']==actual_save for c in cc)
  button(cc,'Daha Sonra İndir');time.sleep(2)
- cc,tt,ww=native('12-real-download-later-main-window');assert 'Dosya İndirme Bilgisi' not in ww
+ cc,tt,ww=native('12-real-download-later-first-state')
+ if 'Daha sonra indir' in ww:
+  assert any('IDM her zaman' in t and 'indirmeye başlar' in t for t in tt),'Only acknowledge the exact actual ordinary prefetch information notice'
+  button(cc,'Tamam');time.sleep(1);cc,tt,ww=native('12b-real-download-later-notice-acknowledged')
+ assert 'Dosya İndirme Bilgisi' not in ww
  shot('13-real-main-before-scheduler-start');im=cv2.imread(str(O/'13-real-main-before-scheduler-start.png'));icon=cv2.imread('.github/film-production/actual-native-scheduler-icon.png');_,score,_,pos=cv2.minMaxLoc(cv2.matchTemplate(im,icon,cv2.TM_CCOEFF_NORMED));assert score>.985
  physical([*pos,pos[0]+icon.shape[1],pos[1]+icon.shape[0]],'actual-scheduler-for-owned-pending-file');time.sleep(.5)
  cc,tt,ww=native('14-real-scheduler-before-main-queue-selection');scheduler=[c for c in cc if c['visible'] and c['class']=='#32770' and c['text']=='Programlayıcı'];assert len(scheduler)==1;box=scheduler[0]['rect'];trees=[c for c in cc if c['visible'] and c['class']=='SysTreeView32' and box[0]<=c['rect'][0]<c['rect'][2]<=box[2] and box[1]<=c['rect'][1]<c['rect'][3]<=box[3]];assert len(trees)==1

@@ -58,7 +58,7 @@ sync_idm_language_live(cfg)
 cfg=IdmLinuxConfig.load();exe=cfg.find_idm_exe();assert exe and exe.is_file();lng=exe.parent/'Languages'/'idm_tr.lng';assert lng.is_file(),'Official Turkish language resource missing'
 langid,langfile=resolve_effective_idm_language(cfg);assert cfg.language=='tr' and langid==0x1f and langfile=='idm_tr.lng','Would fall back to non-Turkish native language'
 env=build_wine_env(cfg);env.update(LANG='tr_TR.UTF-8',LC_ALL='tr_TR.UTF-8')
-subprocess.run(['i686-w64-mingw32-gcc','-O2','-o',str(O/'native-turkish-probe.exe'),'.github/film-production/native_turkish_probe.c','-lgdi32','-luser32'],check=True)
+subprocess.run(['i686-w64-mingw32-gcc','-mwindows','-O2','-o',str(O/'native-turkish-probe.exe'),'.github/film-production/native_turkish_probe.c','-lgdi32','-luser32'],check=True)
 # Initialize a credential-free CI browser before the vendor may open its welcome page.
 # No account, password, keyring unlock, human verification or browser download is performed.
 subprocess.Popen(['brave-browser','--no-sandbox','--no-first-run','--disable-sync','--password-store=basic','--disable-background-mode','--lang=tr-TR','--remote-debugging-port=9222','--remote-allow-origins=http://127.0.0.1:9222','about:blank'],stdout=open(O/'credential-free-browser.log','w'),stderr=subprocess.STDOUT)
