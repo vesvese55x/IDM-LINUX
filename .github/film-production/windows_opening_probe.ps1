@@ -1,5 +1,6 @@
 $ErrorActionPreference='Stop'
-$followup=$env:FILM_WINDOWS_PANEL_FOLLOWUP -eq 'true'
+$nativeInstall=$env:FILM_WINDOWS_INSTALL_IDM -eq 'true'
+$followup=($env:FILM_WINDOWS_PANEL_FOLLOWUP -eq 'true') -or $nativeInstall
 $out=Join-Path (Get-Location) 'out/film-windows-opening'
 New-Item -ItemType Directory -Force $out | Out-Null
 Add-Type -AssemblyName System.Drawing,System.Windows.Forms
@@ -54,12 +55,13 @@ try {
  $report.wrapper_setup_may_extract_files=$true
  $report.native_opening_verified=($report.actual_screenshots.Count -eq $frames -and @($report.actual_screenshots | Where-Object {$_.new_windows.Count -gt 0}).Count -gt 0)
  Save-Report
+ if($nativeInstall){& './.github/film-production/windows_native_install_driver.ps1';if(-not $?){throw 'Actual native install driver failed'}}
  if(-not $report.native_opening_verified){throw 'Real setup process did not appear within safe opening probe; inspect actual screen, do not simulate it'}
 } finally {
  Get-Process setup_gui,IDM-SEMO,IDM_SEMO_GUI -ErrorAction SilentlyContinue | Stop-Process -Force
  if(-not $p.HasExited){Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue}
  $report.probe_elapsed_seconds=$watch.Elapsed.TotalSeconds
- $report.stopped_before_native_idm_installation=$true
+ $report.stopped_before_native_idm_installation=(-not $nativeInstall)
  $report.stopped_before_installation=$null
  $report.note='Wrapper setup itself extracts and compiles application files. This is not proof of native IDM installation.'
  Save-Report
