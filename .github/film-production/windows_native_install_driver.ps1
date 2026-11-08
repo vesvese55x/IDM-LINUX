@@ -80,6 +80,18 @@ while([DateTime]::UtcNow -lt $deadline){
    $current=Get-Process -Id $pi.ParentProcessId -ErrorAction SilentlyContinue
   }
   if(-not $trusted){
+   $package=Join-Path $env:TEMP 'semo_idm_setup.exe'
+   if(Test-Path $package){
+    $sig=Get-AuthenticodeSignature $package
+    $installReport.actual_original_setup_signature_status=[string]$sig.Status
+    if($sig.Status -eq 'Valid' -and $sig.SignerCertificate.Subject -match 'Tonec'){
+     $env:PYTHONPATH=Join-Path $PWD 'src'
+     & python './.github/film-production/verify_vendor_wizard_payload.py' $package $owner.Path (Join-Path $out 'actual-vendor-wizard-payload-equality.json')
+     $trusted=($LASTEXITCODE -eq 0)
+    }
+   }
+  }
+  if(-not $trusted){
    $installReport.unverified_wizard_candidate=@{caption=$caption;chain=$chain;signature_status=if($sig){[string]$sig.Status}else{'No signed setup ancestor found'}}
    Save-Install;Real-Shot 'stopped-unverified-vendor-wizard.png'
    throw 'Visible installer wizard owner/signature could not be verified; do not click or wait falsely'
