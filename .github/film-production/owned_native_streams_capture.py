@@ -52,6 +52,8 @@ from configure_native_speed_limit import configure
 for l in subprocess.check_output(['wmctrl','-l'],text=True).splitlines():
  if 'günün ipucu' in l.lower():subprocess.run(['wmctrl','-ia',l.split()[0]],check=True);keys('Escape')
 report['actual_native_speed_limit_configuration']=configure(100)
+from desktop_style import apply_desktop_style
+apply_desktop_style(O)
 def source_page(mode,url):
  filename=mode+'-source.html'
  (source/filename).write_text('<!doctype html><html lang="tr"><meta charset="utf-8"><title>Kendi izinli '+mode+' kaynağımız</title><style>body{background:#101820;color:#eee;font:20px sans-serif;padding:50px;max-width:1000px}h1{color:#d29a12}input{width:98%;font:17px monospace;padding:15px;margin:25px 0}p{line-height:1.6}</style><h1>Kendi izinli '+mode+' kaynağımız</h1><p>Bu sayfa film için hazırlanan gerçek kaynak sayfasıdır; IDM arayüzü değildir.</p><p>Kullanılan dosya ve yayınlar bize aittir. Aşağıdaki gerçek bağlantı, özgün yazılımın yerel medya köprüsüdür. IDM’ye elle URL Ekle yoluyla aktarılır; otomatik tarayıcı yakalaması iddia edilmez.</p><input id="bridge" autofocus readonly value="'+url+'"><p>İlerleme ve tamamlanma, özgün IDM penceresinde izlenecektir.</p>',encoding='utf8')
@@ -66,7 +68,11 @@ def source_page(mode,url):
  assert copied==url
  event(mode+'-actual-browser-copy-own-original-bridge-url');page.ws.close()
 def native_transfer(mode,url,name):
- source_page(mode,url);time.sleep(2);activate('Internet Download Manager');shot(mode+'-before-url-add')
+ source_page(mode,url);time.sleep(2)
+ for row in subprocess.check_output(['wmctrl','-lx'],text=True).splitlines():
+  if 'brave' in row.lower():subprocess.run(['xdotool','windowminimize',row.split()[0]],check=True)
+ ids=[row.split(None,3)[0] for row in subprocess.check_output(['wmctrl','-l'],text=True).splitlines() if len(row.split(None,3))==4 and __import__('re').fullmatch(r'Internet Download Manager [0-9.]+',row.split(None,3)[3])];assert len(ids)==1
+ subprocess.run(['wmctrl','-ia',ids[0]],check=True);shot(mode+'-before-url-add')
  im=cv2.imread(str(O/(mode+'-before-url-add.png')));icon=cv2.imread('.github/film-production/actual-native-url-icon.png');_,score,_,pos=cv2.minMaxLoc(cv2.matchTemplate(im,icon,cv2.TM_CCOEFF_NORMED));assert score>.985
  physical([*pos,pos[0]+icon.shape[1],pos[1]+icon.shape[0]],mode+'-real-native-url-add');time.sleep(.5)
  cc,tt,ww=native(mode+'-real-url-dialog');assert 'İndirilecek yeni adresi girin' in ww
@@ -96,7 +102,7 @@ def native_transfer(mode,url,name):
  assert progress,'No actual native progress/pause window was observed'
  candidates=[p for root in [Path.home()/'Downloads',Path(native_cfg.download_dir),Path(native_cfg.wine_prefix)/'drive_c/users'] if root.exists() for p in root.rglob(name) if p.is_file()]
  assert candidates,'Actual native file not found';p=candidates[0]
- event(mode+'-actual-native-completion',bytes=p.stat().st_size);shot(mode+'-native-completed');time.sleep(4)
+ event(mode+'-actual-native-completion',bytes=p.stat().st_size);shot(mode+'-native-completed');dwell=22 if mode in ['dvr','ed2k'] else 4;event(mode+'-actual-recorded-completion-dwell-start',seconds=dwell);time.sleep(dwell);event(mode+'-actual-recorded-completion-dwell-end')
  cc,tt,ww=native(mode+'-completed-close-control');button(cc,'Kapat');time.sleep(.5)
  return p,states
 try:
@@ -121,7 +127,7 @@ try:
   from idm_linux.tests.test_ed2k_peer_live import ReferenceSeeder
   from idm_linux.ed2k_bridge import ed2k_register_native
   payload=bytes(range(256))*(E.ED2K_PART_SIZE//256)+bytes(range(256))*844
-  name='izinli_ed2k_ornegi.bin';seeder=ReferenceSeeder(payload,name);seeder.start();wire=[]
+  name='İzinli_eD2K_örneği.bin';seeder=ReferenceSeeder(payload,name);seeder.start();wire=[]
   class Discovery(socketserver.BaseRequestHandler):
    def handle(self):
     self.request.settimeout(15)
