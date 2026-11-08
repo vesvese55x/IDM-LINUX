@@ -59,7 +59,11 @@ def source_page(mode,url):
  actual=page.read("({title:document.title,text:document.body.innerText,focused:document.activeElement.id,url:document.getElementById('bridge').value})");save(mode+'-actual-own-page.json',actual)
  assert actual['focused']=='bridge' and actual['url']==url
  shot(mode+'-actual-own-source-page');keys('ctrl+a');keys('ctrl+c');time.sleep(.2)
- copied=subprocess.check_output(['xclip','-selection','clipboard','-o'],text=True);assert copied==url
+ import tkinter as tk
+ clipboard=tk.Tk();clipboard.withdraw()
+ try:copied=clipboard.clipboard_get()
+ finally:clipboard.destroy()
+ assert copied==url
  event(mode+'-actual-browser-copy-own-original-bridge-url');page.ws.close()
 def native_transfer(mode,url,name):
  source_page(mode,url);time.sleep(2);activate('Internet Download Manager');shot(mode+'-before-url-add')
