@@ -34,7 +34,12 @@ $exe=(Resolve-Path 'artifacts/windows/IDM-SEMO-1.0.0-x86_64.exe').Path
 $report.exe_sha256=(Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
 $baseline=@([RealDesktopProbe]::Windows())
 $watch=[Diagnostics.Stopwatch]::StartNew()
-$p=Start-Process -FilePath $exe -PassThru
+if($env:FILM_WINDOWS_LAUNCH_CMD -eq 'true'){
+ $bat=(Resolve-Path 'belgeselsemo-idm-windows-installer.bat').Path
+ $report.scope='Actual original BAT launched via Windows CMD; actual native desktop evidence, not a simulated terminal'
+ $report.actual_cmd_launch=$true;$report.actual_bat_sha256=(Get-FileHash $bat -Algorithm SHA256).Hash.ToLowerInvariant()
+ $p=Start-Process -FilePath $env:ComSpec -ArgumentList ('/c ""'+$bat+'""') -PassThru
+}else{$p=Start-Process -FilePath $exe -PassThru}
 try {
  # Short bounded opening probe; stop before the documented sixteen-second auto path.
  $frames=if($followup){40}else{6}

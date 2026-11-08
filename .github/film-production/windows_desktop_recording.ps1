@@ -26,8 +26,13 @@ $meta=@{scope='Actual Windows gdigrab desktop, not DrawToBitmap or recreated UI'
 $meta | ConvertTo-Json -Depth 5 | Set-Content -Encoding utf8 (Join-Path $out 'actual-video-capture-metadata.json')
 $video=Join-Path $out 'uncut-windows-exe-and-native-wizard.mp4'
 $err=Join-Path $out 'actual-desktop-recorder.log'
-$args=@('-nostdin','-y','-v','warning','-f','gdigrab','-framerate','24','-draw_mouse','0','-i','desktop','-an','-c:v','libx264','-preset','veryfast','-crf','18','-pix_fmt','yuv420p','-threads','2','-movflags','+frag_keyframe+empty_moov','-t','1000',('"'+$video+'"'))
-$rec=Start-Process $ffmpeg -ArgumentList $args -PassThru -WindowStyle Hidden -RedirectStandardError $err
+$args=@('-y','-v','warning','-f','gdigrab','-framerate','24','-draw_mouse','0','-i','desktop','-an','-c:v','libx264','-preset','veryfast','-crf','18','-pix_fmt','yuv420p','-threads','2','-movflags','+frag_keyframe+empty_moov','-t','1000',$video)
+$psi=New-Object Diagnostics.ProcessStartInfo
+$psi.FileName=$ffmpeg;$psi.UseShellExecute=$false;$psi.CreateNoWindow=$true
+$psi.RedirectStandardInput=$true;$psi.RedirectStandardError=$true
+foreach($arg in $args){[void]$psi.ArgumentList.Add($arg)}
+$rec=New-Object Diagnostics.Process;$rec.StartInfo=$psi;[void]$rec.Start()
+$stderrRead=$rec.StandardError.ReadToEndAsync()
 try{
  Start-Sleep -Seconds 2
  if($rec.HasExited){throw 'Actual desktop recorder exited before original EXE launch'}
@@ -35,8 +40,10 @@ try{
  if(-not $?){throw 'Actual Windows opening/install probe failed'}
  Start-Sleep -Seconds 8
 }finally{
- # Fragmented MP4 retains real captured packets when terminating recorder at the end.
- if(-not $rec.HasExited){Stop-Process -Id $rec.Id -Force -ErrorAction SilentlyContinue;$rec.WaitForExit()}
+ # Ask ffmpeg itself to close the real video cleanly, never kill mid-packet.
+ if(-not $rec.HasExited){$rec.StandardInput.WriteLine('q');$rec.StandardInput.Flush();if(-not $rec.WaitForExit(15000)){$rec.Kill();$rec.WaitForExit()}}
+ $stderrRead.GetAwaiter().GetResult() | Set-Content -Encoding utf8 $err
+ $meta.recorder_exit_code=$rec.ExitCode
  if(Test-Path $video){$meta.video_bytes=(Get-Item $video).Length}
  $meta | ConvertTo-Json -Depth 5 | Set-Content -Encoding utf8 (Join-Path $out 'actual-video-capture-metadata.json')
 }

@@ -24,6 +24,10 @@ on:
         description: 'Actual physical Turkish GUI selection and ordinary official native IDM install; no licensing changes'
         type: boolean
         default: false
+      windows_launch_cmd:
+        description: 'Launch original repository BAT via actual Windows CMD rather than compiled EXE'
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -134,6 +138,7 @@ jobs:
     if: github.event.inputs.stage == 'windows-native-opening-probe'
     runs-on: windows-2022
     env:
+      FILM_WINDOWS_LAUNCH_CMD: ${{ github.event.inputs.windows_launch_cmd }}
       FILM_WINDOWS_INSTALL_IDM: ${{ github.event.inputs.windows_install_idm }}
       FILM_WINDOWS_PANEL_FOLLOWUP: ${{ github.event.inputs.windows_panel_followup }}
     timeout-minutes: 20
