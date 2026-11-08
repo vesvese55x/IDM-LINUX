@@ -141,7 +141,7 @@ try:
  recording_epoch=time.monotonic()
  event('recording-started',cursor='OS cursor excluded; actual actions only');time.sleep(.8)
  if paced:
-  save('paced-capture-scope.json',{'source_hold_until_seconds':25,'native_start_not_before_seconds':58.451746,'completion_hold_until_seconds':92.0,'method':'actual wall-clock dwell; no frozen frames, no speed changes, no simulated progress','voice_chunks_seconds':[28.637324,29.814422,30.963810]})
+  save('paced-capture-scope.json',{'source_hold_until_seconds':25,'native_start_not_before_seconds':60.557642,'completion_hold_until_seconds':94.0,'method':'actual wall-clock dwell; no frozen frames, no speed changes, no simulated progress','voice_chunks_seconds':[30.708390,29.849252,30.963810]})
  # Re-read rects after actual window placement/reflow.
  candidates=browser.read("[...document.querySelectorAll('button,a')].map(e=>{let r=e.getBoundingClientRect();return {text:e.innerText.trim(),rect:[r.left,r.top,r.right,r.bottom],visible:r.width>0&&r.height>0}}).filter(x=>x.visible&&/^(download\\s*){1,2}$/i.test(x.text))")
  assert candidates,'Actual Download control disappeared after layout'
@@ -197,7 +197,7 @@ try:
  cc,tt,ww=native('07-native-file-information');assert any('Dosya İndirme Bilgisi' in w for w in ww)
  paths=[c for c in cc if c['visible'] and c['class'] in ['Edit','ComboBox'] and name in c['text'] and not c['text'].startswith(('http:','https:'))];assert paths,'Original source filename must be present unchanged in a native filename/path field'
  save('native-original-filename-controls.json',paths);event('native-original-filename-read-back',name=name)
- time.sleep(2);wait_recording(58.451746);button(cc,'İndirmeyi Başlat')
+ time.sleep(2);wait_recording(60.557642);button(cc,'İndirmeyi Başlat')
  completed=False;progress=False;stages=[];deadline=time.monotonic()+720
  for n in range(180):
   time.sleep(.4 if n<10 else 3)
@@ -218,7 +218,7 @@ try:
  unchanged=all((vendor/f).is_file() and hashlib.file_digest((vendor/f).open('rb'),'sha256').hexdigest()==digest for f,digest in manifest['files'].items() if Path(f).suffix.lower() in ['.exe','.dll','.sys'])
  assert unchanged,'Vendor binary changed'
  result.update(native_completion_window_seen=completed,native_progress_pause_control_seen=progress,original_filename_on_disk=True,downloaded_files=[str(p) for p in verified],downloaded_sha256_match=True,vendor_binaries_unchanged=unchanged,browser_interception_verified=False,manual_url_add_route_verified=True,actual_native_transfer_verified=True)
- save('actual-pixeldrain-review.json',result);shot('08-native-completion-verified');wait_recording(92.0);time.sleep(3)
+ save('actual-pixeldrain-review.json',result);shot('08-native-completion-verified');wait_recording(94.0);time.sleep(3)
 except Exception as e:
  if browser is not None:
   for ev in browser.events:
