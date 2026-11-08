@@ -12,6 +12,8 @@ public static class ActualControlClick {
  [DllImport("user32.dll")]static extern uint GetWindowThreadProcessId(IntPtr w,out uint pid);
  [DllImport("user32.dll",EntryPoint="SendMessageTimeoutW")]static extern IntPtr ReadMessage(IntPtr w,uint msg,IntPtr a,IntPtr b,uint flags,uint timeout,out IntPtr value);
  public static bool Checked(long h){IntPtr v;ReadMessage(new IntPtr(h),240,IntPtr.Zero,IntPtr.Zero,2,300,out v);return v.ToInt64()==1;}
+ public static string RootTitle(long h){return Text(GetAncestor(new IntPtr(h),2).ToInt64());}
+ public static string RootCombo(long h){string choice="";EnumChildWindows(GetAncestor(new IntPtr(h),2),delegate(IntPtr w,IntPtr s){var c=new StringBuilder(256);GetClassName(w,c,256);if(c.ToString().ToUpperInvariant()=="COMBOBOX"&&IsWindowVisible(w))choice=Text(w.ToInt64());return true;},IntPtr.Zero);return choice;}
  public static int OwnerPid(long h){uint pid;GetWindowThreadProcessId(new IntPtr(h),out pid);return (int)pid;}
  [DllImport("user32.dll",CharSet=CharSet.Unicode)]static extern int GetClassName(IntPtr w,StringBuilder c,int n);
  [DllImport("user32.dll",CharSet=CharSet.Unicode)]static extern IntPtr SendMessageTimeout(IntPtr w,uint m,IntPtr n,StringBuilder text,uint flags,uint timeout,out IntPtr copied);
@@ -57,7 +59,13 @@ Real-Shot 'native-install-03-before-start.png'
 # The previous default run genuinely opened an unavailable store link; preserve that
 # evidence for troubleshooting instead of claiming the extension installed.
 $autoBrowser=Button-Match '^Tarayıcı Eklentisini Otomatik Aç & Kur$'
-if([ActualControlClick]::Checked($autoBrowser)){Actual-Click $autoBrowser 'Choose manual separate browser-extension setup, not automatic store opening'}
+$checkBefore=(& python './.github/film-production/windows_read_checkbox.py' $autoBrowser | ConvertFrom-Json)
+if($LASTEXITCODE -ne 0){throw 'Real accessibility checkbox-state read failed'}
+if($checkBefore.checked){Actual-Click $autoBrowser 'Choose manual separate browser-extension setup, not automatic store opening'}
+$checkAfter=(& python './.github/film-production/windows_read_checkbox.py' $autoBrowser | ConvertFrom-Json)
+if($LASTEXITCODE -ne 0 -or $checkAfter.checked){throw 'Actual optional browser auto-open checkbox must be visibly/accessibly unchecked'}
+$installReport.actual_optional_browser_checkbox_before=$checkBefore
+$installReport.actual_optional_browser_checkbox_after=$checkAfter
 $installReport.browser_extension_step_separate_and_not_verified=$true
 $installReport.auto_store_open_disabled_by_explicit_normal_UI_choice=$true
 Real-Shot 'native-install-03b-manual-browser-extension-choice.png'
@@ -66,18 +74,19 @@ Actual-Click $start 'Start actual project native Windows IDM installation'
 $deadline=[DateTime]::UtcNow.AddMinutes(12);$found=$null;$n=0
 while([DateTime]::UtcNow -lt $deadline){
  Start-Sleep -Seconds 2
- Real-Shot ('native-install-progress-{0:d3}.png' -f $n);$n++
+ if(($n % 15) -eq 0){Real-Shot ('native-install-progress-{0:d3}.png' -f $n)};$n++
  # Official fallback really opens its vendor wizard: /VERYSILENT is not honored.
  # Only physically click enabled, explicitly whitelisted controls whose owning
  # executable has a VALID Tonec signature. Never registration, purchase or reset.
  $wizardClicked=$false
  foreach($row in [ActualControlClick]::Controls()){
   $parts=$row.Split([char]'|',3);$h=[long]$parts[0];$caption=$parts[2].Replace('&','').Trim()
-  if($caption -notmatch '^(Next\s*>?|Install|Finish\s*>?|I accept the terms.*|I agree.*)$'){continue}
+  if($caption -notmatch '^(Next\s*>?|İleri\s*>?|Install|Finish\s*>?|Bitir\s*>?|I accept the terms.*|I agree.*|Lisans anlaşmasındaki şartları kabul ediyorum|OK)$'){continue}
+  if($caption -eq 'OK' -and ([ActualControlClick]::RootTitle($h) -notin @('IDM Setup','IDM Kurulumu') -or [ActualControlClick]::RootCombo($h) -ne 'Türkçe')){continue}
   if(-not [ActualControlClick]::IsWindowEnabled([IntPtr]$h)){continue}
   $owner=Get-Process -Id ([ActualControlClick]::OwnerPid($h)) -ErrorAction SilentlyContinue
   if(-not $owner -or -not $owner.Path){continue}
-  if($caption -match '^I (accept|agree)' -and [ActualControlClick]::Checked($h)){continue}
+  if(($caption -match '^I (accept|agree)' -or $caption -eq 'Lisans anlaşmasındaki şartları kabul ediyorum') -and [ActualControlClick]::Checked($h)){continue}
   # The signed SFX may create its real wizard in an extracted child process.
   # Trust only the actual signed official setup or a bounded, observed descendant.
   $current=$owner;$trusted=$false;$chain=@();$sig=$null
@@ -131,7 +140,7 @@ if($signature.Status -ne 'Valid' -or $installReport.signer_subject -notmatch 'To
 $registrations=@(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*','HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*' -ErrorAction SilentlyContinue | Where-Object {$_.DisplayName -eq 'Internet Download Manager'})
 $installReport.native_uninstall_registration=@($registrations | Select-Object DisplayName,DisplayVersion,Publisher,InstallLocation)
 if($registrations.Count -eq 0){Save-Install;throw 'Native installer registry registration not verified'}
-$installReport.actual_finish_button_clicked=@($installReport.physical_actions | Where-Object {$_.actual_caption.Replace('&','').Trim() -match '^Finish\s*>?$'}).Count -gt 0
+$installReport.actual_finish_button_clicked=@($installReport.physical_actions | Where-Object {$_.actual_caption.Replace('&','').Trim() -match '^(Finish|Bitir)\s*>?$'}).Count -gt 0
 $installReport.native_install_completed=$true
 Save-Install
 Real-Shot 'native-install-04-installed-verified.png'
