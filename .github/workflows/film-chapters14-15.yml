@@ -5,7 +5,7 @@ on:
       stage:
         description: 'Preparation is not a completed download lesson'
         type: choice
-        options: [linux-gui-preflight, linux-native-turkish-preflight, linux-native-fileinfo-turkish-check, linux-native-transfer-turkish-check, linux-native-pixeldrain-capture, windows-native-opening-probe, linux-playlist-owned-backend-check, linux-native-speed-menu-probe, linux-playlist-owned-gui-check, linux-owned-hls-dvr-check, linux-owned-ed2k-check, linux-owned-native-streams-capture]
+        options: [linux-gui-preflight, linux-native-turkish-preflight, linux-native-fileinfo-turkish-check, linux-native-transfer-turkish-check, linux-native-pixeldrain-capture, windows-native-opening-probe, linux-playlist-owned-backend-check, linux-native-speed-menu-probe, linux-playlist-owned-gui-check, linux-owned-hls-dvr-check, linux-owned-ed2k-check, linux-owned-native-streams-capture, linux-owned-native-ed2k-capture]
         default: linux-gui-preflight
       source_page_url:
         description: 'User-authorized public Pixeldrain page URL. Never enter passwords or API keys.'
@@ -110,6 +110,8 @@ jobs:
               if [ "${{ github.event.inputs.stage }}" != "linux-native-turkish-preflight" ]; then
                 if [ "${{ github.event.inputs.stage }}" = "linux-native-speed-menu-probe" ]; then
                   .venv-film/bin/python .github/film-production/native_speed_menu_probe.py || exit $?
+                elif [ "${{ github.event.inputs.stage }}" = "linux-owned-native-ed2k-capture" ]; then
+                  FILM_OWNED_NATIVE_ED2K_ONLY=true .venv-film/bin/python .github/film-production/owned_native_streams_capture.py || exit $?
                 elif [ "${{ github.event.inputs.stage }}" = "linux-owned-native-streams-capture" ]; then
                   .venv-film/bin/python .github/film-production/owned_native_streams_capture.py || exit $?
                 elif [ "${{ github.event.inputs.stage }}" = "linux-native-pixeldrain-capture" ]; then

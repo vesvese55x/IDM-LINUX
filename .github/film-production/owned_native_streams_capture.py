@@ -96,7 +96,7 @@ def native_transfer(mode,url,name):
  return p,states
 try:
  log=(O/'actual-capture.log').open('w');recorder=subprocess.Popen(['ffmpeg','-nostdin','-y','-v','warning','-f','x11grab','-draw_mouse','0','-s','1920x1080','-r','24','-i',os.environ['DISPLAY'],'-an','-c:v','libx264','-preset','veryfast','-crf','18','-threads','2',str(O/'uncut-owned-original-bridge-native.mp4')],stdout=log,stderr=subprocess.STDOUT);event('actual-recording-started')
- for mode,name in [('vod','izinli_hls_vod.mp4'),('dvr','izinli_canli_dvr.mp4')]:
+ for mode,name in ([] if os.environ.get('FILM_OWNED_NATIVE_ED2K_ONLY')=='true' else [('vod','izinli_hls_vod.mp4'),('dvr','izinli_canli_dvr.mp4')]):
   history=0
   if mode=='dvr':
    publisher=subprocess.Popen(['ffmpeg','-nostdin','-v','error','-y','-stream_loop','2','-re','-i',str(master),*hls,'-hls_playlist_type','event',str(source/'live.m3u8')],stdout=subprocess.DEVNULL,stderr=open(O/'actual-live-publisher.log','w'));deadline=time.monotonic()+45
@@ -111,11 +111,45 @@ try:
   actual_frames=frames(path);assert actual_frames==reference*(3 if mode=='dvr' else 1),'Native downloaded all original video frames in order'
   decoded=command(['ffmpeg','-v','error','-i',str(path),'-f','null','-']);assert not decoded.stderr
   report['cases'].append({'mode':mode,'actual_native_filename':path.name,'bytes':path.stat().st_size,'sha256':hashlib.file_digest(path.open('rb'),'sha256').hexdigest(),'all_source_video_frames_identical':len(actual_frames),'actual_original_daemon_route_used':True,'actual_native_progress_and_completion':True,'history_segments_at_live_dvr_start':history,'backend':ticket.backend,'full_decode_pass':True});persist()
- report['actual_original_bridge_native_hls_and_dvr_verified']=True;persist()
+ if os.environ.get('FILM_OWNED_NATIVE_ED2K_ONLY')=='true':
+  from idm_linux.p2p import ed2k_native as E
+  from idm_linux.tests.test_ed2k_peer_live import ReferenceSeeder
+  from idm_linux.ed2k_bridge import ed2k_register_native
+  payload=bytes(range(256))*(E.ED2K_PART_SIZE//256)+bytes(range(256))*844
+  name='izinli_ed2k_ornegi.bin';seeder=ReferenceSeeder(payload,name);seeder.start();wire=[]
+  class Discovery(socketserver.BaseRequestHandler):
+   def handle(self):
+    self.request.settimeout(15)
+    try:
+     while True:
+      packet=E._recv_packet(self.request)
+      if packet is None:return
+      op,body=packet;wire.append({'opcode':op,'payload_bytes':len(body)})
+      if op==E.OP_LOGINREQUEST:E._send_packet(self.request,E.OP_IDCHANGE,struct.pack('<I',0x1234))
+      elif op in (E.OP_GETSOURCES,E.OP_GETSOURCES_OBFU):
+       assert body[:16]==seeder.file_hash
+       E._send_packet(self.request,E.OP_FOUNDSOURCES,seeder.file_hash+b'\x01'+socket.inet_aton('127.0.0.1')+struct.pack('<H',seeder.port))
+    except OSError:return
+  discovery=socketserver.ThreadingTCPServer(('127.0.0.1',0),Discovery);discovery.daemon_threads=True;threading.Thread(target=discovery.serve_forever,daemon=True).start()
+  (get_cache_dir(create=True)/'ed2k_servers.json').write_text(json.dumps({'ts':time.time(),'servers':[['127.0.0.1',discovery.server_address[1]]]}))
+  link=f'ed2k://|file|{name}|{len(payload)}|{seeder.file_hash.hex()}|/'
+  ok,msg,meta=ed2k_register_native(link,str(O/'actual-ed2k-engine-output'));assert ok,msg
+  url=f'http://127.0.0.1:{bridge.server_port}/ed2k/{meta["ticket"]}/{quote(name)}'
+  path,states=native_transfer('ed2k',url,name);session=meta['session']
+  assert path.read_bytes()==payload and session.complete and session.compute_file_hash()==seeder.file_hash
+  assert seeder.served_bytes>=len(payload) and seeder.requests>0
+  assert E.OP_LOGINREQUEST in [x['opcode'] for x in wire] and E.OP_GETSOURCES in [x['opcode'] for x in wire]
+  report['cases'].append({'mode':'ed2k','actual_original_daemon_route_used':True,'actual_native_progress_and_completion':True,'native_original_filename_preserved':path.name==name,'bytes':path.stat().st_size,'sha256':hashlib.file_digest(path.open('rb'),'sha256').hexdigest(),'ed2k_hash':session.compute_file_hash().hex(),'actual_discovery_wire_requests':wire,'actual_peer_served_bytes':seeder.served_bytes,'actual_peer_part_requests':seeder.requests,'multipart_count':session.num_parts,'scope':'Owned real private discovery/peer network, not public-network or automatic interception proof'})
+  report['actual_original_bridge_native_ed2k_verified']=True;persist()
+ else:report['actual_original_bridge_native_hls_and_dvr_verified']=True;persist()
 except Exception as e:
  report.update(failure=type(e).__name__+': '+str(e));persist();shot('stopped-on-real-state');raise
 finally:
  if recorder is not None:recorder.send_signal(signal.SIGINT);recorder.wait(timeout=30)
+ if seeder is not None:
+  from idm_linux.ed2k_bridge import ed2k_shutdown_all
+  ed2k_shutdown_all();seeder.stop()
+ if discovery is not None:discovery.shutdown();discovery.server_close()
  if publisher and publisher.poll() is None:publisher.terminate();publisher.wait(timeout=10)
  for item in engine.list_jobs():
   if not item['completed'] and not item['failed']:engine.stop_job(item['ticket'])
