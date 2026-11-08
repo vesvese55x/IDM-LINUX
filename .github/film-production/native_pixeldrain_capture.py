@@ -17,6 +17,11 @@ file_id=parts.path.split('/')[-1]
 cfg=IdmLinuxConfig.load();assert cfg.find_idm_exe() and (Path(cfg.wine_prefix)/'system.reg').is_file()
 os.environ.update(build_wine_env(cfg));probe=Path('out/film14-native-turkish/native-turkish-probe.exe').resolve()
 epoch=time.monotonic();events=[];recorder=None;browser=None
+paced=os.environ.get('FILM_PACED_CAPTURE','false')=='true';recording_epoch=None
+def wait_recording(seconds):
+ if paced:
+  remaining=recording_epoch+seconds-time.monotonic()
+  if remaining>0:time.sleep(remaining)
 result={'scope':'actual Pixeldrain public source; manual native URL Add, NOT automatic browser interception','finished_lesson':False,'final_film_export_allowed':False,'all_native_fonts_certified':False,'all_error_dialogues_verified':False,'source_video_included_in_artifact':False}
 def save(name,value): (O/name).write_text(json.dumps(value,ensure_ascii=False,indent=2))
 def event(kind,**kw):
@@ -101,8 +106,6 @@ try:
  wid=subprocess.check_output(['xdotool','getactivewindow'],text=True).strip()
  subprocess.run(['wmctrl','-ir',wid,'-b','remove,maximized_vert,maximized_horz'],check=True)
  subprocess.run(['wmctrl','-ir',wid,'-e','0,380,55,1480,930'],check=True);time.sleep(.5)
- log=(O/'capture.log').open('w');recorder=subprocess.Popen(['ffmpeg','-nostdin','-y','-v','warning','-f','x11grab','-draw_mouse','0','-s','1920x1080','-r','24','-i',os.environ['DISPLAY'],'-an','-c:v','libx264','-preset','veryfast','-crf','18','-threads','2',str(O/'uncut-pixeldrain-native.mp4')],stdout=log,stderr=subprocess.STDOUT)
- event('recording-started',cursor='OS cursor excluded; actual actions only');time.sleep(.8)
  keys('ctrl+l');type_ascii(source);keys('Return');event('actual-browser-navigation')
  browser=connect_url(source);time.sleep(7)
  page=browser.read("({title:document.title,text:document.body.innerText,api_endpoint:window.api_endpoint,file:window.viewer_data&&window.viewer_data.api_response,links:[...document.querySelectorAll('a')].map(a=>({text:a.innerText,href:a.href}))})")
@@ -131,9 +134,15 @@ try:
   if l.split()[0]!=source_wid and not any(x in l.lower() for x in ['xfce4-panel','xfdesktop']):subprocess.run(['xdotool','windowminimize',l.split()[0]],check=True)
  subprocess.run(['wmctrl','-ia',source_wid],check=True)
  subprocess.run(['wmctrl','-ir',source_wid,'-e','0,380,55,1480,930'],check=True);time.sleep(.7)
+ log=(O/'capture.log').open('w');recorder=subprocess.Popen(['ffmpeg','-nostdin','-y','-v','warning','-f','x11grab','-draw_mouse','0','-s','1920x1080','-r','24','-i',os.environ['DISPLAY'],'-an','-c:v','libx264','-preset','veryfast','-crf','18','-threads','2',str(O/'uncut-pixeldrain-native.mp4')],stdout=log,stderr=subprocess.STDOUT)
+ recording_epoch=time.monotonic()
+ event('recording-started',cursor='OS cursor excluded; actual actions only');time.sleep(.8)
+ if paced:
+  save('paced-capture-scope.json',{'source_hold_until_seconds':25,'native_start_not_before_seconds':54.655283,'completion_hold_until_seconds':88.0,'method':'actual wall-clock dwell; no frozen frames, no speed changes, no simulated progress','voice_chunks_seconds':[28.637324,26.017959,30.963810]})
  # Re-read rects after actual window placement/reflow.
  candidates=browser.read("[...document.querySelectorAll('button,a')].map(e=>{let r=e.getBoundingClientRect();return {text:e.innerText.trim(),rect:[r.left,r.top,r.right,r.bottom],visible:r.width>0&&r.height>0}}).filter(x=>x.visible&&/^(download\\s*){1,2}$/i.test(x.text))")
  assert candidates,'Actual Download control disappeared after layout'
+ wait_recording(25.0)
  physical(measured_browser_rect(browser,candidates[0]['rect'],'02-download-target'),'actual-pixeldrain-download-button')
  deadline=time.monotonic()+25;begin=None
  while time.monotonic()<deadline:
@@ -174,7 +183,7 @@ try:
  cc,tt,ww=native('07-native-file-information');assert any('Dosya İndirme Bilgisi' in w for w in ww)
  paths=[c for c in cc if c['visible'] and c['class'] in ['Edit','ComboBox'] and name in c['text'] and not c['text'].startswith(('http:','https:'))];assert paths,'Original source filename must be present unchanged in a native filename/path field'
  save('native-original-filename-controls.json',paths);event('native-original-filename-read-back',name=name)
- time.sleep(2);button(cc,'İndirmeyi Başlat')
+ time.sleep(2);wait_recording(54.655283);button(cc,'İndirmeyi Başlat')
  completed=False;progress=False;stages=[];deadline=time.monotonic()+720
  for n in range(180):
   time.sleep(.4 if n<10 else 3)
@@ -195,7 +204,7 @@ try:
  unchanged=all((vendor/f).is_file() and hashlib.file_digest((vendor/f).open('rb'),'sha256').hexdigest()==digest for f,digest in manifest['files'].items() if Path(f).suffix.lower() in ['.exe','.dll','.sys'])
  assert unchanged,'Vendor binary changed'
  result.update(native_completion_window_seen=completed,native_progress_pause_control_seen=progress,original_filename_on_disk=True,downloaded_files=[str(p) for p in verified],downloaded_sha256_match=True,vendor_binaries_unchanged=unchanged,browser_interception_verified=False,manual_url_add_route_verified=True,actual_native_transfer_verified=True)
- save('actual-pixeldrain-review.json',result);shot('08-native-completion-verified');time.sleep(3)
+ save('actual-pixeldrain-review.json',result);shot('08-native-completion-verified');wait_recording(88.0);time.sleep(3)
 except Exception as e:
  if browser is not None:
   for ev in browser.events:

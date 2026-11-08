@@ -12,6 +12,10 @@ on:
         type: string
         required: false
         default: ''
+      paced_capture:
+        description: 'Genuine wall-clock dwell aligned to existing TR voice04 narration; no retiming/frozen UI'
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -22,6 +26,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     env:
+      FILM_PACED_CAPTURE: ${{ github.event.inputs.paced_capture }}
       FILM_SOURCE_PAGE_URL: ${{ github.event.inputs.source_page_url }}
       DISPLAY: ':99'
       TZ: Europe/Istanbul

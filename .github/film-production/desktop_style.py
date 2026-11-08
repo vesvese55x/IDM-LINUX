@@ -12,6 +12,7 @@ def apply_desktop_style(output):
  for line in props.splitlines():
   p=line.split()[0]
   if p.endswith('/last-image'):subprocess.run(['xfconf-query','-c','xfce4-desktop','-p',p,'-s',str((O/'wallpaper-with-actual-card.png').resolve())],check=True)
+ subprocess.run(['xfconf-query','-c','xfce4-desktop','-p','/desktop-icons/style','--create','--type','int','-s','0'],check=True)
  # Configure actual panel widgets, never paint a replacement taskbar.
  def setpanel(prop,typ,value):
   subprocess.run(['xfconf-query','-c','xfce4-panel','-p',prop,'--create','--type',typ,'-s',str(value)],check=True,capture_output=True)
