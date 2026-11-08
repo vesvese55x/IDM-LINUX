@@ -102,6 +102,9 @@ try:
  for l in subprocess.check_output(['wmctrl','-l'],text=True).splitlines():
   if 'günün ipucu' in l.lower():subprocess.run(['wmctrl','-ia',l.split()[0]],check=True);keys('Escape');time.sleep(.3)
  assert 'günün ipucu' not in subprocess.check_output(['wmctrl','-l'],text=True).lower()
+ if paced:
+  from configure_native_speed_limit import configure
+  result['actual_ordinary_speed_limit_configuration']=configure(10000)
  activate('brave')
  wid=subprocess.check_output(['xdotool','getactivewindow'],text=True).strip()
  subprocess.run(['wmctrl','-ir',wid,'-b','remove,maximized_vert,maximized_horz'],check=True)
