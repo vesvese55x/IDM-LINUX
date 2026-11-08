@@ -1,6 +1,6 @@
 name: Complete film — standard runner assembly
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       receiver_public_key:
         type: string

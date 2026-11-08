@@ -2,10 +2,19 @@ name: Film chapters 14-15 — genuine GUI runner
 on:
   workflow_dispatch:
     inputs:
+      receiver_public_key:
+        type: string
+        required: false
+      bundle_sha256:
+        type: string
+        required: false
+      bundle_bytes:
+        type: string
+        required: false
       stage:
         description: 'Preparation is not a completed download lesson'
         type: choice
-        options: [linux-gui-preflight, linux-native-turkish-preflight, linux-native-fileinfo-turkish-check, linux-native-transfer-turkish-check, linux-native-pixeldrain-capture, windows-native-opening-probe, linux-playlist-owned-backend-check, linux-native-speed-menu-probe, linux-playlist-owned-gui-check, linux-owned-hls-dvr-check, linux-owned-ed2k-check, linux-owned-native-streams-capture, linux-owned-native-ed2k-capture, linux-public-playlist-probe, linux-public-playlist-transfer, linux-public-playlist-diagnostic, linux-native-gui-details-probe]
+        options: [complete-film-assembly, linux-gui-preflight, linux-native-turkish-preflight, linux-native-fileinfo-turkish-check, linux-native-transfer-turkish-check, linux-native-pixeldrain-capture, windows-native-opening-probe, linux-playlist-owned-backend-check, linux-native-speed-menu-probe, linux-playlist-owned-gui-check, linux-owned-hls-dvr-check, linux-owned-ed2k-check, linux-owned-native-streams-capture, linux-owned-native-ed2k-capture, linux-public-playlist-probe, linux-public-playlist-transfer, linux-public-playlist-diagnostic, linux-native-gui-details-probe]
         default: linux-gui-preflight
       source_page_url:
         description: 'User-authorized public Pixeldrain page URL. Never enter passwords or API keys.'
@@ -35,7 +44,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   genuine-gui-preflight:
-    if: github.event.inputs.stage != 'windows-native-opening-probe'
+    if: github.event.inputs.stage != 'windows-native-opening-probe' && github.event.inputs.stage != 'complete-film-assembly'
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     env:
@@ -195,3 +204,11 @@ jobs:
             out/film-windows-opening/
             artifacts/windows/build-manifest.json
           retention-days: 7
+
+  complete-film:
+    if: github.event.inputs.stage == 'complete-film-assembly'
+    uses: ./.github/workflows/film-complete-assembly.yml
+    with:
+      receiver_public_key: ${{ inputs.receiver_public_key }}
+      bundle_sha256: ${{ inputs.bundle_sha256 }}
+      bundle_bytes: ${{ inputs.bundle_bytes }}
