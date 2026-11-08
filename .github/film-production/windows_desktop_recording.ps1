@@ -22,7 +22,7 @@ if(-not $ff){
  $ffmpeg=$ff.FullName
 }else{$ffmpeg=$ff.Source}
 if(-not $ffmpeg){throw 'No actual desktop recorder available'}
-$meta=@{scope='Actual Windows gdigrab desktop, not DrawToBitmap or recreated UI';requested_display=[1920,1080];display_change_return=$modeResult;actual_display=@([FilmActualDisplay]::GetSystemMetrics(0),[FilmActualDisplay]::GetSystemMetrics(1));frame_rate=24;finished_lesson=$false;final_film_export_allowed=$false}
+$meta=@{scope='Actual Windows gdigrab desktop, not DrawToBitmap or recreated UI';requested_display=@(1920,1080);display_change_return=$modeResult;actual_display=@([FilmActualDisplay]::GetSystemMetrics(0),[FilmActualDisplay]::GetSystemMetrics(1));frame_rate=24;finished_lesson=$false;final_film_export_allowed=$false}
 $meta | ConvertTo-Json -Depth 5 | Set-Content -Encoding utf8 (Join-Path $out 'actual-video-capture-metadata.json')
 $video=Join-Path $out 'uncut-windows-exe-and-native-wizard.mp4'
 $err=Join-Path $out 'actual-desktop-recorder.log'
