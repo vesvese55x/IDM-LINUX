@@ -54,9 +54,7 @@ jobs:
           if [ -n "$FILM_SOURCE_PAGE_URL" ]; then echo "::add-mask::$FILM_SOURCE_PAGE_URL"; fi
       - name: Install ordinary documented media JavaScript runtime
         if: startsWith(github.event.inputs.stage, 'linux-public-playlist')
-        uses: denoland/setup-deno@v2
-        with:
-          deno-version: v2.x
+        run: npm install --global deno@2.9.6
       - name: Prepare actual desktop and fonts
         run: |
           sudo apt-get update -qq
