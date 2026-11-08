@@ -50,7 +50,7 @@ def shot(tag):
 def click(w,tag):
  x=w.winfo_rootx()+w.winfo_width()//2;y=w.winfo_rooty()+w.winfo_height()//2
  assert w.winfo_ismapped() and 0<x<1920 and ROOT.winfo_rooty()+20<y<ROOT.winfo_rooty()+ROOT.winfo_height()-10,('Offscreen original control',str(w),x,y)
- ev(tag,widget_class=w.winfo_class(),text=str(w.cget('text')) if 'text' in w.keys() else '',point=[x,y]);subprocess.run(['xdotool','mousemove',str(x),str(y),'click','1'],check=True)
+ ev(tag,widget_class=w.winfo_class(),text=str(w.cget('text')) if 'text' in w.keys() else '',point=[x,y]);subprocess.run(['xdotool','mousemove',str(x),str(y),'click','1'],check=True);ROOT.update()
 def find(label):
  a=[w for w in widgets(ROOT) if isinstance(w,(tk.Button,ttk.Button)) and w.winfo_ismapped() and str(w.cget('text'))==label];assert len(a)==1,(label,len(a));return a[0]
 def bottom():
