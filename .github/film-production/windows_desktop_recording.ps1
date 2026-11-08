@@ -20,6 +20,15 @@ public static class FilmActualDisplay {
 $modeResult=[FilmActualDisplay]::Request1080();Start-Sleep -Seconds 2
 # Ordinary real desktop preparation, never altering application pixels.
 Set-TimeZone -Id 'Turkey Standard Time'
+Set-Culture -CultureInfo 'tr-TR'
+$intl='HKCU:\Control Panel\International'
+Set-ItemProperty $intl -Name sShortDate -Value 'dd.MM.yyyy'
+Set-ItemProperty $intl -Name sShortTime -Value 'HH:mm:ss'
+Set-ItemProperty $intl -Name sTimeFormat -Value 'HH:mm:ss'
+$advanced='HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+New-ItemProperty $advanced -Name ShowSecondsInSystemClock -Value 1 -PropertyType DWord -Force | Out-Null
+Get-Process explorer -ErrorAction SilentlyContinue | Stop-Process -Force
+Start-Process explorer.exe;Start-Sleep -Seconds 3
 Add-Type -AssemblyName System.Drawing
 $os=Get-CimInstance Win32_OperatingSystem;$cpu=Get-CimInstance Win32_Processor | Select-Object -First 1
 $wall=[System.Drawing.Image]::FromFile((Join-Path $PWD '.github/film-production/wallpaper.png'))

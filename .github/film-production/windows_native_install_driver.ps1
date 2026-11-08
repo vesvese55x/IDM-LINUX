@@ -49,6 +49,14 @@ Actual-Click $turkish 'Select actual Turkish option'
 Real-Shot 'native-install-02-turkish-selected.png'
 Actual-Click $installNav 'Return to actual installer page'
 Real-Shot 'native-install-03-before-start.png'
+# Choose the ordinary manual browser-extension route, explicitly not auto-store success.
+# The previous default run genuinely opened an unavailable store link; preserve that
+# evidence for troubleshooting instead of claiming the extension installed.
+$autoBrowser=Button-Match '^Tarayıcı Eklentisini Otomatik Aç & Kur$'
+if([ActualControlClick]::Checked($autoBrowser)){Actual-Click $autoBrowser 'Choose manual separate browser-extension setup, not automatic store opening'}
+$installReport.browser_extension_step_separate_and_not_verified=$true
+$installReport.auto_store_open_disabled_by_explicit_normal_UI_choice=$true
+Real-Shot 'native-install-03b-manual-browser-extension-choice.png'
 $installReport.actual_turkish_start_caption=[ActualControlClick]::Text($start)
 Actual-Click $start 'Start actual project native Windows IDM installation'
 $deadline=[DateTime]::UtcNow.AddMinutes(12);$found=$null;$n=0
