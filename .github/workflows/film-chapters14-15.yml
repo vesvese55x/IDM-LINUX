@@ -5,7 +5,7 @@ on:
       stage:
         description: 'Preparation is not a completed download lesson'
         type: choice
-        options: [linux-gui-preflight, linux-native-turkish-preflight, linux-native-fileinfo-turkish-check, linux-native-transfer-turkish-check, linux-native-pixeldrain-capture, windows-native-opening-probe, linux-playlist-owned-backend-check]
+        options: [linux-gui-preflight, linux-native-turkish-preflight, linux-native-fileinfo-turkish-check, linux-native-transfer-turkish-check, linux-native-pixeldrain-capture, windows-native-opening-probe, linux-playlist-owned-backend-check, linux-native-speed-menu-probe]
         default: linux-gui-preflight
       source_page_url:
         description: 'User-authorized public Pixeldrain page URL. Never enter passwords or API keys.'
@@ -98,7 +98,9 @@ jobs:
               if [ "${{ github.event.inputs.stage }}" != "linux-native-turkish-preflight" ]; then EXTRA="--isolated-fileinfo"; fi
               .venv-film/bin/python .github/film-production/native_turkish_preflight.py $EXTRA || exit $?
               if [ "${{ github.event.inputs.stage }}" != "linux-native-turkish-preflight" ]; then
-                if [ "${{ github.event.inputs.stage }}" = "linux-native-pixeldrain-capture" ]; then
+                if [ "${{ github.event.inputs.stage }}" = "linux-native-speed-menu-probe" ]; then
+                  .venv-film/bin/python .github/film-production/native_speed_menu_probe.py || exit $?
+                elif [ "${{ github.event.inputs.stage }}" = "linux-native-pixeldrain-capture" ]; then
                   .venv-film/bin/python .github/film-production/native_pixeldrain_capture.py || exit $?
                 else
                 TRANSFER=""
