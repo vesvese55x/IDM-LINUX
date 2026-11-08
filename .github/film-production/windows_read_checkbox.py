@@ -9,4 +9,4 @@ try:
 except Exception:
  props=w.legacy_properties();value=int(props['State']);checked=bool(value&16)
  method='Windows MSAA checked state'
-print(json.dumps({'name':w.element_info.name,'checked':checked,'raw_state':value,'read_method':method,'product_ui_modified':False},ensure_ascii=False))
+print(json.dumps({'name':w.element_info.name,'checked':checked,'raw_state':value,'read_method':method,'product_ui_modified':False},ensure_ascii=True))
