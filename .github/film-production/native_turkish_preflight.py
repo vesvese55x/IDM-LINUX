@@ -131,6 +131,12 @@ if '--isolated-fileinfo' not in os.sys.argv:
 else:
  (O/'isolated-fileinfo-scope.json').write_text(json.dumps({'settings_navigation_performed_in_this_process':False,'reason':'Separate fixture inspection from unverified post-scheduler state. Earlier probe timeouts used a wrong Wine prefix and do not prove a native hang. Do not claim end-to-end scheduler stability.','all_fonts_certified':False}))
 # Keep real native application processes, but minimize their actual windows before separate wrapper screenshots.
-for line in subprocess.check_output(['wmctrl','-l'],text=True).splitlines():
- if 'xfce' not in line.lower():subprocess.run(['xdotool','windowminimize',line.split()[0]],check=False)
+for line in subprocess.check_output(['wmctrl','-lx'],text=True).splitlines():
+ # The localized desktop title is Masaüstü, not xfce: filter actual WM_CLASS.
+ if not any(cls in line.lower() for cls in ['xfdesktop','xfce4-panel']):subprocess.run(['xdotool','windowminimize',line.split()[0]],check=False)
+for line in subprocess.check_output(['wmctrl','-lx'],text=True).splitlines():
+ if 'xfdesktop' in line.lower():
+  desktop_info=subprocess.check_output(['xwininfo','-id',line.split()[0]],text=True)
+  (O/'actual-desktop-map-state.txt').write_text(desktop_info)
+  assert 'IsViewable' in desktop_info,'Never record against an accidentally minimized desktop'
 print('ACTUAL_NATIVE_MAIN_WINDOW_TURKISH_PREFLIGHT_PASSED_NOT_FULL_EPISODE',flush=True)
