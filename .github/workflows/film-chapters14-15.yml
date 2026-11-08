@@ -52,6 +52,11 @@ jobs:
       - name: Mask runtime source URL in subsequent logs
         run: |
           if [ -n "$FILM_SOURCE_PAGE_URL" ]; then echo "::add-mask::$FILM_SOURCE_PAGE_URL"; fi
+      - name: Install ordinary documented media JavaScript runtime
+        if: startsWith(github.event.inputs.stage, 'linux-public-playlist')
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
       - name: Prepare actual desktop and fonts
         run: |
           sudo apt-get update -qq
@@ -59,6 +64,7 @@ jobs:
           sudo locale-gen tr_TR.UTF-8
           python3 -m venv --system-site-packages .venv-film
           .venv-film/bin/pip install -e . pillow fonttools yt-dlp streamlink pytest
+          if [[ '${{ github.event.inputs.stage }}' == linux-public-playlist* ]]; then .venv-film/bin/pip install 'yt-dlp[default]'; fi
           echo "$PWD/.venv-film/bin" >> "$GITHUB_PATH"
       - name: Install official Brave, without credentials
         if: github.event.inputs.stage != 'linux-playlist-owned-backend-check' && github.event.inputs.stage != 'linux-playlist-owned-gui-check' && github.event.inputs.stage != 'linux-owned-hls-dvr-check' && github.event.inputs.stage != 'linux-owned-ed2k-check' && github.event.inputs.stage != 'linux-public-playlist-probe' && github.event.inputs.stage != 'linux-public-playlist-transfer' && github.event.inputs.stage != 'linux-public-playlist-diagnostic'

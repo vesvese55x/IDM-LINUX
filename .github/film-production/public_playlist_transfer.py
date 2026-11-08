@@ -13,6 +13,12 @@ r={'scope':'Original backend only, actual public playlist selected entries 1 and
 def save():(O/'actual-public-playlist-transfer-review.json').write_text(json.dumps(r,ensure_ascii=False,indent=2))
 manager=PlaylistBatchManager(base_dir=O/'actual-downloads')
 try:
+ # Normal upstream dependencies only. No altered clients, cookies or proxies.
+ import runpy
+ runpy.run_path('.github/film-production/public_playlist_diagnostic.py',run_name='__main__')
+ diagnostic=json.loads(Path('out/film14-public-playlist-diagnostic/actual-public-playlist-diagnostic.json').read_text())
+ r['ordinary_dependency_precheck_exit_code']=diagnostic['actual_exit_code'];save()
+ assert diagnostic['actual_exit_code']==0,'Ordinary access still denied: stop without auth/bot workaround or transfer attempt'
  info=probe_playlist_entries(url,max_items=3);r['actual_probe']=info;save();assert info.get('ok') and len(info.get('entries',[]))==3
  chosen=[info['entries'][0],info['entries'][2]];r['actual_selected_entries']=chosen
  start=manager.start_batch(url,chosen,str(O/'actual-downloads'));r['actual_start']=start;save();assert start['ok']
