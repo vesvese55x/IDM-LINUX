@@ -64,10 +64,23 @@ while([DateTime]::UtcNow -lt $deadline){
   if($caption -notmatch '^(Next\s*>?|Install|Finish|I accept the terms.*|I agree.*)$'){continue}
   if(-not [ActualControlClick]::IsWindowEnabled([IntPtr]$h)){continue}
   $owner=Get-Process -Id ([ActualControlClick]::OwnerPid($h)) -ErrorAction SilentlyContinue
-  if(-not $owner -or -not $owner.Path -or $owner.ProcessName -ne 'semo_idm_setup'){continue}
+  if(-not $owner -or -not $owner.Path){continue}
   if($caption -match '^I (accept|agree)' -and [ActualControlClick]::Checked($h)){continue}
-  $sig=Get-AuthenticodeSignature $owner.Path
-  if($sig.Status -ne 'Valid' -or $sig.SignerCertificate.Subject -notmatch 'Tonec'){continue}
+  # The signed SFX may create its real wizard in an extracted child process.
+  # Trust only the actual signed official setup or a bounded, observed descendant.
+  $current=$owner;$trusted=$false;$chain=@();$sig=$null
+  for($depth=0;$depth -lt 6 -and $current;$depth++){
+   $chain+=@{id=$current.Id;name=$current.ProcessName;path=$current.Path}
+   if($current.ProcessName -eq 'semo_idm_setup'){
+    $sig=Get-AuthenticodeSignature $current.Path
+    $trusted=($sig.Status -eq 'Valid' -and $sig.SignerCertificate.Subject -match 'Tonec');break
+   }
+   $pi=Get-CimInstance Win32_Process -Filter ('ProcessId='+$current.Id) -ErrorAction SilentlyContinue
+   if(-not $pi -or -not $pi.ParentProcessId){break}
+   $current=Get-Process -Id $pi.ParentProcessId -ErrorAction SilentlyContinue
+  }
+  if(-not $trusted){continue}
+  $installReport.actual_verified_vendor_wizard_process_chain=$chain
   Real-Shot ('vendor-wizard-before-{0:d3}.png' -f $n)
   Actual-Click $h ('Actual signed Tonec installer control: '+$caption)
   $installReport.manual_vendor_wizard_recorded=$true
