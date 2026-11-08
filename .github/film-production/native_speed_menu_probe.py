@@ -30,4 +30,8 @@ r=subprocess.run(['wine',str(p)],capture_output=True,check=True,timeout=30);(O/'
 subprocess.run(['xdotool','mousemove',str(a[0][0]+190),str(a[0][1]+226)],check=True);time.sleep(1)
 subprocess.run(['import','-window','root',str(O/'03-actual-speed-limiter-submenu.png')],check=True)
 r=subprocess.run(['wine',str(p)],capture_output=True,check=True,timeout=30);(O/'actual-speed-submenu-raw.txt').write_bytes(r.stdout)
+# Settings item measured on genuine submenu in run42452623048; observe, cancel unchanged.
+subprocess.run(['xdotool','mousemove',str(a[0][0]+330),str(a[0][1]+270),'click','1'],check=True);time.sleep(.8)
+subprocess.run(['import','-window','root',str(O/'04-actual-speed-settings.png')],check=True)
+r=subprocess.run(['wine',str(p)],capture_output=True,check=True,timeout=30);(O/'actual-speed-settings-raw.txt').write_bytes(r.stdout)
 subprocess.run(['xdotool','key','Escape'],check=True)
