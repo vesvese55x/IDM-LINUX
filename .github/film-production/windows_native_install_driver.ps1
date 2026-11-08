@@ -10,6 +10,8 @@ public static class ActualControlClick {
  [DllImport("user32.dll")]static extern bool IsWindowVisible(IntPtr w);
  [DllImport("user32.dll")]public static extern bool IsWindowEnabled(IntPtr w);
  [DllImport("user32.dll")]static extern uint GetWindowThreadProcessId(IntPtr w,out uint pid);
+ [DllImport("user32.dll",EntryPoint="SendMessageTimeoutW")]static extern IntPtr ReadMessage(IntPtr w,uint msg,IntPtr a,IntPtr b,uint flags,uint timeout,out IntPtr value);
+ public static bool Checked(long h){IntPtr v;ReadMessage(new IntPtr(h),240,IntPtr.Zero,IntPtr.Zero,2,300,out v);return v.ToInt64()==1;}
  public static int OwnerPid(long h){uint pid;GetWindowThreadProcessId(new IntPtr(h),out pid);return (int)pid;}
  [DllImport("user32.dll",CharSet=CharSet.Unicode)]static extern int GetClassName(IntPtr w,StringBuilder c,int n);
  [DllImport("user32.dll",CharSet=CharSet.Unicode)]static extern IntPtr SendMessageTimeout(IntPtr w,uint m,IntPtr n,StringBuilder text,uint flags,uint timeout,out IntPtr copied);
@@ -62,7 +64,8 @@ while([DateTime]::UtcNow -lt $deadline){
   if($caption -notmatch '^(Next\s*>?|Install|Finish|I accept the terms.*|I agree.*)$'){continue}
   if(-not [ActualControlClick]::IsWindowEnabled([IntPtr]$h)){continue}
   $owner=Get-Process -Id ([ActualControlClick]::OwnerPid($h)) -ErrorAction SilentlyContinue
-  if(-not $owner -or -not $owner.Path){continue}
+  if(-not $owner -or -not $owner.Path -or $owner.ProcessName -ne 'semo_idm_setup'){continue}
+  if($caption -match '^I (accept|agree)' -and [ActualControlClick]::Checked($h)){continue}
   $sig=Get-AuthenticodeSignature $owner.Path
   if($sig.Status -ne 'Valid' -or $sig.SignerCertificate.Subject -notmatch 'Tonec'){continue}
   Real-Shot ('vendor-wizard-before-{0:d3}.png' -f $n)
