@@ -5,7 +5,7 @@ on:
       stage:
         description: 'Preparation is not a completed download lesson'
         type: choice
-        options: [linux-gui-preflight, linux-native-turkish-preflight, linux-native-fileinfo-turkish-check, linux-native-transfer-turkish-check, linux-native-pixeldrain-capture]
+        options: [linux-gui-preflight, linux-native-turkish-preflight, linux-native-fileinfo-turkish-check, linux-native-transfer-turkish-check, linux-native-pixeldrain-capture, windows-native-opening-probe]
         default: linux-gui-preflight
       source_page_url:
         description: 'User-authorized public Pixeldrain page URL. Never enter passwords or API keys.'
@@ -23,6 +23,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   genuine-gui-preflight:
+    if: github.event.inputs.stage != 'windows-native-opening-probe'
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     env:
@@ -108,3 +109,25 @@ jobs:
             out/film14-native-turkish/
           retention-days: 7
           if-no-files-found: warn
+
+  genuine-windows-opening:
+    if: github.event.inputs.stage == 'windows-native-opening-probe'
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build byte-exact repository launcher without installing IDM
+        shell: pwsh
+        run: ./packaging/windows/build.ps1
+      - name: Actual desktop and EXE opening only, never DrawToBitmap
+        shell: pwsh
+        run: ./.github/film-production/windows_opening_probe.ps1
+      - name: Keep actual evidence, not a completed installation claim
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: film-native-windows-opening-${{ github.run_id }}
+          path: |
+            out/film-windows-opening/
+            artifacts/windows/build-manifest.json
+          retention-days: 7
