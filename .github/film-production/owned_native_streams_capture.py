@@ -57,7 +57,7 @@ apply_desktop_style(O)
 def source_page(mode,url):
  filename=mode+'-source.html'
  (source/filename).write_text('<!doctype html><html lang="tr"><meta charset="utf-8"><title>Kendi izinli '+mode+' kaynağımız</title><style>body{background:#101820;color:#eee;font:20px sans-serif;padding:50px;max-width:1000px}h1{color:#d29a12}input{width:98%;font:17px monospace;padding:15px;margin:25px 0}p{line-height:1.6}</style><h1>Kendi izinli '+mode+' kaynağımız</h1><p>Bu sayfa film için hazırlanan gerçek kaynak sayfasıdır; IDM arayüzü değildir.</p><p>Kullanılan dosya ve yayınlar bize aittir. Aşağıdaki gerçek bağlantı, özgün yazılımın yerel medya köprüsüdür. IDM’ye elle URL Ekle yoluyla aktarılır; otomatik tarayıcı yakalaması iddia edilmez.</p><input id="bridge" autofocus readonly value="'+url+'"><p>İlerleme ve tamamlanma, özgün IDM penceresinde izlenecektir.</p>',encoding='utf8')
- activate('brave');keys('ctrl+l');type_ascii(origin+'/'+filename);keys('Return');page=connect_url(origin+'/'+filename);time.sleep(1)
+ activate('brave');wid=subprocess.check_output(['xdotool','getactivewindow'],text=True).strip();subprocess.run(['wmctrl','-ir',wid,'-b','remove,maximized_vert,maximized_horz'],check=True);subprocess.run(['wmctrl','-ir',wid,'-e','0,380,55,1480,930'],check=True);keys('ctrl+l');type_ascii(origin+'/'+filename);keys('Return');page=connect_url(origin+'/'+filename);time.sleep(1)
  actual=page.read("({title:document.title,text:document.body.innerText,focused:document.activeElement.id,url:document.getElementById('bridge').value})");save(mode+'-actual-own-page.json',actual)
  assert actual['focused']=='bridge' and actual['url']==url
  shot(mode+'-actual-own-source-page');keys('ctrl+a');keys('ctrl+c');time.sleep(.2)
@@ -69,6 +69,9 @@ def source_page(mode,url):
  event(mode+'-actual-browser-copy-own-original-bridge-url');page.ws.close()
 def native_transfer(mode,url,name):
  source_page(mode,url);time.sleep(2)
+ if mode=='ed2k' and os.environ.get('FILM_PACED_CAPTURE')=='true':
+  remaining=recording_epoch+38.5-time.monotonic()
+  if remaining>0:time.sleep(remaining)
  for row in subprocess.check_output(['wmctrl','-lx'],text=True).splitlines():
   if 'brave' in row.lower():subprocess.run(['xdotool','windowminimize',row.split()[0]],check=True)
  ids=[row.split(None,3)[0] for row in subprocess.check_output(['wmctrl','-l'],text=True).splitlines() if len(row.split(None,3))==4 and __import__('re').fullmatch(r'Internet Download Manager [0-9.]+',row.split(None,3)[3])];assert len(ids)==1
@@ -102,11 +105,11 @@ def native_transfer(mode,url,name):
  assert progress,'No actual native progress/pause window was observed'
  candidates=[p for root in [Path.home()/'Downloads',Path(native_cfg.download_dir),Path(native_cfg.wine_prefix)/'drive_c/users'] if root.exists() for p in root.rglob(name) if p.is_file()]
  assert candidates,'Actual native file not found';p=candidates[0]
- event(mode+'-actual-native-completion',bytes=p.stat().st_size);shot(mode+'-native-completed');dwell=22 if mode in ['dvr','ed2k'] else 4;event(mode+'-actual-recorded-completion-dwell-start',seconds=dwell);time.sleep(dwell);event(mode+'-actual-recorded-completion-dwell-end')
+ event(mode+'-actual-native-completion',bytes=p.stat().st_size);shot(mode+'-native-completed');dwell=22 if mode in ['dvr','ed2k'] else 4;event(mode+'-actual-recorded-completion-dwell-start',requested_dwell_seconds=dwell);time.sleep(dwell);event(mode+'-actual-recorded-completion-dwell-end')
  cc,tt,ww=native(mode+'-completed-close-control');button(cc,'Kapat');time.sleep(.5)
  return p,states
 try:
- log=(O/'actual-capture.log').open('w');recorder=subprocess.Popen(['ffmpeg','-nostdin','-y','-v','warning','-f','x11grab','-draw_mouse','0','-s','1920x1080','-r','24','-i',os.environ['DISPLAY'],'-an','-c:v','libx264','-preset','veryfast','-crf','18','-threads','2',str(O/'uncut-owned-original-bridge-native.mp4')],stdout=log,stderr=subprocess.STDOUT);event('actual-recording-started')
+ log=(O/'actual-capture.log').open('w');recorder=subprocess.Popen(['ffmpeg','-nostdin','-y','-v','warning','-f','x11grab','-draw_mouse','0','-s','1920x1080','-r','24','-i',os.environ['DISPLAY'],'-an','-c:v','libx264','-preset','veryfast','-crf','18','-threads','2',str(O/'uncut-owned-original-bridge-native.mp4')],stdout=log,stderr=subprocess.STDOUT);recording_epoch=time.monotonic();event('actual-recording-started');report['actual_recording_start_utc']=__import__('datetime').datetime.now(__import__('datetime').timezone.utc).isoformat()
  for mode,name in ([] if os.environ.get('FILM_OWNED_NATIVE_ED2K_ONLY')=='true' else [('vod','izinli_hls_vod.mp4'),('dvr','izinli_canli_dvr.mp4')]):
   history=0
   if mode=='dvr':
