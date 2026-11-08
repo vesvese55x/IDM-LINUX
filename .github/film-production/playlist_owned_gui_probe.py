@@ -70,7 +70,56 @@ def listed(attempt=0):
   raise AssertionError(('Actual own three-entry list did not appear',len(cbs)))
  bottom();shot('02-actual-three-entry-list');ev('actual-real-list-three-checkboxes',count=len(cbs))
  (O/'original-visible-widget-dump.json').write_text(json.dumps([{'class':w.winfo_class(),'text':str(w.cget('text')) if 'text' in w.keys() else '', 'rect':[w.winfo_rootx(),w.winfo_rooty(),w.winfo_width(),w.winfo_height()]} for w in widgets(ROOT) if w.winfo_ismapped()],ensure_ascii=False,indent=2))
- ROOT.after(1800,finish)
+ ROOT.after(2200,select_and_start)
+def actual_batches():
+ import urllib.request
+ with urllib.request.urlopen('http://127.0.0.1:35641/api/playlist/batch/list',timeout=4) as r:d=json.loads(r.read())
+ (O/'actual-daemon-batches.json').write_text(json.dumps(d,ensure_ascii=False,indent=2))
+ return d['batches']
+def row_controls():
+ return sorted([w for w in widgets(ROOT) if isinstance(w,tk.Checkbutton) and w.winfo_ismapped() and str(w.cget('text'))==''],key=lambda w:w.winfo_rooty())
+def select_and_start():
+ cbs=row_controls();assert len(cbs)==3
+ assert all(bool(ROOT.getvar(w.cget('variable'))) for w in cbs)
+ click(cbs[1],'deselect-second-actual-checkbox')
+ assert [bool(ROOT.getvar(w.cget('variable'))) for w in cbs]==[True,False,True]
+ shot('04-actual-selection-first-third');click(find(T('ov.pl_btn_download')),'start-selected-through-original-GUI')
+ ROOT.after(1300,lambda:wait_pause(0))
+def wait_pause(attempt):
+ a=[w for w in widgets(ROOT) if isinstance(w,ttk.Button) and w.winfo_ismapped() and str(w.cget('text'))=='⏸']
+ if not a:
+  assert attempt<60,'No actual downloading pause button';ROOT.after(500,lambda:wait_pause(attempt+1));return
+ shot('05-actual-first-download-progress');click(a[0],'pause-real-first-transfer');ROOT.after(1800,resume_actual)
+def resume_actual():
+ batches=actual_batches();assert any(e['status']=='paused' for b in batches for e in b['entries'])
+ shot('06-actual-paused');click(find('▶'),'resume-real-first-transfer');ROOT.after(1500,lambda:wait_complete(0))
+def wait_complete(attempt):
+ batches=actual_batches();assert len(batches)==1
+ entries=batches[0]['entries'];assert len(entries)==2 and {int(e['index']) for e in entries}=={1,3}
+ assert not any(e['status']=='failed' for e in entries),'Actual transfer failed'
+ if not all(e['status']=='completed' for e in entries):
+  assert attempt<180,'Actual completion timeout';ROOT.after(1000,lambda:wait_complete(attempt+1));return
+ files=list((O/'actual-downloads').rglob('*.mp4'));assert len(files)==2
+ hashes={hashlib.sha256(p.read_bytes()).hexdigest() for p in files}
+ assert hashes=={hashlib.sha256((source/f'own-clip-{i}.mp4').read_bytes()).hexdigest() for i in [1,3]}
+ ev('actual-two-selected-files-complete-sha256-matched',files=[str(p) for p in files]);shot('07-actual-selected-downloads-complete')
+ ROOT.after(2500,start_cancel_demo)
+def start_cancel_demo():
+ cbs=row_controls()
+ for i,w in enumerate(cbs):
+  wanted=(i==1)
+  if bool(ROOT.getvar(w.cget('variable')))!=wanted:click(w,'actual-new-selection-for-cancel-demo')
+ click(find(T('ov.pl_btn_download')),'start-own-second-clip-for-real-cancel-demo');ROOT.after(1200,lambda:wait_cancel(0))
+def wait_cancel(attempt):
+ a=[w for w in widgets(ROOT) if isinstance(w,ttk.Button) and w.winfo_ismapped() and str(w.cget('text'))=='⏸']
+ if not a:
+  assert attempt<60,'Cancel demonstration never started';ROOT.after(500,lambda:wait_cancel(attempt+1));return
+ shot('08-actual-separate-cancel-demo-progress');click(find(T('ov.pl_btn_cancel_all')),'cancel-real-separate-own-batch');ROOT.after(1800,check_cancel)
+def check_cancel():
+ batches=actual_batches();assert len(batches)==2
+ assert any(any(e['status']=='cancelled' for e in b['entries']) for b in batches)
+ files=list((O/'actual-downloads').rglob('*.mp4'));assert len(files)==2,'Cancelled second source must not be called completed'
+ ev('actual-cancellation-verified-original-first-third-preserved');shot('09-actual-cancelled-separate-demo');ROOT.after(3000,finish)
 def finish():
  global rec
  shot('03-original-playlist-read-only-state');rec.send_signal(signal.SIGINT);rec.wait(timeout=30);rec=None;ROOT.destroy()
@@ -91,7 +140,7 @@ tk.Tk.__init__=init
 try:
  from idm_linux.gui import launch_control_panel
  launch_control_panel(initial_page='overview',project_root=Path.cwd());assert not failures,failures
- (O/'actual-gui-probe-review.json').write_text(json.dumps({'actual_original_gui_and_original_daemon':True,'real_own_rss_list_visible':True,'native_idm_installed_in_this_separate_profile':False,'native_helper_substitution_called':False,'own_source_limited_KiB_per_second':128,'gui_download_selection_cancel_verified':False,'finished_lesson':False,'final_film_export_allowed':False},ensure_ascii=False,indent=2))
+ (O/'actual-gui-probe-review.json').write_text(json.dumps({'actual_original_gui_and_original_daemon':True,'real_own_rss_list_visible':True,'native_idm_installed_in_this_separate_profile':False,'native_helper_substitution_called':False,'own_source_limited_KiB_per_second':128,'gui_download_selection_pause_resume_cancel_verified':True,'actual_selected_first_third_outputs_sha256_verified':True,'finished_lesson':False,'final_film_export_allowed':False},ensure_ascii=False,indent=2))
 finally:
  daemon.terminate()
  try:daemon.wait(timeout=15)

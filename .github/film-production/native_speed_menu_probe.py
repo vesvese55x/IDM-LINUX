@@ -8,7 +8,7 @@ os.environ.update(build_wine_env(IdmLinuxConfig.load()))
 for l in subprocess.check_output(['wmctrl','-l'],text=True).splitlines():
  if 'günün ipucu' in l.lower():
   subprocess.run(['wmctrl','-ia',l.split()[0]],check=True);subprocess.run(['xdotool','key','Escape'],check=True);time.sleep(.3)
-rows=[l for l in subprocess.check_output(['wmctrl','-l'],text=True).splitlines() if 'Internet Download Manager' in l]
+rows=[l for l in subprocess.check_output(['wmctrl','-l'],text=True).splitlines() if __import__('re').search(r'Internet Download Manager \d+\.\d+$',l)]
 assert len(rows)==1,rows
 subprocess.run(['wmctrl','-ia',rows[0].split()[0]],check=True);time.sleep(.5)
 p=Path('out/film14-native-turkish/native-turkish-probe.exe').resolve()
