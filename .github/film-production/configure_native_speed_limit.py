@@ -37,9 +37,10 @@ def configure(kibps):
  ok=[c for c in controls if c['visible'] and c['class']=='Button' and c['text'].replace('&','')=='Tamam'];assert len(ok)==1
  shot('03-actual-value-before-confirm');click(ok[0]['rect']);menu(root)
  click([root[0]+320,root[1]+222,root[0]+340,root[1]+236])
- _,states,_=inspect('04-after-enable');on=[s for s in states if s['text']=='Aç'];off=[s for s in states if s['text']=='Kapalı']
+ menu(root);shot('04-actual-popup-after-enable')
+ _,states,_=inspect('04-after-enable');states=[{'text':t,'state':s} for t,s in set((x['text'],x['state']) for x in states)];on=[s for s in states if s['text']=='Aç'];off=[s for s in states if s['text']=='Kapalı']
  assert len(on)==1 and len(off)==1 and on[0]['state']&8 and not off[0]['state']&8,'Actual native menu checkmarks must certify enable state'
- menu(root);shot('05-actual-enabled-checkmark');subprocess.run(['xdotool','key','Escape','Escape'],check=True)
+ shot('05-actual-enabled-checkmark');subprocess.run(['xdotool','key','Escape','Escape'],check=True)
  report={'configured_by_physical_original_UI':True,'native_speed_limit_KiB_per_second':kibps,'value_read_back':True,'enabled_menu_checkmark_verified':True,'benchmark_or_maximum_speed_claim':False,'reason':'Make real progress observable in a genuine paced tutorial, not a performance test','vendor_files_or_trial_keys_modified':False}
  (O/'actual-ordinary-speed-limit-review.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
  return report
