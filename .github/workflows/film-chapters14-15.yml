@@ -16,6 +16,10 @@ on:
         description: 'Genuine wall-clock dwell aligned to existing TR voice04 narration; no retiming/frozen UI'
         type: boolean
         default: false
+      windows_panel_followup:
+        description: 'Observe real automatic panel opening; do not start native IDM installation'
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -113,6 +117,8 @@ jobs:
   genuine-windows-opening:
     if: github.event.inputs.stage == 'windows-native-opening-probe'
     runs-on: windows-2022
+    env:
+      FILM_WINDOWS_PANEL_FOLLOWUP: ${{ github.event.inputs.windows_panel_followup }}
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
