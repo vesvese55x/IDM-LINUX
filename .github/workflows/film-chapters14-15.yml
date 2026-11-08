@@ -14,7 +14,7 @@ on:
       stage:
         description: 'Preparation is not a completed download lesson'
         type: choice
-        options: [complete-film-assembly, linux-gui-preflight, linux-native-turkish-preflight, linux-native-fileinfo-turkish-check, linux-native-transfer-turkish-check, linux-native-pixeldrain-capture, windows-native-opening-probe, linux-playlist-owned-backend-check, linux-native-speed-menu-probe, linux-playlist-owned-gui-check, linux-owned-hls-dvr-check, linux-owned-ed2k-check, linux-owned-native-streams-capture, linux-owned-native-ed2k-capture, linux-public-playlist-probe, linux-public-playlist-transfer, linux-public-playlist-diagnostic, linux-native-gui-details-probe]
+        options: [english-windows-ui-reference, complete-film-assembly, linux-gui-preflight, linux-native-turkish-preflight, linux-native-fileinfo-turkish-check, linux-native-transfer-turkish-check, linux-native-pixeldrain-capture, windows-native-opening-probe, linux-playlist-owned-backend-check, linux-native-speed-menu-probe, linux-playlist-owned-gui-check, linux-owned-hls-dvr-check, linux-owned-ed2k-check, linux-owned-native-streams-capture, linux-owned-native-ed2k-capture, linux-public-playlist-probe, linux-public-playlist-transfer, linux-public-playlist-diagnostic, linux-native-gui-details-probe]
         default: linux-gui-preflight
       source_page_url:
         description: 'User-authorized public Pixeldrain page URL. Never enter passwords or API keys.'
@@ -44,7 +44,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   genuine-gui-preflight:
-    if: github.event.inputs.stage != 'windows-native-opening-probe' && github.event.inputs.stage != 'complete-film-assembly'
+    if: github.event.inputs.stage != 'windows-native-opening-probe' && github.event.inputs.stage != 'complete-film-assembly' && github.event.inputs.stage != 'english-windows-ui-reference'
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     env:
@@ -212,3 +212,20 @@ jobs:
       receiver_public_key: ${{ inputs.receiver_public_key }}
       bundle_sha256: ${{ inputs.bundle_sha256 }}
       bundle_bytes: ${{ inputs.bundle_bytes }}
+
+  english-windows-reference:
+    if: github.event.inputs.stage == 'english-windows-ui-reference'
+    runs-on: windows-2022
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Actual unmodified English SEMO application reference
+        shell: pwsh
+        run: ./.github/film-production/english_windows_reference.ps1
+      - name: Actual desktop references and receipt only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: film-english-windows-reference-${{ github.run_id }}
+          path: out/film-english-windows-reference/
+          retention-days: 7
