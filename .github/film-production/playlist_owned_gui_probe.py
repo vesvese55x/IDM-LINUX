@@ -55,11 +55,13 @@ def find(label):
  a=[w for w in widgets(ROOT) if isinstance(w,(tk.Button,ttk.Button)) and w.winfo_ismapped() and str(w.cget('text'))==label];assert len(a)==1,(label,len(a));return a[0]
 def bottom():
  subprocess.run(['xdotool','mousemove',str(ROOT.winfo_rootx()+900),str(ROOT.winfo_rooty()+400),'click','--repeat','24','--delay','35','5'],check=True)
+paced=os.environ.get('FILM_PACED_CAPTURE','false')=='true'
+def at(seconds,fn):ROOT.after(max(0,int((start+seconds-time.monotonic())*1000)),fn)
 def begin():
  global rec,start
  ROOT.geometry('1460x900+380+40');ROOT.update_idletasks();start=time.monotonic()
  rec=subprocess.Popen(['ffmpeg','-nostdin','-y','-v','error','-f','x11grab','-draw_mouse','0','-video_size','1920x1080','-framerate','24','-i',os.environ['DISPLAY'],'-an','-c:v','libx264','-preset','veryfast','-crf','18','-threads','2',str(O/'uncut-owned-playlist-gui.mp4')],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
- shot('01-actual-original-overview');bottom();ROOT.after(1300,enter)
+ shot('01-actual-original-overview');bottom();at(10 if paced else 1.3,enter)
 def enter():
  b=find(T('ov.pl_card_btn_list'));row=b.master;entries=[w for w in row.winfo_children() if isinstance(w,tk.Entry)];assert len(entries)==1
  click(entries[0],'actual-own-rss-address-input');subprocess.run(['xdotool','type','--clearmodifiers','--delay','2',url],check=True);click(b,'actual-list-own-playlist');ROOT.after(3000,listed)
@@ -70,7 +72,7 @@ def listed(attempt=0):
   raise AssertionError(('Actual own three-entry list did not appear',len(cbs)))
  bottom();shot('02-actual-three-entry-list');ev('actual-real-list-three-checkboxes',count=len(cbs))
  (O/'original-visible-widget-dump.json').write_text(json.dumps([{'class':w.winfo_class(),'text':str(w.cget('text')) if 'text' in w.keys() else '', 'rect':[w.winfo_rootx(),w.winfo_rooty(),w.winfo_width(),w.winfo_height()]} for w in widgets(ROOT) if w.winfo_ismapped()],ensure_ascii=False,indent=2))
- ROOT.after(2200,select_and_start)
+ at(24 if paced else time.monotonic()-start+2.2,select_and_start)
 def actual_batches():
  import urllib.request
  with urllib.request.urlopen('http://127.0.0.1:35641/api/playlist/batch/list',timeout=4) as r:d=json.loads(r.read())
@@ -83,13 +85,16 @@ def select_and_start():
  assert all(ROOT.getboolean(ROOT.getvar(w.cget('variable'))) for w in cbs)
  click(cbs[1],'deselect-second-actual-checkbox')
  assert [ROOT.getboolean(ROOT.getvar(w.cget('variable'))) for w in cbs]==[True,False,True]
- shot('04-actual-selection-first-third');click(find(T('ov.pl_btn_download')),'start-selected-through-original-GUI')
- ROOT.after(1300,lambda:wait_pause(0))
+ shot('04-actual-selection-first-third')
+ at(30 if paced else time.monotonic()-start,start_selected)
+def start_selected():
+ click(find(T('ov.pl_btn_download')),'start-selected-through-original-GUI')
+ at(35 if paced else time.monotonic()-start+1.3,lambda:wait_pause(0))
 def wait_pause(attempt):
  a=[w for w in widgets(ROOT) if isinstance(w,ttk.Button) and w.winfo_ismapped() and str(w.cget('text'))=='⏸']
  if not a:
   assert attempt<60,'No actual downloading pause button';ROOT.after(500,lambda:wait_pause(attempt+1));return
- shot('05-actual-first-download-progress');click(a[0],'pause-real-first-transfer');ROOT.after(1800,resume_actual)
+ shot('05-actual-first-download-progress');click(a[0],'pause-real-first-transfer');at(42 if paced else time.monotonic()-start+1.8,resume_actual)
 def resume_actual():
  batches=actual_batches();assert any(e['status']=='paused' for b in batches for e in b['entries'])
  shot('06-actual-paused');click(find('▶'),'resume-real-first-transfer');ROOT.after(1500,lambda:wait_complete(0))
@@ -103,13 +108,13 @@ def wait_complete(attempt):
  hashes={hashlib.sha256(p.read_bytes()).hexdigest() for p in files}
  assert hashes=={hashlib.sha256((source/f'own-clip-{i}.mp4').read_bytes()).hexdigest() for i in [1,3]}
  ev('actual-two-selected-files-complete-sha256-matched',files=[str(p) for p in files]);shot('07-actual-selected-downloads-complete')
- ROOT.after(2500,start_cancel_demo)
+ at(76 if paced else time.monotonic()-start+2.5,start_cancel_demo)
 def start_cancel_demo():
  cbs=row_controls()
  for i,w in enumerate(cbs):
   wanted=(i==1)
   if ROOT.getboolean(ROOT.getvar(w.cget('variable')))!=wanted:click(w,'actual-new-selection-for-cancel-demo')
- click(find(T('ov.pl_btn_download')),'start-own-second-clip-for-real-cancel-demo');ROOT.after(1200,lambda:wait_cancel(0))
+ click(find(T('ov.pl_btn_download')),'start-own-second-clip-for-real-cancel-demo');at(81 if paced else time.monotonic()-start+1.2,lambda:wait_cancel(0))
 def wait_cancel(attempt):
  a=[w for w in widgets(ROOT) if isinstance(w,ttk.Button) and w.winfo_ismapped() and str(w.cget('text'))=='⏸']
  if not a:
@@ -119,7 +124,7 @@ def check_cancel():
  batches=actual_batches();assert len(batches)==2
  assert any(any(e['status']=='cancelled' for e in b['entries']) for b in batches)
  files=list((O/'actual-downloads').rglob('*.mp4'));assert len(files)==2,'Cancelled second source must not be called completed'
- ev('actual-cancellation-verified-original-first-third-preserved');shot('09-actual-cancelled-separate-demo');ROOT.after(3000,finish)
+ ev('actual-cancellation-verified-original-first-third-preserved');shot('09-actual-cancelled-separate-demo');at(95 if paced else time.monotonic()-start+3,finish)
 def finish():
  global rec
  shot('03-original-playlist-read-only-state');rec.send_signal(signal.SIGINT);rec.wait(timeout=30);rec=None;ROOT.destroy()
