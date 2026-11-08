@@ -79,7 +79,11 @@ while([DateTime]::UtcNow -lt $deadline){
    if(-not $pi -or -not $pi.ParentProcessId){break}
    $current=Get-Process -Id $pi.ParentProcessId -ErrorAction SilentlyContinue
   }
-  if(-not $trusted){continue}
+  if(-not $trusted){
+   $installReport.unverified_wizard_candidate=@{caption=$caption;chain=$chain;signature_status=if($sig){[string]$sig.Status}else{'No signed setup ancestor found'}}
+   Save-Install;Real-Shot 'stopped-unverified-vendor-wizard.png'
+   throw 'Visible installer wizard owner/signature could not be verified; do not click or wait falsely'
+  }
   $installReport.actual_verified_vendor_wizard_process_chain=$chain
   Real-Shot ('vendor-wizard-before-{0:d3}.png' -f $n)
   Actual-Click $h ('Actual signed Tonec installer control: '+$caption)
